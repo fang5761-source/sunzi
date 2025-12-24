@@ -2,631 +2,427 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>孫子：沙盤推演 V6.0 (最終決戰版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>孫子兵法｜戰術演練系統</title>
     <style>
         :root {
-            /* V6.0 沙盤配色 */
-            --wood-desk: #3E2723; /* 深色木桌 */
-            --map-paper: #D7CCC8; /* 古地圖紙 */
-            --scroll-paper: #FFF8E1; /* 軍令狀紙 */
-            --bamboo-dark: #5D4037;
-            --bamboo-light: #D7A566;
-            --accent-red: #B71C1C; /* 印章紅 */
-            --accent-gold: #FFD700; /* 軍階金 */
-            --success-green: #2E7D32;
+            --main-bg: #0f1410; /* 深軍綠黑 */
+            --terminal-green: #33ff33; /* 雷達綠 */
+            --military-green: #4b6e46; /* 軍服綠 */
+            --alert-red: #ff3333;
+            --hud-border: 2px solid #4b6e46;
+            --glass-bg: rgba(20, 30, 20, 0.9);
         }
 
         body {
-            font-family: "Microsoft JhengHei", "Heiti TC", serif;
             margin: 0;
             padding: 0;
-            /* 背景升級：木桌 + 地圖網格 */
-            background-color: var(--wood-desk);
+            background-color: var(--main-bg);
             background-image: 
-                linear-gradient(rgba(62, 39, 35, 0.8), rgba(62, 39, 35, 0.8)), /* 木紋遮罩 */
-                repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0,0,0,0.2) 20px), /* 橫向網格 */
-                repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(0,0,0,0.2) 20px), /* 縱向網格 */
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%235D4037" width="50" height="50" x="0" y="0"/><rect fill="%234E342E" width="50" height="50" x="50" y="0"/><rect fill="%234E342E" width="50" height="50" x="0" y="50"/><rect fill="%235D4037" width="50" height="50" x="50" y="50"/></svg>'); /* 木紋理基底 */
-            background-size: auto, 20px 20px, 20px 20px, 100px 100px;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* === 頂部軍帳橫梁 === */
-        header {
-            width: 100%;
-            background: linear-gradient(to bottom, var(--wood-desk), #2c1b18);
-            padding: 10px 0 5px 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            position: relative;
-            z-index: 10;
-            border-bottom: 3px solid #1a100e;
-            flex-shrink: 0;
-        }
-
-        h1 {
-            font-size: 1.4rem;
-            margin: 0;
-            text-align: center;
-            color: var(--accent-gold);
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-            letter-spacing: 3px;
-            font-family: "標楷體", serif; /* 更有古風 */
-        }
-
-        .header-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 92%;
-            margin: 10px auto 0;
-            color: #ccc;
-        }
-
-        .level-tag {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--accent-gold);
-            color: var(--accent-gold);
-            padding: 2px 10px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-        }
-
-        /* Switch Toggle (維持原樣，調整配色) */
-        .switch-container {
-            display: flex;
-            align-items: center;
-            font-size: 0.85rem;
-            gap: 5px;
-        }
-        .switch-input { display: none; }
-        .switch-track {
-            width: 36px; height: 20px; background-color: #555; border-radius: 20px; position: relative; transition: 0.3s;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-        }
-        .switch-knob {
-            width: 16px; height: 16px; background-color: #ccc; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s;
-        }
-        .switch-input:checked + .switch-track { background-color: var(--accent-red); }
-        .switch-input:checked + .switch-track .switch-knob { transform: translateX(16px); background-color: #fff; }
-
-        /* 進度條：行軍路線 */
-        .progress-container {
-            width: 92%;
-            height: 8px;
-            background: rgba(0,0,0,0.6);
-            margin: 8px auto 5px;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid #444;
-            position: relative;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(to right, var(--accent-red), var(--accent-gold));
-            width: 0%;
-            transition: width 0.5s ease;
-            position: relative;
-        }
-        /* 進度條上的小旗幟 */
-        .progress-fill::after {
-            content: '🚩';
-            position: absolute;
-            right: -10px;
-            top: -6px;
-            font-size: 14px;
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
-        }
-
-        /* === 遊戲主區域 === */
-        #game-container {
-            flex-grow: 1;
-            width: 100%;
-            max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            box-sizing: border-box;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* NPC 對話框：將軍印風格 */
-        .npc-area {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-shrink: 0;
-            align-items: center;
-        }
-        .npc-avatar {
-            width: 54px;
-            height: 54px;
-            /* 將軍印風格 */
-            background: #8d6e63;
-            color: var(--accent-gold);
-            border-radius: 50%;
+                linear-gradient(rgba(15, 20, 16, 0.95), rgba(15, 20, 16, 0.95)),
+                repeating-linear-gradient(0deg, transparent, transparent 1px, #1a221a 1px, #1a221a 2px);
+            background-size: cover;
+            color: #c0dcc0;
+            font-family: "Courier New", Courier, "LiHei Pro", "微軟正黑體", monospace;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-            border: 4px solid var(--accent-gold);
-            box-shadow: 0 5px 10px rgba(0,0,0,0.4), inset 0 2px 5px rgba(0,0,0,0.3);
-            text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
-            font-family: "標楷體", serif;
-        }
-        .npc-text {
-            background: rgba(255, 248, 225, 0.9); /* 泛黃紙張感 */
-            color: #333;
-            padding: 12px 18px;
-            border-radius: 8px 20px 20px 20px;
-            border: 2px solid #5d4037;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            flex: 1;
-            box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
-            position: relative;
-            font-weight: bold;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* === 1. 上方放置區：軍令狀卷軸 === */
-        .target-zone-wrapper {
-            flex-grow: 1;
-            background: var(--scroll-paper); /* 卷軸紙色 */
-            /* 卷軸邊緣效果 */
-            background-image: linear-gradient(to right, rgba(0,0,0,0.1) 0%, transparent 5%, transparent 95%, rgba(0,0,0,0.1) 100%);
-            border-top: 8px solid var(--bamboo-dark); /* 卷軸軸心 */
-            border-bottom: 8px solid var(--bamboo-dark);
-            border-left: 2px solid #c7bba8;
-            border-right: 2px solid #c7bba8;
-            border-radius: 4px;
-            margin-bottom: 15px;
+        /* 掃描線特效 */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: var(--glass-bg);
+            border: var(--hud-border);
+            box-shadow: 0 0 20px rgba(51, 255, 51, 0.1);
+            padding: 30px;
             position: relative;
-            box-shadow: inset 0 0 30px rgba(141, 110, 99, 0.3), 0 10px 20px rgba(0,0,0,0.4);
+            border-radius: 4px;
+        }
+
+        /* 角落裝飾 (HUD Corner) */
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: var(--terminal-green);
+            border-style: solid;
+            transition: all 0.3s ease;
+        }
+        .tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; }
+        .tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
+        .bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; }
+        .br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+
+        h1 {
+            color: var(--terminal-green);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            border-bottom: 1px dashed var(--military-green);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(51, 255, 51, 0.5);
+            font-size: 1.8rem;
+        }
+
+        .status-bar {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #8fa88f;
+        }
+
+        .question-box {
+            min-height: 120px;
+            margin-bottom: 25px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        /* 打字機游標 */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2rem;
+            background-color: var(--terminal-green);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        button {
+            background: rgba(75, 110, 70, 0.2);
+            border: 1px solid var(--military-green);
+            color: var(--terminal-green);
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            position: relative;
             overflow: hidden;
         }
-        /* 卷軸軸心裝飾 */
-        .target-zone-wrapper::before, .target-zone-wrapper::after {
-            content: ''; position: absolute; width: 12px; height: 100%; background: #3e2723; top:0;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-        }
-        .target-zone-wrapper::before { left: 0; }
-        .target-zone-wrapper::after { right: 0; }
 
-        .scroll-board {
-            padding: 20px 25px;
-            overflow-y: auto;
-            height: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            /* 卷軸內部浮水印 */
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" opacity="0.05"><text x="50%" y="50%" font-size="80" text-anchor="middle" dominant-baseline="middle" font-family="標楷體" fill="black">孫子</text></svg>');
-            background-repeat: no-repeat;
-            background-position: center;
+        button:hover {
+            background: var(--military-green);
+            color: #000;
+            box-shadow: 0 0 15px var(--terminal-green);
         }
 
-        .hint-text {
-            color: #8d6e63;
-            margin-top: 40px;
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.correct {
+            background-color: var(--terminal-green) !important;
+            color: black !important;
+            border-color: var(--terminal-green);
+            box-shadow: 0 0 20px var(--terminal-green);
+        }
+
+        button.wrong {
+            background-color: var(--alert-red) !important;
+            color: white !important;
+            border-color: var(--alert-red);
+            box-shadow: 0 0 20px var(--alert-red);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            text-align: center;
             font-weight: bold;
-            pointer-events: none;
-            opacity: 0.7;
+            min-height: 24px;
         }
 
-        /* === 2. 下方候選區：指揮桌底部 === */
-        .source-zone-wrapper {
-            flex-shrink: 0;
-            background: rgba(0,0,0,0.3); /* 半透明深色 */
-            border-top: 3px solid #5d4037;
-            padding: 15px 5px 20px 5px; /* 底部留多一點空間給立體按鈕 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border-radius: 15px 15px 0 0;
-            box-shadow: inset 0 5px 10px rgba(0,0,0,0.3);
-        }
-        
-        .section-label {
-            font-size: 0.85rem;
-            color: #ccc;
-            margin-bottom: 10px;
+        .next-btn {
+            background: var(--terminal-green);
+            color: black;
             font-weight: bold;
+            text-align: center;
+            width: 100%;
+            margin-top: 20px;
+            display: none;
+            text-transform: uppercase;
             letter-spacing: 2px;
         }
 
-        .options-board {
+        .next-btn:hover {
+            background: #fff;
+        }
+
+        /* 進度條 */
+        .progress-container {
             width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px 10px; /* 增加垂直間距，避免立體按鈕打架 */
-            min-height: 80px;
-        }
-
-        /* === 3. 竹簡/兵棋樣式 (V6.0 立體化升級) === */
-        .bamboo-slip {
-            /* 立體感核心：多重漸層與陰影 */
-            background: linear-gradient(to bottom, #eecfa1 0%, #d7a566 100%);
-            border: none;
-            /* 側面厚度與底部陰影 */
-            box-shadow: 
-                inset 0 1px 0 rgba(255,255,255,0.4), /* 頂部高光 */
-                0 4px 0 #8d6e63, /* 側面厚度 (深色) */
-                0 8px 10px rgba(0,0,0,0.4); /* 底部投影 */
-            
-            padding: 12px 18px;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #3e2723;
-            cursor: pointer;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
-            font-family: "標楷體", serif;
-            
-            flex: 0 0 auto;
-            min-width: 70px;
-            text-align: center;
-            
-            transition: all 0.1s;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            height: 4px;
+            background: #222;
+            margin-top: 20px;
             position: relative;
-            top: 0; /* 初始位置 */
-        }
-
-        /* 按下效果：真實下壓 */
-        .bamboo-slip:active {
-            top: 4px; /* 向下移動等於厚度的高度 */
-            box-shadow: 
-                inset 0 2px 5px rgba(0,0,0,0.2),
-                0 0px 0 #8d6e63, /* 厚度消失 */
-                0 2px 5px rgba(0,0,0,0.4); /* 投影變小 */
-            background: linear-gradient(to bottom, #d7a566 0%, #c99555 100%); /* 顏色變深 */
-        }
-
-        /* 提示特效：發光邊緣 */
-        .bamboo-slip.hint-active {
-            box-shadow: 
-                inset 0 1px 0 rgba(255,255,255,0.4),
-                0 4px 0 #f57f17, /* 側面變亮 */
-                0 0 15px #ffeb3b, /* 發光 */
-                0 8px 10px rgba(0,0,0,0.4);
-            animation: pulse-gold 1s infinite alternate;
-            color: #000;
-        }
-
-        @keyframes pulse-gold {
-            from { filter: brightness(1); }
-            to { filter: brightness(1.15); }
-        }
-
-        /* 按鈕區 */
-        .action-area {
-            display: flex;
-            gap: 15px;
-            width: 100%;
-            justify-content: center;
-            margin-bottom: 15px;
-        }
-
-        /* 操作按鈕也立體化 */
-        .game-btn {
-            border: none;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-            flex: 1;
-            max-width: 160px;
-            font-family: "標楷體", serif;
-            letter-spacing: 1px;
-            transition: all 0.1s;
-            position: relative; top: 0;
-        }
-        #check-answer-btn {
-            background: linear-gradient(to bottom, #43a047, #2e7d32);
-            box-shadow: 0 4px 0 #1b5e20, 0 8px 10px rgba(0,0,0,0.3);
-            display: none;
-        }
-        #reset-btn {
-            background: linear-gradient(to bottom, #8d6e63, #5d4037);
-            box-shadow: 0 4px 0 #3e2723, 0 8px 10px rgba(0,0,0,0.3);
-        }
-        .game-btn:active {
-            top: 4px;
-            box-shadow: 0 0px 0 #000, 0 2px 5px rgba(0,0,0,0.4);
-        }
-
-        /* === Modal 與 勝利印章動畫 === */
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: none; justify-content: center; align-items: center;
-            z-index: 2000;
-        }
-        .modal-content {
-            background: var(--scroll-paper);
-            width: 85%; max-width: 400px;
-            padding: 30px 25px;
-            border-radius: 8px;
-            border: 4px solid var(--bamboo-dark);
-            text-align: center; color: #333;
-            position: relative;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.1"><rect x="0" y="0" width="100" height="100" fill="none" stroke="%235D4037" stroke-width="1" stroke-dasharray="5,5"/></svg>');
         }
         
-        /* 勝利大印章 */
-        .big-stamp {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(3) rotate(-15deg);
-            width: 120px; height: 120px;
-            border: 6px solid var(--accent-red);
-            border-radius: 10px;
-            color: var(--accent-red);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 1.8rem;
-            background: rgba(183, 28, 28, 0.1);
-            opacity: 0; /* 初始隱藏 */
-            pointer-events: none;
-            font-family: "標楷體", serif;
-            z-index: 2001;
-            /* 蓋章動畫 */
-            animation: stamp-effect 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        @keyframes stamp-effect {
-            0% { transform: translate(-50%, -50%) scale(3) rotate(-15deg); opacity: 0; }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(-15deg); opacity: 0.9; }
-        }
-
-        .translation-text {
-            text-align: left; margin: 25px 0; line-height: 1.8;
-            color: #3e2723; background: rgba(255,255,255,0.5);
-            padding: 15px; border-radius: 5px; border: 1px solid #d7ccc8;
-            font-size: 1.05rem;
+        .progress-bar {
+            height: 100%;
+            background: var(--terminal-green);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--terminal-green);
         }
 
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>孫子：沙盤推演</h1>
-        <div class="header-controls">
-            <div class="level-tag" id="level-indicator">載入中...</div>
-            <label class="switch-container">
-                <span>提示</span>
-                <input type="checkbox" id="hint-toggle" class="switch-input" checked onchange="toggleHint()">
-                <div class="switch-track"><div class="switch-knob"></div></div>
-            </label>
-        </div>
-        <div class="progress-container"><div class="progress-fill" id="progress-bar"></div></div>
-    </header>
+<div class="container">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
 
-    <div id="game-container">
+    <h1>孫子兵法 // 戰術演練</h1>
+
+    <div class="status-bar">
+        <span id="score-display">戰功: 0</span>
+        <span id="level-display">關卡: 1 / 5</span>
+    </div>
+
+    <div class="question-box">
+        <span id="question-text"></span><span class="cursor"></span>
+    </div>
+
+    <div class="options-grid" id="options-container">
+        </div>
+
+    <div class="feedback" id="feedback-text"></div>
+
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">>> 執行下一指令 >></button>
+
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+</div>
+
+<script>
+    // 題庫資料 (可自行擴充)
+    const questions = [
+        {
+            question: "《孫子兵法》的核心思想中，關於「不戰而屈人之兵」，屬於哪一篇的重點？",
+            options: ["始計篇", "謀攻篇", "作戰篇", "九地篇"],
+            answer: 1 // 索引從0開始，1代表第二個選項 "謀攻篇"
+        },
+        {
+            question: "「兵者，國之大事，死生之地，存亡之道，不可不察也。」出自哪一篇？",
+            options: ["始計篇", "軍爭篇", "虛實篇", "行軍篇"],
+            answer: 0
+        },
+        {
+            question: "「知己知彼，百戰不殆」這句名言的下一句是什麼？",
+            options: ["不知彼而知己，一勝一負", "不知彼不知己，每戰必殆", "知天知地，勝乃不窮", "攻其無備，出其不意"],
+            answer: 0
+        },
+        {
+            question: "在《孫子兵法》中，「風林火山」分別代表什麼？",
+            options: ["速度、安靜、侵略、不動", "天氣、地形、火力、山勢", "情緒、糧草、水源、士氣", "偵查、埋伏、突擊、防守"],
+            answer: 0
+        },
+        {
+            question: "作戰篇提到「兵貴勝，不貴久」，意思是？",
+            options: ["戰爭要在夏天進行", "戰爭的關鍵在於速戰速決", "軍隊裝備要昂貴", "戰爭時間越久越好"],
+            answer: 1
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let isTyping = false;
+
+    // 初始化音效 (簡單頻率模擬)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'type') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.03);
+        } else if (type === 'correct') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+    }
+
+    // 打字機效果函數
+    function typeWriter(text, elementId, speed = 30) {
+        const element = document.getElementById(elementId);
+        element.innerHTML = "";
+        let i = 0;
+        isTyping = true;
         
-        <div class="npc-area">
-            <div class="npc-avatar">孫武</div>
-            <div class="npc-text" id="npc-text">將軍，請看沙盤。</div>
-        </div>
-
-        <div class="target-zone-wrapper">
-            <div id="victory-stamp" class="big-stamp" style="display: none;">賞：謀略達成</div>
-            <div class="scroll-board" id="target-zone">
-                <div class="hint-text" id="hint-text">(請點擊下方兵棋佈陣)</div>
-            </div>
-        </div>
-
-        <div class="action-area">
-            <button id="reset-btn" class="game-btn" onclick="resetCurrentLevel()">↺ 重整旗鼓</button>
-            <button id="check-answer-btn" class="game-btn" onclick="showModal()">📜 驗收軍令</button>
-        </div>
-
-        <div class="source-zone-wrapper">
-            <div class="section-label">▼ 候選兵棋 ▼</div>
-            <div class="options-board" id="source-zone"></div>
-        </div>
-
-    </div>
-
-    <div class="modal" id="win-modal">
-        <div class="modal-content">
-            <h2 style="color: var(--wood-dark); margin-top:0px; font-family: '標楷體';">★ 軍令無誤 ★</h2>
-            <div class="translation-text" id="modal-content"></div>
-            <div style="display:flex; gap:15px; justify-content: center;">
-                <button class="game-btn" style="background: linear-gradient(to bottom, #757575, #616161); box-shadow: 0 4px 0 #424242;" onclick="replayLevel()">再次演練</button>
-                <button class="game-btn" style="background: linear-gradient(to bottom, #3e2723, #2c1b18); box-shadow: 0 4px 0 #1a100e;" onclick="nextLevel()">下一關</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        window.onload = function() { initGame(); };
-
-        // 題庫資料 (維持原樣)
-        const levels = [
-            { segments: ["兵者", "國之大事", "死生之地", "存亡之道", "不可不察也"], translation: "【白話】戰爭是國家的大事，關係到軍民的生死，國家的存亡，是絕對不可以不認真考察研究的。", npcWin: "孫武：「不錯！不知死生，不配言兵。」" },
-            { segments: ["一曰道", "二曰天", "三曰地", "四曰將", "五曰法"], translation: "【白話】這五個方面是：第一是道（政治），第二是天（天時），第三是地（地利），第四是將（將領），第五是法（法制）。", npcWin: "孫武：「此五者，將領不可不察。」" },
-            { segments: ["道者", "令民與上同意也", "故可與之死", "可與之生", "而不畏危"], translation: "【白話】所謂「道」，就是使民眾與君主的意願一致。這樣，民眾就能與君主同生死、共患難，而不畏懼危險。", npcWin: "孫武：「上下同欲者勝，此乃道也。」" },
-            { segments: ["天者", "陰陽", "寒暑", "時制也"], translation: "【白話】所謂「天」，就是指晝夜陰陽的變化，寒冬暑季的更替，以及適於作戰的季節氣候。", npcWin: "孫武：「知天時者，可借風雨之力。」" },
-            { segments: ["地者", "遠近", "險易", "廣狹", "死生也"], translation: "【白話】所謂「地」，是指路程的遠近、地勢的險要或平坦、戰場的廣闊或狹窄，以及地形是絕地還是生路。", npcWin: "孫武：「地利者，兵之助也。」" },
-            { segments: ["將者", "智", "信", "仁", "勇", "嚴也"], translation: "【白話】所謂「將」，就是將領要具備智慧、誠信、仁愛、勇敢、嚴明這五種素質。", npcWin: "孫武：「為將者，當具備此五德。」" },
-            { segments: ["法者", "曲制", "官道", "主用也"], translation: "【白話】所謂「法」，是指軍隊的組織編制、將吏的職責管理、以及軍需物資的供應管理。", npcWin: "孫武：「法制不明，則軍令不行。」" }
-        ];
-
-        let currentLevel = 0;
-        let currentSelection = [];
-        let pool = [];
-        let isHintOn = true;
-
-        // DOM 元素參考
-        const targetZone = document.getElementById('target-zone');
-        const sourceZone = document.getElementById('source-zone');
-        const hintText = document.getElementById('hint-text');
-        const npcText = document.getElementById('npc-text');
-        const levelIndicator = document.getElementById('level-indicator');
-        const progressBar = document.getElementById('progress-bar');
-        const winModal = document.getElementById('win-modal');
-        const modalContent = document.getElementById('modal-content');
-        const hintToggle = document.getElementById('hint-toggle');
-        const checkBtn = document.getElementById('check-answer-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const victoryStamp = document.getElementById('victory-stamp');
-        const targetZoneWrapper = document.querySelector('.target-zone-wrapper');
-
-        function initGame() { loadLevel(currentLevel); }
-        function toggleHint() { isHintOn = hintToggle.checked; updateHintEffect(); updateNpcText(); }
-
-        function updateNpcText() {
-            if (checkBtn.style.display === 'block') return;
-            npcText.innerText = isHintOn ? "孫武：「依兵棋光芒，佈下陣勢。」" : "孫武：「戰場迷霧重重，全憑將軍決斷！」";
-            npcText.style.color = "#333";
-            targetZoneWrapper.style.borderColor = "#c7bba8"; // 回復卷軸邊框
-        }
-
-        function loadLevel(idx) {
-            currentSelection = [];
-            pool = [...levels[idx].segments].sort(() => Math.random() - 0.5);
-
-            levelIndicator.innerText = `戰役 ${idx + 1} / ${levels.length}`;
-            // 更新行軍旗幟位置
-            progressBar.style.width = `${((idx) / levels.length) * 100}%`;
-            
-            checkBtn.style.display = 'none'; 
-            resetBtn.style.display = 'block'; 
-            winModal.style.display = 'none';
-            victoryStamp.style.display = 'none'; // 隱藏印章
-
-            npcText.innerText = "...";
-
-            setTimeout(() => {
-                renderBoard();
-                updateNpcText();
-            }, 50);
-        }
-
-        function renderBoard() {
-            targetZone.innerHTML = '';
-            if (currentSelection.length === 0) targetZone.appendChild(hintText);
-            else currentSelection.forEach((text, i) => targetZone.appendChild(createBamboo(text, 'target', i)));
-
-            sourceZone.innerHTML = '';
-            pool.forEach((text, i) => {
-                const btn = createBamboo(text, 'source', i);
-                btn.setAttribute('data-text', text);
-                sourceZone.appendChild(btn);
-            });
-            updateHintEffect();
-        }
-
-        function updateHintEffect() {
-            const allBtns = sourceZone.querySelectorAll('.bamboo-slip');
-            allBtns.forEach(btn => btn.classList.remove('hint-active'));
-            if (!isHintOn) return;
-
-            const data = levels[currentLevel];
-            if (currentSelection.length >= data.segments.length) return;
-            const nextText = data.segments[currentSelection.length];
-
-            for(let btn of allBtns) {
-                if (btn.getAttribute('data-text') === nextText) {
-                    btn.classList.add('hint-active');
-                    break;
-                }
-            }
-        }
-
-        function createBamboo(text, type, index) {
-            if (checkBtn.style.display === 'block') {
-                 // 過關後產生一個純展示的兵棋 (沒有點擊事件)
-                 const displayBtn = document.createElement('div');
-                 displayBtn.className = 'bamboo-slip';
-                 displayBtn.innerText = text;
-                 displayBtn.style.cursor = 'default';
-                 // 移除立體效果讓它看起來貼在卷軸上
-                 displayBtn.style.boxShadow = 'none';
-                 displayBtn.style.background = 'transparent';
-                 displayBtn.style.border = '2px solid #5d4037';
-                 return displayBtn;
-            }
-
-            const btn = document.createElement('div');
-            btn.className = 'bamboo-slip';
-            btn.innerText = text;
-            btn.onclick = function() {
-                // 簡單的觸覺回饋
-                if (navigator.vibrate) navigator.vibrate(10); 
-                
-                if (type === 'source') {
-                    currentSelection.push(text);
-                    pool.splice(pool.indexOf(text), 1);
-                } else {
-                    pool.push(text);
-                    currentSelection.splice(currentSelection.indexOf(text), 1);
-                }
-                renderBoard();
-                checkWin();
-            };
-            return btn;
-        }
-
-        function checkWin() {
-            const data = levels[currentLevel];
-            if (currentSelection.length !== data.segments.length) return;
-
-            const isCorrect = currentSelection.every((val, i) => val === data.segments[i]);
-
-            if (isCorrect) {
-                npcText.innerText = data.npcWin;
-                npcText.style.color = var(--accent-red);
-                targetZoneWrapper.style.borderColor = var(--success-green); // 卷軸邊框變綠
-                
-                // 播放勝利動畫
-                victoryStamp.style.display = 'flex';
-                // 讓目標區的兵棋變成平面貼在卷軸上的樣子
-                renderBoard(); 
-
-                checkBtn.style.display = 'block';
-                resetBtn.style.display = 'none';
-                 // 勝利觸覺回饋
-                if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+        function type() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                // 偶爾發出打字聲
+                if(i % 2 === 0) playSound('type'); 
+                setTimeout(type, speed);
             } else {
-                npcText.innerText = "孫武：「陣勢已亂！請重整旗鼓。」";
-                // 錯誤觸覺回饋
-                if (navigator.vibrate) navigator.vibrate(200);
+                isTyping = false;
             }
         }
+        type();
+    }
 
-        function showModal() {
-             const data = levels[currentLevel];
-             // 強調原文
-             modalContent.innerHTML = `<div style="font-size:1.2rem; font-weight:bold; margin-bottom:10px; font-family:'標楷體';">${data.segments.join('，')}</div>${data.translation}`;
-             winModal.style.display = 'flex';
+    function loadQuestion() {
+        const q = questions[currentQuestionIndex];
+        const optionsContainer = document.getElementById("options-container");
+        const nextBtn = document.getElementById("next-btn");
+        const feedback = document.getElementById("feedback-text");
+        
+        // 更新狀態
+        document.getElementById("level-display").innerText = `關卡: ${currentQuestionIndex + 1} / ${questions.length}`;
+        document.getElementById("progress-bar").style.width = `${((currentQuestionIndex) / questions.length) * 100}%`;
+        
+        // 重置介面
+        optionsContainer.innerHTML = "";
+        nextBtn.style.display = "none";
+        feedback.innerText = "";
+        feedback.style.color = "#c0dcc0";
+
+        // 執行打字效果
+        typeWriter(q.question, "question-text");
+
+        // 生成選項
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.innerText = `[${index + 1}] ${opt}`;
+            btn.onclick = () => checkAnswer(index, btn);
+            // 延遲顯示選項，製造科技感
+            btn.style.opacity = "0";
+            btn.style.animation = `fadeIn 0.5s forwards ${0.5 + index * 0.1}s`;
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    // 增加CSS動畫
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = `
+        @keyframes fadeIn { to { opacity: 1; } }
+    `;
+    document.head.appendChild(styleSheet);
+
+    function checkAnswer(selectedIndex, btnElement) {
+        if (isTyping) return; // 打字中禁止作答
+
+        const q = questions[currentQuestionIndex];
+        const options = document.getElementById("options-container").children;
+        const feedback = document.getElementById("feedback-text");
+
+        // 鎖定所有按鈕
+        for (let btn of options) {
+            btn.disabled = true;
+            btn.style.cursor = "not-allowed";
         }
 
-        function nextLevel() {
-            currentLevel++;
-            if (currentLevel >= levels.length) { alert("恭喜將軍！始計篇演練完畢！"); currentLevel = 0; }
-            loadLevel(currentLevel);
+        if (selectedIndex === q.answer) {
+            btnElement.classList.add("correct");
+            score += 100;
+            document.getElementById("score-display").innerText = `戰功: ${score}`;
+            feedback.innerText = ">> 目標確認。戰術正確。";
+            feedback.style.color = "var(--terminal-green)";
+            playSound('correct');
+        } else {
+            btnElement.classList.add("wrong");
+            // 顯示正確答案
+            options[q.answer].classList.add("correct");
+            feedback.innerText = ">> 警告：戰術誤判。";
+            feedback.style.color = "var(--alert-red)";
+            playSound('wrong');
         }
 
-        function replayLevel() { loadLevel(currentLevel); }
-        function resetCurrentLevel() { loadLevel(currentLevel); }
-    </script>
+        document.getElementById("next-btn").style.display = "block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        const container = document.querySelector(".container");
+        let rank = "新兵";
+        if (score >= 500) rank = "大將軍";
+        else if (score >= 300) rank = "校尉";
+        else rank = "步兵";
+
+        container.innerHTML = `
+            <div class="corner tl"></div><div class="corner tr"></div>
+            <div class="corner bl"></div><div class="corner br"></div>
+            <h1>演習結束</h1>
+            <div style="text-align: center; margin: 40px 0;">
+                <p style="font-size: 1.2rem;">最終戰功</p>
+                <p style="font-size: 3rem; color: var(--terminal-green); margin: 10px 0; text-shadow: 0 0 20px var(--terminal-green);">${score}</p>
+                <p style="border-top: 1px solid var(--military-green); padding-top: 20px;">授予軍階：<strong style="font-size: 1.5rem; color: #fff;">${rank}</strong></p>
+            </div>
+            <button class="next-btn" style="display:block" onclick="location.reload()">>> 重新部署 >></button>
+        `;
+        document.getElementById("progress-bar").style.width = "100%";
+    }
+
+    // 啟動遊戲
+    window.onload = loadQuestion;
+
+</script>
 </body>
 </html>
