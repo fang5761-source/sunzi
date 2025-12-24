@@ -3,542 +3,589 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>孫子兵法：大將軍之路 (v6.5 學習加強版)</title>
+    <title>孫子：謀略之戰 v5.0 (軍營戰地版)</title>
     <style>
         :root {
-            /* 軍營沈浸配色 */
-            --bg-canvas: #e0d6c4;
-            --wood-frame: #4e342e;
-            --wood-light: #8d6e63;
-            --rank-gold: #ffb300;
-            --army-red: #b71c1c;
-            --hint-glow: #ffeb3b; /* 提示光暈 */
+            /* 軍營配色 */
+            --bg-camp: #e6e2d3; /* 帆布/軍帳色 */
+            --wood-dark: #3e2723; /* 深木頭 */
+            --wood-light: #5d4037; 
+            --bamboo-light: #ffecb3;
+            --bamboo-dark: #ffca28;
+            --accent-red: #b71c1c; /* 帥印紅 */
+            --success-green: #2e7d32;
         }
 
         body {
-            font-family: "Kaiti TC", "楷體", "STKaiti", serif;
+            font-family: "Microsoft JhengHei", "Heiti TC", serif;
             margin: 0;
             padding: 0;
-            background-color: #5d4037;
-            background-image: repeating-linear-gradient(45deg, #4e342e 0, #4e342e 10px, #3e2723 10px, #3e2723 20px);
-            color: var(--wood-frame);
-            height: 100vh;
-            overflow: hidden;
+            background-color: #d7ccc8; /* 背景加深 */
+            background-image: repeating-linear-gradient(45deg, #d7ccc8 25%, #d7ccc8 50%, #cfd8dc 50%, #cfd8dc 75%); /* 增加一點紋理 */
+            background-size: 20px 20px;
+            color: var(--wood-dark);
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100vh; /* 固定高度，防止整個頁面滾動 */
+            overflow: hidden; /* 禁止整個頁面滾動 */
         }
 
-        /* === 頂部軍情條 (保留妳喜歡的設計) === */
+        /* === 頂部軍帳風格 Header === */
         header {
             width: 100%;
-            background: var(--wood-frame);
-            color: #d7ccc8;
-            padding: 8px 15px;
-            box-sizing: border-box;
+            background: var(--bg-camp);
+            padding: 10px 0 15px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
+            border-bottom: 5px solid var(--wood-dark);
+            flex-shrink: 0; /* 防止被壓縮 */
+        }
+
+        /* 裝飾：軍帳頂部的三角形 */
+        header::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(45deg, var(--wood-dark) 25%, transparent 25%) -10px 0,
+                        linear-gradient(-45deg, var(--wood-dark) 25%, transparent 25%) -10px 0;
+            background-size: 20px 20px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            text-align: center;
+            color: var(--wood-dark);
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+            letter-spacing: 2px;
+        }
+
+        .header-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 3px solid #8d6e63;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            z-index: 100;
+            width: 90%;
+            max-width: 500px;
+            margin: 10px auto 0;
         }
 
-        .rank-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.1rem;
+        .level-tag {
+            background: var(--wood-dark);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
             font-weight: bold;
-            color: var(--rank-gold);
-        }
-        
-        .rank-icon {
-            width: 30px;
-            height: 30px;
-            background: var(--army-red);
-            border-radius: 5px;
-            border: 2px solid var(--rank-gold);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
         }
 
-        /* 功能按鈕區 (靜音/提示) */
-        .settings-area {
+        /* Switch Toggle */
+        .switch-container {
             display: flex;
-            gap: 15px;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--wood-dark);
+            gap: 5px;
+            font-weight: bold;
         }
-        .icon-btn {
-            background: none;
-            border: 1px solid #8d6e63;
+        .switch-input { display: none; }
+        .switch-track {
+            width: 40px;
+            height: 22px;
+            background-color: #aaa;
+            border-radius: 20px;
+            position: relative;
+            transition: 0.3s;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .switch-knob {
+            width: 18px;
+            height: 18px;
+            background-color: #fff;
             border-radius: 50%;
-            color: #d7ccc8;
-            width: 32px;
-            height: 32px;
-            cursor: pointer;
-            font-size: 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: 0.2s;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-        .icon-btn.active {
-            background: var(--rank-gold);
-            color: var(--wood-frame);
-            border-color: var(--rank-gold);
-            box-shadow: 0 0 10px var(--rank-gold);
+        .switch-input:checked + .switch-track { background-color: var(--accent-red); }
+        .switch-input:checked + .switch-track .switch-knob { transform: translateX(18px); }
+
+        /* 進度條 */
+        .progress-bar {
+            width: 90%;
+            height: 6px;
+            background: #bbb;
+            margin: 8px auto 0;
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid #999;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-red);
+            width: 0%;
+            transition: width 0.3s ease;
         }
 
-        /* === 主戰場 === */
-        #battlefield {
-            flex: 1;
+        /* === 遊戲主區域 (Flex 佈局) === */
+        #game-container {
+            flex-grow: 1; /* 佔滿剩餘空間 */
             width: 100%;
             max-width: 600px;
-            background: var(--bg-canvas);
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
-            padding: 15px;
+            padding: 10px;
             box-sizing: border-box;
-            position: relative;
-            overflow: hidden;
+            overflow: hidden; /* 防止溢出 */
         }
 
-        /* NPC 區 */
-        .npc-container {
+        /* NPC 對話框 */
+        .npc-area {
             display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            align-items: flex-start;
-            z-index: 10;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-shrink: 0; /* 固定高度 */
         }
-
-        .npc-portrait {
-            width: 60px;
-            height: 60px;
-            background: var(--wood-frame);
-            border: 3px solid #8d6e63;
+        .npc-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--wood-dark);
+            color: #fff;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
-            font-size: 1.5rem;
             font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            flex-shrink: 0;
+            border: 3px solid #bcaaa4;
+            box-shadow: 0 4px 4px rgba(0,0,0,0.3);
         }
-
-        .npc-dialogue {
+        .npc-text {
             background: #fff;
-            padding: 12px 18px;
-            border-radius: 4px 15px 15px 15px;
-            border: 2px solid var(--wood-frame);
-            font-size: 1rem;
-            line-height: 1.5;
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: 2px solid var(--wood-dark);
+            font-size: 0.95rem;
+            line-height: 1.4;
+            flex: 1;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
             position: relative;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
         }
-        .npc-dialogue::before {
-            content: ''; position: absolute; top: 15px; left: -10px;
-            border-width: 6px 10px 6px 0; border-style: solid;
-            border-color: transparent var(--wood-frame) transparent transparent;
+        .npc-text::after { /* 對話框小箭頭 */
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 15px;
+            border-width: 8px 8px 8px 0;
+            border-style: solid;
+            border-color: transparent var(--wood-dark) transparent transparent;
         }
 
-        /* 目標區 (卷軸) */
-        .scroll-area {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.5);
-            border: 2px dashed var(--wood-light);
+        /* === 1. 上方放置區 (解決無限拉長問題) === */
+        .target-zone-wrapper {
+            flex-grow: 1; /* 吃掉中間所有空間 */
+            background: #fdfbf7;
+            border: 6px solid var(--wood-dark);
             border-radius: 8px;
+            margin-bottom: 10px;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 關鍵：讓內部可以滾動 */
+        }
+
+        .scroll-board {
             padding: 15px;
-            overflow-y: auto;
+            overflow-y: auto; /* 關鍵：內容多時，這裡出現卷軸 */
+            height: 100%;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 10px;
-            margin-bottom: 15px;
-            z-index: 10;
         }
 
-        /* 候選區 */
-        .deck-area {
-            min-height: 120px;
-            background: rgba(62, 39, 35, 0.1);
-            border-top: 3px solid var(--wood-frame);
-            padding: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            z-index: 10;
-        }
-
-        /* 竹簡樣式 */
-        .bamboo-tile {
-            background: linear-gradient(to bottom, #ffecb3, #ffca28);
-            border: 1px solid #8d6e63;
-            border-top: 3px solid #6d4c41;
-            border-bottom: 3px solid #6d4c41;
-            padding: 10px 18px;
-            border-radius: 3px;
-            font-size: 1.25rem;
-            color: #3e2723;
+        .hint-text {
+            color: #999;
+            margin-top: 20px;
             font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 5px rgba(0,0,0,0.2);
-            transition: transform 0.1s;
-            user-select: none;
-            position: relative;
-        }
-        .bamboo-tile:active { transform: scale(0.95); }
-
-        /* 🌟 提示特效 (呼吸燈) */
-        .bamboo-tile.hint-active {
-            animation: hintPulse 1.2s infinite alternate;
-            border-color: #ff6f00;
-            box-shadow: 0 0 15px var(--hint-glow);
-            z-index: 20;
-        }
-        @keyframes hintPulse {
-            0% { transform: scale(1); filter: brightness(1); }
-            100% { transform: scale(1.05); filter: brightness(1.2); }
+            pointer-events: none;
         }
 
-        /* 視窗通用 (晉升 & 翻譯) */
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: none; justify-content: center; align-items: center; z-index: 2000;
-        }
-        .paper-scroll {
-            background: #fff8e1;
-            width: 85%; max-width: 450px;
-            padding: 25px;
-            text-align: center;
-            border-top: 15px solid var(--wood-frame);
-            border-bottom: 15px solid var(--wood-frame);
-            box-shadow: 0 0 30px #000;
-            position: relative;
-        }
-
-        /* 翻譯文字 */
-        .translation-box {
-            background: #efebe9;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: left;
-            margin: 15px 0;
-            line-height: 1.6;
-            color: #3e2723;
-            font-size: 1rem;
+        /* === 2. 下方候選區 (固定在底部) === */
+        .source-zone-wrapper {
+            flex-shrink: 0; /* 不被壓縮 */
+            background: rgba(255,255,255,0.4);
+            border-top: 2px dashed var(--wood-dark);
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
-        .army-btn {
-            background: var(--wood-frame);
-            color: #fff;
-            border: none;
-            padding: 10px 25px;
-            font-size: 1.1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
+        .section-label {
+            font-size: 0.9rem;
+            color: var(--wood-dark);
+            margin-bottom: 5px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.8);
+            padding: 2px 10px;
+            border-radius: 10px;
         }
-        .army-btn.primary { background: var(--army-red); }
+
+        .options-board {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap; /* 允許換行 */
+            justify-content: center;
+            gap: 10px;
+            min-height: 80px; /* 確保有空間 */
+        }
+
+        /* === 3. 竹簡樣式 (軍營立體風) === */
+        .bamboo-slip {
+            /* 漸層打造立體竹子感 */
+            background: linear-gradient(to right, #eecfa1 0%, #d7a566 50%, #eecfa1 100%);
+            border: 1px solid #8d6e63;
+            border-top: 3px solid #5d4037; /* 竹節頂 */
+            border-bottom: 3px solid #5d4037; /* 竹節底 */
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #3e2723;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+            
+            /* 控制大小，防止變形 */
+            flex: 0 0 auto; /* 不會自動放大填滿 */
+            min-width: 80px;
+            text-align: center;
+            
+            transition: transform 0.1s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+        }
+
+        /* 裝飾：竹簡上的繩子 */
+        .bamboo-slip::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 5px;
+            width: 100%;
+            height: 2px;
+            background: rgba(62, 39, 35, 0.2);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bamboo-slip:active {
+            transform: scale(0.95);
+        }
+
+        /* 提示特效 */
+        .bamboo-slip.hint-active {
+            background: linear-gradient(to right, #fff59d 0%, #fbc02d 50%, #fff59d 100%);
+            border-color: #f57f17;
+            box-shadow: 0 0 15px #ffeb3b;
+            z-index: 2; /* 浮起來 */
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* 按鈕區 */
+        .action-area {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+
+        button {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+            color: white;
+            flex: 1;
+            max-width: 150px;
+        }
+        #check-answer-btn {
+            background: var(--success-green);
+            display: none;
+        }
+        #reset-btn {
+            background: #795548;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: #fdfbf7;
+            width: 85%;
+            max-width: 400px;
+            padding: 20px;
+            border-radius: 10px;
+            border: 5px solid var(--wood-dark);
+            text-align: center;
+            position: relative;
+        }
+        /* 裝飾：印章 */
+        .stamp {
+            position: absolute;
+            top: -20px;
+            right: -10px;
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--accent-red);
+            border-radius: 5px;
+            color: var(--accent-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transform: rotate(15deg);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .translation-text {
+            text-align: left;
+            margin: 20px 0;
+            line-height: 1.6;
+            color: #333;
+            background: #efebe9;
+            padding: 10px;
+            border-radius: 5px;
+        }
 
     </style>
 </head>
 <body>
 
-<header>
-    <div class="rank-badge">
-        <div class="rank-icon" id="rank-icon">卒</div>
-        <span id="rank-name">步卒</span>
-        <span style="font-size:0.8rem; margin-left:5px; color:#bcaaa4;" id="level-display">(1/33)</span>
-    </div>
-    
-    <div class="settings-area">
-        <button class="icon-btn active" id="hint-btn" onclick="toggleHint()">💡</button>
-        <button class="icon-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
-    </div>
-</header>
-
-<div id="battlefield">
-    <div style="position:absolute; top:5px; right:10px; font-size:0.8rem; color:rgba(62,39,35,0.4); font-weight:bold;" id="chapter-name">第一篇：始計</div>
-    
-    <div class="npc-container">
-        <div class="npc-portrait">孫</div>
-        <div class="npc-dialogue" id="npc-text">新兵！依竹簡光芒，佈下陣勢！</div>
-    </div>
-
-    <div class="scroll-area" id="target-zone">
-        <div style="color:#8d6e63; margin-top:30px;">(點擊下方竹簡)</div>
-    </div>
-
-    <div class="deck-area" id="source-zone">
+    <header>
+        <h1>孫子：謀略之戰</h1>
+        <div class="header-controls">
+            <div class="level-tag" id="level-indicator">載入中...</div>
+            <label class="switch-container">
+                <input type="checkbox" id="hint-toggle" class="switch-input" checked onchange="toggleHint()">
+                <div class="switch-track"><div class="switch-knob"></div></div>
+                <span>提示</span>
+            </label>
         </div>
-</div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-bar"></div></div>
+    </header>
 
-<div class="modal" id="win-modal">
-    <div class="paper-scroll">
-        <h2 style="color:var(--army-red); margin:0;">★ 軍令達成 ★</h2>
-        <div style="font-size:1.2rem; font-weight:bold; margin:15px 0;" id="win-original-text"></div>
-        <div class="translation-box">
-            <strong>【白話釋義】</strong><br>
-            <span id="win-translation-text"></span>
+    <div id="game-container">
+        
+        <div class="npc-area">
+            <div class="npc-avatar">孫武</div>
+            <div class="npc-text" id="npc-text">佈陣中...</div>
         </div>
-        <button class="army-btn primary" onclick="nextLevel()">領命 (下一關)</button>
+
+        <div class="target-zone-wrapper">
+            <div class="scroll-board" id="target-zone">
+                <div class="hint-text" id="hint-text">(請點擊下方閃爍竹簡)</div>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <button id="reset-btn" onclick="resetCurrentLevel()">↺ 重整旗鼓</button>
+            <button id="check-answer-btn" onclick="showModal()">📜 查看軍書</button>
+        </div>
+
+        <div class="source-zone-wrapper">
+            <div class="section-label">▼ 候選竹簡 ▼</div>
+            <div class="options-board" id="source-zone"></div>
+        </div>
+
     </div>
-</div>
 
-<div class="modal" id="rank-modal">
-    <div class="paper-scroll">
-        <div style="position:absolute; top:10px; right:20px; border:3px solid var(--army-red); color:var(--army-red); padding:5px; transform:rotate(15deg); font-weight:bold;">晉升令</div>
-        <h2 style="color:var(--army-red); font-size:1.8rem;">官階晉升</h2>
-        <p>戰功彪炳，特此拔擢為</p>
-        <h1 id="new-rank-title" style="font-size:2.5rem; margin:10px 0; color:var(--wood-frame)">伍長</h1>
-        <button class="army-btn" onclick="closeRankModal()">謝主隆恩</button>
+    <div class="modal" id="win-modal">
+        <div class="modal-content">
+            <div class="stamp">完勝</div>
+            <h2 style="color: var(--wood-dark); margin-top:10px;">★ 謀略正確 ★</h2>
+            <div class="translation-text" id="modal-content"></div>
+            <div style="display:flex; gap:10px;">
+                <button style="background:#757575;" onclick="replayLevel()">再次演練</button>
+                <button style="background:var(--wood-dark);" onclick="nextLevel()">下一關</button>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    // === 1. 題庫與翻譯資料 (範例) ===
-    const levelsData = [
-        { text: "兵者，國之大事", translation: "戰爭是國家的大事。" },
-        { text: "死生之地，存亡之道，不可不察也", translation: "關係到軍民的生死，國家的存亡，是絕對不可以不認真考察研究的。" },
-        { text: "故經之以五事，校之以計，而索其情", translation: "所以要從五個方面來分析研究，用這五方面的內容進行比較，從而探求戰爭勝負的情勢。" },
-        { text: "一曰道，二曰天，三曰地，四曰將，五曰法", translation: "第一是道（政治），第二是天（天時），第三是地（地利），第四是將（將領），第五是法（法制）。" },
-        { text: "道者，令民與上同意也", translation: "所謂「道」，就是使民眾與君主的意願一致。" },
-        { text: "故可與之死，可與之生，而不畏危", translation: "這樣，民眾就能與君主同生死、共患難，而不畏懼危險。" },
-        { text: "天者，陰陽、寒暑、時制也", translation: "所謂「天」，就是指晝夜陰陽的變化，寒冬暑季的更替，以及適於作戰的季節氣候。" },
-        { text: "地者，遠近、險易、廣狹、死生也", translation: "所謂「地」，是指路程的遠近、地勢的險要或平坦、戰場的廣闊或狹窄，以及地形是絕地還是生路。" },
-        { text: "將者，智、信、仁、勇、嚴也", translation: "所謂「將」，就是將領要具備智慧、誠信、仁愛、勇敢、嚴明這五種素質。" },
-        { text: "法者，曲制、官道、主用也", translation: "所謂「法」，是指軍隊的組織編制、將吏的職責管理、以及軍需物資的供應管理。" }
-    ];
+    <script>
+        window.onload = function() { initGame(); };
 
-    // === 2. 系統變數 ===
-    let currentLevel = 0;
-    let currentSelection = [];
-    let currentPool = [];
-    let isHintOn = true;
-    let isMuted = false;
+        const levels = [
+            { segments: ["兵者", "國之大事", "死生之地", "存亡之道", "不可不察也"], translation: "【白話】戰爭是國家的大事，關係到軍民的生死，國家的存亡，是絕對不可以不認真考察研究的。", npcWin: "孫武：「不錯！不知死生，不配言兵。」" },
+            { segments: ["一曰道", "二曰天", "三曰地", "四曰將", "五曰法"], translation: "【白話】這五個方面是：第一是道（政治），第二是天（天時），第三是地（地利），第四是將（將領），第五是法（法制）。", npcWin: "孫武：「此五者，將領不可不察。」" },
+            { segments: ["道者", "令民與上同意也", "故可與之死", "可與之生", "而不畏危"], translation: "【白話】所謂「道」，就是使民眾與君主的意願一致。這樣，民眾就能與君主同生死、共患難，而不畏懼危險。", npcWin: "孫武：「上下同欲者勝，此乃道也。」" },
+            { segments: ["天者", "陰陽", "寒暑", "時制也"], translation: "【白話】所謂「天」，就是指晝夜陰陽的變化，寒冬暑季的更替，以及適於作戰的季節氣候。", npcWin: "孫武：「知天時者，可借風雨之力。」" },
+            { segments: ["地者", "遠近", "險易", "廣狹", "死生也"], translation: "【白話】所謂「地」，是指路程的遠近、地勢的險要或平坦、戰場的廣闊或狹窄，以及地形是絕地還是生路。", npcWin: "孫武：「地利者，兵之助也。」" },
+            { segments: ["將者", "智", "信", "仁", "勇", "嚴也"], translation: "【白話】所謂「將」，就是將領要具備智慧、誠信、仁愛、勇敢、嚴明這五種素質。", npcWin: "孫武：「為將者，當具備此五德。」" },
+            { segments: ["法者", "曲制", "官道", "主用也"], translation: "【白話】所謂「法」，是指軍隊的組織編制、將吏的職責管理、以及軍需物資的供應管理。", npcWin: "孫武：「法制不明，則軍令不行。」" }
+        ];
 
-    const ranks = [
-        { title: "步卒", icon: "卒", min: 0 },
-        { title: "伍長", icon: "伍", min: 5 },
-        { title: "百夫長", icon: "百", min: 10 },
-        { title: "千夫長", icon: "千", min: 20 },
-        { title: "將軍", icon: "將", min: 30 }
-    ];
+        let currentLevel = 0;
+        let currentSelection = [];
+        let pool = [];
+        let isHintOn = true;
 
-    // === 3. 初始化 ===
-    window.onload = function() {
-        if(localStorage.getItem('sunTzuProgress')) {
-            currentLevel = parseInt(localStorage.getItem('sunTzuProgress'));
-            if(currentLevel >= levelsData.length) currentLevel = 0;
-        }
-        loadLevel(currentLevel);
-        updateRankDisplay();
-    };
-
-    function loadLevel(idx) {
-        // 保護機制：如果超過題庫，暫時回到第一題
-        if (idx >= levelsData.length) { idx = 0; currentLevel = 0; }
-        
-        const data = levelsData[idx];
-        document.getElementById('level-display').innerText = `(${idx + 1}/${levelsData.length})`;
-        
-        // NPC 對話
-        const npcText = document.getElementById('npc-text');
-        npcText.innerText = isHintOn ? "依閃爍竹簡，排列陣勢！" : "將軍，請憑記憶佈陣！";
-        npcText.style.color = "#000";
-
-        // 準備竹簡 (分詞)
-        currentSelection = [];
-        let segments = splitSentence(data.text);
-        currentPool = [...segments].sort(() => Math.random() - 0.5); // 打亂
-
-        renderBoard();
-        document.getElementById('win-modal').style.display = 'none';
-        document.getElementById('target-zone').className = 'scroll-area';
-    }
-
-    function splitSentence(str) {
-        // 簡單依標點符號切分，保留標點
-        let parts = str.split(/(?=[，、。；])/); 
-        // 處理一下，讓標點跟著上一句或獨立? 
-        // 這裡改用簡單邏輯：如果有逗號，就依逗號切
-        let res = [];
-        let temp = str.split(/[，、。；]/).filter(s => s.trim() !== "");
-        // 這裡為了遊戲性，我們簡單把字串拆成幾個部分
-        if (str.length <= 4) return [str];
-        // 模擬切分：對半切
-        let mid = Math.floor(str.length / 2);
-        // 如果有標點，優先用標點切
-        if (str.includes('，')) return str.split('，').map((s, i, arr) => i < arr.length -1 ? s + '，' : s);
-        return [str.substring(0, mid), str.substring(mid)];
-    }
-
-    function renderBoard() {
         const targetZone = document.getElementById('target-zone');
         const sourceZone = document.getElementById('source-zone');
-        
-        targetZone.innerHTML = '';
-        sourceZone.innerHTML = '';
+        const hintText = document.getElementById('hint-text');
+        const npcText = document.getElementById('npc-text');
+        const levelIndicator = document.getElementById('level-indicator');
+        const progressBar = document.getElementById('progress-bar');
+        const winModal = document.getElementById('win-modal');
+        const modalContent = document.getElementById('modal-content');
+        const hintToggle = document.getElementById('hint-toggle');
+        const checkBtn = document.getElementById('check-answer-btn');
+        const resetBtn = document.getElementById('reset-btn');
 
-        // 已選區
-        if (currentSelection.length === 0) {
-            targetZone.innerHTML = '<div style="color:#8d6e63; margin-top:30px; opacity:0.6;">(點擊下方竹簡)</div>';
-        } else {
-            currentSelection.forEach((text) => {
-                targetZone.appendChild(createTile(text, 'target'));
+        function initGame() { loadLevel(currentLevel); }
+        function toggleHint() { isHintOn = hintToggle.checked; updateHintEffect(); updateNpcText(); }
+
+        function updateNpcText() {
+            if (checkBtn.style.display === 'block') return; // 過關後不更新
+            npcText.innerText = isHintOn ? "孫武：「依竹簡光芒，佈下陣勢。」" : "孫武：「戰場無情，全憑將軍決斷！」";
+            npcText.style.color = "#000";
+        }
+
+        function loadLevel(idx) {
+            currentSelection = [];
+            pool = [...levels[idx].segments].sort(() => Math.random() - 0.5);
+
+            levelIndicator.innerText = `關卡 ${idx + 1}/${levels.length}`;
+            progressBar.style.width = `${((idx) / levels.length) * 100}%`;
+            
+            checkBtn.style.display = 'none'; 
+            resetBtn.style.display = 'block'; 
+            winModal.style.display = 'none';
+
+            // 重置樣式
+            document.querySelector('.target-zone-wrapper').style.borderColor = "#3e2723";
+            npcText.innerText = "...";
+
+            setTimeout(() => {
+                renderBoard();
+                npcText.innerText = isHintOn ? "孫武：「依竹簡光芒，佈下陣勢。」" : "孫武：「戰場無情，全憑將軍決斷！」";
+            }, 50);
+        }
+
+        function renderBoard() {
+            targetZone.innerHTML = '';
+            if (currentSelection.length === 0) targetZone.appendChild(hintText);
+            else currentSelection.forEach((text, i) => targetZone.appendChild(createBamboo(text, 'target', i)));
+
+            sourceZone.innerHTML = '';
+            pool.forEach((text, i) => {
+                const btn = createBamboo(text, 'source', i);
+                btn.setAttribute('data-text', text);
+                sourceZone.appendChild(btn);
             });
+            updateHintEffect();
         }
 
-        // 候選區
-        currentPool.forEach((text) => {
-            sourceZone.appendChild(createTile(text, 'source'));
-        });
+        function updateHintEffect() {
+            const allBtns = sourceZone.querySelectorAll('.bamboo-slip');
+            allBtns.forEach(btn => btn.classList.remove('hint-active'));
+            if (!isHintOn) return;
 
-        if (isHintOn) applyHintEffect();
-    }
+            const data = levels[currentLevel];
+            if (currentSelection.length >= data.segments.length) return;
+            const nextText = data.segments[currentSelection.length];
 
-    function createTile(text, type) {
-        const div = document.createElement('div');
-        div.className = 'bamboo-tile';
-        div.innerText = text;
-        div.setAttribute('data-text', text); // 用於提示比對
-        div.onclick = () => moveTile(text, type);
-        return div;
-    }
-
-    function moveTile(text, type) {
-        playClickSound();
-        if (type === 'source') {
-            currentPool = currentPool.filter(t => t !== text);
-            currentSelection.push(text);
-        } else {
-            currentSelection = currentSelection.filter(t => t !== text);
-            currentPool.push(text);
-        }
-        renderBoard();
-        checkAnswer();
-    }
-
-    // 🌟 提示系統邏輯
-    function applyHintEffect() {
-        const data = levelsData[currentLevel];
-        // 取得正確順序的 segments (這裡我們重新切分一次來比對)
-        let correctSegments = splitSentence(data.text);
-        
-        // 找出下一個應該選什麼
-        let nextIndex = currentSelection.length;
-        if (nextIndex >= correctSegments.length) return;
-        
-        let nextText = correctSegments[nextIndex];
-
-        // 在 sourceZone 裡找到對應的按鈕加 class
-        const buttons = document.getElementById('source-zone').children;
-        for (let btn of buttons) {
-            if (btn.getAttribute('data-text') === nextText) {
-                btn.classList.add('hint-active');
-                break; // 只提示一個
+            for(let btn of allBtns) {
+                if (btn.getAttribute('data-text') === nextText) {
+                    btn.classList.add('hint-active');
+                    break;
+                }
             }
         }
-    }
 
-    function toggleHint() {
-        isHintOn = !isHintOn;
-        document.getElementById('hint-btn').className = isHintOn ? 'icon-btn active' : 'icon-btn';
-        document.getElementById('hint-btn').innerText = isHintOn ? '💡' : '🌑';
-        renderBoard(); // 重新渲染以套用/移除特效
-    }
+        function createBamboo(text, type, index) {
+            if (checkBtn.style.display === 'block') return document.createElement('div'); // 過關後回傳空div
 
-    function toggleMute() {
-        isMuted = !isMuted;
-        document.getElementById('mute-btn').innerText = isMuted ? '🔇' : '🔊';
-        document.getElementById('mute-btn').className = isMuted ? 'icon-btn active' : 'icon-btn';
-    }
-
-    function checkAnswer() {
-        const data = levelsData[currentLevel];
-        // 簡單比對：使用者組出來的句子 = 原句
-        if (currentSelection.join('') === data.text) {
-            playWinSound();
-            showWinModal(data);
+            const btn = document.createElement('div');
+            btn.className = 'bamboo-slip';
+            btn.innerText = text;
+            btn.onclick = function() {
+                if (navigator.vibrate) navigator.vibrate(15);
+                if (type === 'source') {
+                    currentSelection.push(text);
+                    pool.splice(pool.indexOf(text), 1);
+                } else {
+                    pool.push(text);
+                    currentSelection.splice(currentSelection.indexOf(text), 1);
+                }
+                renderBoard();
+                checkWin();
+            };
+            return btn;
         }
-    }
 
-    function showWinModal(data) {
-        document.getElementById('win-original-text').innerText = data.text;
-        document.getElementById('win-translation-text').innerText = data.translation;
-        document.getElementById('win-modal').style.display = 'flex';
-    }
+        function checkWin() {
+            const data = levels[currentLevel];
+            if (currentSelection.length !== data.segments.length) return;
 
-    function nextLevel() {
-        document.getElementById('win-modal').style.display = 'none';
-        currentLevel++;
-        localStorage.setItem('sunTzuProgress', currentLevel);
-        
-        checkRankUp();
-        loadLevel(currentLevel);
-    }
+            const isCorrect = currentSelection.every((val, i) => val === data.segments[i]);
 
-    // === 官階與音效 ===
-    function checkRankUp() {
-        let newRank = ranks[0];
-        for (let r of ranks) { if (currentLevel >= r.min) newRank = r; }
-        
-        let currentTitle = document.getElementById('rank-name').innerText;
-        if (newRank.title !== currentTitle) {
-            document.getElementById('new-rank-title').innerText = newRank.title;
-            document.getElementById('rank-modal').style.display = 'flex';
-            playWinSound();
+            if (isCorrect) {
+                npcText.innerText = data.npcWin;
+                npcText.style.color = "#b71c1c";
+                document.querySelector('.target-zone-wrapper').style.borderColor = "#2e7d32";
+                checkBtn.style.display = 'block';
+                resetBtn.style.display = 'none';
+            } else {
+                npcText.innerText = "孫武：「陣勢已亂！請重整旗鼓。」";
+            }
         }
-        updateRankDisplay();
-    }
 
-    function updateRankDisplay() {
-        let r = ranks[0];
-        for (let item of ranks) { if (currentLevel >= item.min) r = item; }
-        document.getElementById('rank-icon').innerText = r.icon;
-        document.getElementById('rank-name').innerText = r.title;
-    }
+        function showModal() {
+             const data = levels[currentLevel];
+             modalContent.innerHTML = `<strong>${data.segments.join('，')}</strong><br><br>${data.translation}`;
+             winModal.style.display = 'flex';
+        }
 
-    function closeRankModal() {
-        document.getElementById('rank-modal').style.display = 'none';
-    }
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel >= levels.length) { alert("恭喜將軍！始計篇修練完畢！"); currentLevel = 0; }
+            loadLevel(currentLevel);
+        }
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playClickSound() {
-        if (isMuted) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-    }
-    function playWinSound() {
-        if (isMuted) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const now = audioCtx.currentTime;
-        [440, 554, 659].forEach((f, i) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.frequency.value = f;
-            gain.gain.setValueAtTime(0.1, now + i*0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + i*0.1 + 0.4);
-            osc.start(now + i*0.1); osc.stop(now + i*0.1 + 0.4);
-        });
-    }
-
-</script>
+        function replayLevel() { loadLevel(currentLevel); }
+        function resetCurrentLevel() { loadLevel(currentLevel); }
+    </script>
 </body>
 </html>
