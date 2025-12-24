@@ -2,1381 +2,1396 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>孫子兵法・軍帳驗令 v1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <title>孫子兵法・校令演練 v1（手機版）</title>
   <style>
     :root{
-      /* Theme */
-      --bg0:#0e1410;
-      --bg1:#111a14;
-      --panel:#121c16;
-      --panel2:#0f1712;
-      --line:#2a3a30;
-      --muted:#9fb2a6;
-      --text:#e6efe9;
-      --accent:#c7a45c;       /* brass */
-      --accent2:#7aa37e;      /* calm green */
-      --danger:#e06666;
-      --ok:#77d18a;
-      --stamp:#b32d2d;
-
-      /* Typography scale (controlled) */
-      --base:16px;            /* small=15, medium=16, large=18 */
-      --slot:40px;
-      --radius:14px;
-      --shadow: 0 10px 25px rgba(0,0,0,.35);
-      --shadow2: 0 6px 16px rgba(0,0,0,.28);
+      --bg: #0f1214;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.10);
+      --text: #e9edf1;
+      --muted: rgba(233,237,241,0.70);
+      --gold: #d7b56a;
+      --gold2:#8a6a2b;
+      --red:#e65a5a;
+      --green:#48c774;
+      --line: rgba(215,181,106,0.35);
+      --chip: rgba(215,181,106,0.14);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+      --radius: 16px;
+      --fontScale: 1; /* JS會改 */
+      --safeTop: env(safe-area-inset-top, 0px);
+      --safeBottom: env(safe-area-inset-bottom, 0px);
     }
 
     *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    html, body{ height:100%; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      font-family: "Microsoft JhengHei", "PingFang TC", "Noto Serif CJK TC", system-ui, serif;
-      font-size: var(--base);
-      color: var(--text);
       background:
-        radial-gradient(1200px 700px at 20% 10%, rgba(199,164,92,.10), transparent 55%),
-        radial-gradient(900px 600px at 80% 20%, rgba(122,163,126,.10), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      overflow:hidden; /* no page scrolling */
+        radial-gradient(1200px 700px at 20% -20%, rgba(215,181,106,0.18), transparent 55%),
+        radial-gradient(900px 600px at 110% 30%, rgba(230,90,90,0.10), transparent 55%),
+        radial-gradient(900px 600px at -10% 80%, rgba(72,199,116,0.10), transparent 55%),
+        linear-gradient(180deg, #0b0d0f 0%, #101418 100%);
+      color:var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      overflow:hidden;
     }
 
-    /* Layout: 1-screen */
+    /* ====== Layout ====== */
     .app{
       height:100%;
       display:flex;
       flex-direction:column;
+      padding: calc(10px + var(--safeTop)) 12px calc(10px + var(--safeBottom)) 12px;
       gap:10px;
-      padding:12px;
-      max-width:720px;
-      margin:0 auto;
     }
 
+    /* ====== Top Bar ====== */
     .topbar{
-      flex: 0 0 auto;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
       border-radius: var(--radius);
-      box-shadow: var(--shadow2);
-      padding:10px 10px 8px 10px;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .toprow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .badge{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width: 0;
-    }
-
-    .rank{
-      padding:6px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(199,164,92,.45);
-      background: rgba(199,164,92,.10);
-      color: #f3e6c8;
-      font-weight:700;
-      letter-spacing:.08em;
-      white-space:nowrap;
-    }
-
-    .meta{
-      display:flex;
-      flex-direction:column;
-      min-width:0;
-      gap:2px;
-    }
-    .title{
-      font-weight:800;
-      letter-spacing:.04em;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .subtitle{
-      font-size: .9em;
-      color: var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .controls{
-      display:flex;
-      gap:8px;
-      flex:0 0 auto;
-    }
-
-    .iconbtn{
-      width:42px;
-      height:42px;
-      border-radius: 12px;
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12));
-      box-shadow: 0 6px 14px rgba(0,0,0,.25);
-      color: var(--text);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:800;
-      cursor:pointer;
-      user-select:none;
-    }
-    .iconbtn:active{ transform: translateY(1px); }
-    .iconbtn.on{
-      border-color: rgba(199,164,92,.60);
-      box-shadow: 0 0 0 2px rgba(199,164,92,.18), 0 6px 14px rgba(0,0,0,.25);
-    }
-
-    .progress{
-      height:8px;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:999px;
-      overflow:hidden;
-    }
-    .fill{
-      height:100%;
-      width:0%;
-      background: linear-gradient(90deg, rgba(199,164,92,.95), rgba(122,163,126,.95));
-      transition: width .25s ease;
-    }
-
-    .mid{
-      flex: 1 1 auto;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-height: 0;
-    }
-
-    .panel{
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.15));
-      border:1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-
-    .brief{
       padding:10px 12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      background: rgba(0,0,0,.16);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    .npc{
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      min-width:0;
-    }
-    .seal{
-      width:40px;
-      height:40px;
-      border-radius: 14px;
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 45%),
-        linear-gradient(180deg, rgba(199,164,92,.22), rgba(0,0,0,.15));
-      border: 1px solid rgba(199,164,92,.55);
+      box-shadow: var(--shadow);
       display:flex;
       align-items:center;
-      justify-content:center;
-      font-weight:900;
-      color:#f3e6c8;
-      flex: 0 0 auto;
+      justify-content:space-between;
+      gap:10px;
+      min-height: 56px;
     }
-    .npcmsg{
-      min-width:0;
+
+    .leftStack{
       display:flex;
       flex-direction:column;
       gap:4px;
-    }
-    .npcmsg .line1{
-      font-weight:800;
-      letter-spacing:.02em;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .npcmsg .line2{
-      color: var(--muted);
-      font-size: .92em;
-      line-height: 1.2;
+      min-width: 0;
     }
 
-    .actions{
+    .rankRow{
       display:flex;
+      align-items:center;
+      gap:8px;
+      min-width: 0;
+    }
+
+    .rankBadge{
+      flex:0 0 auto;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(215,181,106,0.55);
+      background: rgba(215,181,106,0.12);
+      color: var(--gold);
+      font-weight:700;
+      font-size: calc(12px * var(--fontScale));
+      letter-spacing: .08em;
+      white-space: nowrap;
+    }
+
+    .chapterLabel{
+      min-width:0;
+      color: var(--muted);
+      font-size: calc(12px * var(--fontScale));
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    .statusRow{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: calc(12px * var(--fontScale));
+    }
+
+    .statusPill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:3px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .statusDot{
+      width:8px;height:8px;border-radius:50%;
+      background: rgba(233,237,241,0.30);
+      box-shadow: 0 0 0 3px rgba(233,237,241,0.06);
+    }
+    .dot-ok{ background: var(--green); box-shadow: 0 0 0 3px rgba(72,199,116,0.15); }
+    .dot-warn{ background: var(--red); box-shadow: 0 0 0 3px rgba(230,90,90,0.15); }
+
+    .rightBtns{
+      display:flex;
+      align-items:center;
       gap:8px;
       flex:0 0 auto;
     }
-    .btn{
-      border-radius: 12px;
-      border:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.18));
+
+    .iconBtn{
+      width:40px;height:40px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
       color: var(--text);
-      padding:10px 12px;
-      font-weight:800;
-      cursor:pointer;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .btn:active{ transform: translateY(1px); }
-    .btn.primary{
-      border-color: rgba(122,163,126,.55);
-      box-shadow: 0 0 0 2px rgba(122,163,126,.16);
-    }
-    .btn.danger{
-      border-color: rgba(224,102,102,.55);
-      box-shadow: 0 0 0 2px rgba(224,102,102,.14);
-    }
-
-    /* Command slots */
-    .slots{
-      padding:10px 10px 8px 10px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-height: 0;
-    }
-
-    .slotgrid{
-      display:grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap:8px;
-      align-items:stretch;
-      justify-items:stretch;
-    }
-
-    /* Responsive: adjust columns based on width */
-    @media (max-width: 520px){
-      .slotgrid{ grid-template-columns: repeat(7, 1fr); }
-    }
-    @media (max-width: 420px){
-      .slotgrid{ grid-template-columns: repeat(6, 1fr); }
-    }
-
-    .slot{
-      height: var(--slot);
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
       display:flex;
       align-items:center;
       justify-content:center;
-      font-weight:900;
-      font-size: 1.06em;
-      color: rgba(230,239,233,.92);
-      position:relative;
+      font-size: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      cursor:pointer;
       user-select:none;
     }
-    .slot.correct{
-      border-color: rgba(119,209,138,.55);
-      box-shadow: 0 0 0 2px rgba(119,209,138,.12);
-      color: #eafff0;
-    }
-    .slot.wrong{
-      border-color: rgba(224,102,102,.60);
-      box-shadow: 0 0 0 2px rgba(224,102,102,.14);
-      color: #ffdede;
-    }
-    .slot.empty{
-      color: rgba(159,178,166,.35);
-    }
+    .iconBtn:active{ transform: scale(0.98); }
 
-    .slot .idx{
-      position:absolute;
-      left:6px;
-      top:4px;
-      font-size:.62em;
-      color: rgba(159,178,166,.35);
-      font-weight:800;
-      display:none; /* keep clean; can enable later */
+    /* ====== Sun Wu line ====== */
+    .sunwu{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(215,181,106,0.10), rgba(255,255,255,0.04));
+      border-radius: var(--radius);
+      padding:10px 12px;
+      box-shadow: var(--shadow);
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      min-height: 54px;
     }
-
-    .slotbar{
+    .sunwuBadge{
+      flex:0 0 auto;
+      width:40px;height:40px;
+      border-radius: 14px;
+      border:1px solid rgba(215,181,106,0.55);
+      background: rgba(215,181,106,0.14);
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      gap:10px;
+      justify-content:center;
+      color: var(--gold);
+      font-weight:800;
+      letter-spacing: .1em;
     }
-    .status{
-      color: var(--muted);
-      font-size: .92em;
-      white-space:nowrap;
+    .sunwuText{
+      min-width: 0;
+      font-size: calc(14px * var(--fontScale));
+      line-height: 1.25;
+      color: rgba(233,237,241,0.92);
+      white-space: nowrap;
       overflow:hidden;
-      text-overflow:ellipsis;
+      text-overflow: ellipsis;
     }
 
-    /* Keyboard */
-    .keyboard{
-      flex: 0 0 auto;
-      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.16));
+    /* ====== Command Area ====== */
+    .command{
+      flex: 1 1 auto;
       border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding:10px;
+      padding: 10px;
       display:flex;
       flex-direction:column;
       gap:10px;
+      overflow:hidden;
     }
 
-    .kbdtop{
+    .commandHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex:0 0 auto;
+    }
+
+    .title{
+      font-weight:800;
+      color: var(--gold);
+      font-size: calc(14px * var(--fontScale));
+      letter-spacing: .06em;
+      white-space:nowrap;
+    }
+
+    .miniProgress{
+      flex:1 1 auto;
+      height: 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.06);
+      overflow:hidden;
+      min-width: 80px;
+    }
+    .miniFill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(215,181,106,0.9), rgba(215,181,106,0.35));
+      transition: width .25s ease;
+    }
+
+    .commandBody{
+      flex:1 1 auto;
+      border:1px dashed rgba(215,181,106,0.35);
+      border-radius: 14px;
+      background: rgba(0,0,0,0.18);
+      padding: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .lineWrap{
+      width:100%;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-content:flex-start;
+      justify-content:flex-start;
+      max-height: 100%;
+      overflow:hidden; /* 避免整體滑動 */
+    }
+
+    .placeholder{
+      color: rgba(233,237,241,0.45);
+      font-size: calc(14px * var(--fontScale));
+      letter-spacing:.04em;
+      user-select:none;
+    }
+
+    /* Tokens */
+    .token{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(215,181,106,0.45);
+      background: rgba(215,181,106,0.12);
+      color: rgba(233,237,241,0.95);
+      font-weight:800;
+      font-size: calc(16px * var(--fontScale));
+      line-height: 1.05;
+      letter-spacing:.02em;
+      user-select:none;
+      cursor:pointer;
+      white-space: nowrap;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+    }
+    .token:active{ transform: scale(0.98); }
+
+    .token.selected{
+      background: rgba(72,199,116,0.14);
+      border-color: rgba(72,199,116,0.55);
+      color: rgba(233,237,241,0.98);
+    }
+
+    .token.wrongFlash{
+      animation: wrong .25s ease 0s 2;
+      border-color: rgba(230,90,90,0.9);
+      background: rgba(230,90,90,0.14);
+    }
+    @keyframes wrong{
+      0%{ transform: translateX(0); }
+      25%{ transform: translateX(-4px); }
+      50%{ transform: translateX(4px); }
+      75%{ transform: translateX(-3px); }
+      100%{ transform: translateX(0); }
+    }
+
+    /* ====== Controls ====== */
+    .controls{
+      flex:0 0 auto;
+      display:flex;
+      gap:10px;
+    }
+
+    .btn{
+      flex:1 1 0;
+      height: 46px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: rgba(233,237,241,0.92);
+      font-weight:800;
+      font-size: calc(14px * var(--fontScale));
+      letter-spacing:.06em;
+      cursor:pointer;
+      user-select:none;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+    }
+    .btn:active{ transform: scale(0.99); }
+    .btn.primary{
+      border-color: rgba(215,181,106,0.55);
+      background: rgba(215,181,106,0.14);
+      color: var(--gold);
+    }
+    .btn.danger{
+      border-color: rgba(230,90,90,0.45);
+      background: rgba(230,90,90,0.12);
+      color: rgba(233,237,241,0.95);
+    }
+
+    /* ====== Options ====== */
+    .options{
+      flex:0 0 auto;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .optionsHead{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
     }
-
-    .kbdlabel{
-      font-weight:900;
-      letter-spacing:.06em;
-      color: #f1e8d2;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-
-    .pagehint{
+    .optionsLabel{
       color: var(--muted);
-      font-size:.92em;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      font-weight:700;
+      font-size: calc(12px * var(--fontScale));
+      letter-spacing:.06em;
+      white-space: nowrap;
     }
-
     .pager{
       display:flex;
-      gap:8px;
       align-items:center;
+      gap:8px;
       flex:0 0 auto;
     }
-
-    .pbtn{
-      width:44px;
-      height:42px;
+    .pagerBtn{
+      width:36px;height:34px;
       border-radius: 12px;
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: rgba(233,237,241,0.9);
       font-weight:900;
       cursor:pointer;
       user-select:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
     }
-    .pbtn:active{ transform: translateY(1px); }
+    .pagerBtn:active{ transform: scale(0.98); }
+    .pagerDots{
+      color: rgba(233,237,241,0.55);
+      font-size: calc(12px * var(--fontScale));
+      letter-spacing:.08em;
+      white-space: nowrap;
+      min-width: 44px;
+      text-align:center;
+    }
 
-    .grid{
+    .tokenGrid{
       display:grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap:8px;
-      align-items:stretch;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap:10px;
     }
-    @media (max-width: 520px){
-      .grid{ grid-template-columns: repeat(7, 1fr); }
+    @media (min-width: 410px){
+      .tokenGrid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
-    @media (max-width: 420px){
-      .grid{ grid-template-columns: repeat(6, 1fr); }
-    }
-
-    .token{
-      height: 46px;
-      border-radius: 14px;
-      border:1px solid rgba(199,164,92,.35);
-      background:
-        radial-gradient(circle at 30% 30%, rgba(255,255,255,.10), transparent 45%),
-        linear-gradient(180deg, rgba(199,164,92,.10), rgba(0,0,0,.18));
-      box-shadow: 0 6px 14px rgba(0,0,0,.22);
-      color: #f3e6c8;
-      display:flex;
-      align-items:center;
+    .token.small{
+      width:100%;
       justify-content:center;
-      font-weight:1000;
-      cursor:pointer;
-      user-select:none;
-      position:relative;
-    }
-    .token:active{ transform: translateY(1px) scale(.99); }
-    .token.dim{
-      opacity:.60;
-      border-color: rgba(255,255,255,.10);
-      color: rgba(230,239,233,.70);
-      background: rgba(0,0,0,.14);
+      padding: 12px 10px;
+      font-size: calc(15px * var(--fontScale));
     }
 
-    /* Lamp hint */
-    .token.hint{
-      border-color: rgba(255,230,140,.80);
-      box-shadow: 0 0 0 2px rgba(255,230,140,.18), 0 10px 18px rgba(0,0,0,.26);
-      animation: glow 1.35s ease-in-out infinite;
-    }
-    @keyframes glow{
-      0%{ transform: translateY(0); filter: brightness(1); }
-      50%{ transform: translateY(-1px); filter: brightness(1.15); }
-      100%{ transform: translateY(0); filter: brightness(1); }
-    }
-
-    /* Modal */
+    /* ====== Modal ====== */
     .modal{
-      position:fixed;
+      position: fixed;
       inset:0;
-      background: rgba(0,0,0,.72);
+      background: rgba(0,0,0,0.78);
       display:none;
       align-items:center;
       justify-content:center;
-      padding:14px;
-      z-index:9999;
+      padding: 18px 14px;
+      z-index: 50;
     }
     .card{
-      width:min(520px, 100%);
+      width: min(520px, 100%);
       border-radius: 18px;
-      border:1px solid rgba(255,255,255,.10);
-      background: linear-gradient(180deg, rgba(20,28,22,.96), rgba(10,14,11,.96));
-      box-shadow: 0 20px 50px rgba(0,0,0,.55);
-      overflow:hidden;
-      position:relative;
+      border:1px solid rgba(215,181,106,0.55);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      padding: 14px;
     }
-    .cardhead{
-      padding:14px 14px 10px 14px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .stamper{
-      position:absolute;
-      top:12px;
-      right:12px;
-      width:72px;
-      height:72px;
-      border-radius: 16px;
-      border:2px solid rgba(179,45,45,.85);
-      color: rgba(255,210,210,.96);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:1000;
-      letter-spacing:.1em;
-      transform: rotate(12deg);
-      background: rgba(179,45,45,.10);
-      box-shadow: 0 10px 22px rgba(0,0,0,.35);
-      pointer-events:none;
-    }
-    .cardtitle{
-      font-weight:1000;
-      letter-spacing:.06em;
-    }
-    .carddesc{
-      margin-top:4px;
-      color: var(--muted);
-      font-size:.95em;
-      line-height:1.25;
-    }
-    .cardbody{
-      padding:12px 14px 14px 14px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-    .blockquote{
-      padding:10px 12px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.20);
-      line-height:1.5;
-      color: rgba(230,239,233,.92);
-    }
-    .cardactions{
-      display:flex;
-      gap:10px;
-      padding:12px 14px 14px 14px;
-      border-top:1px solid rgba(255,255,255,.08);
-    }
-    .cardactions .btn{ flex:1; text-align:center; }
-
-    /* Drawer (Military book) */
-    .drawer{
-      position:fixed;
-      left:0;
-      right:0;
-      bottom:-100%;
-      background: linear-gradient(180deg, rgba(18,28,22,.98), rgba(8,12,9,.98));
-      border-top:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 -18px 45px rgba(0,0,0,.55);
-      border-radius: 18px 18px 0 0;
-      padding:12px 12px 18px 12px;
-      transition: bottom .25s ease;
-      z-index: 8888;
-      max-width: 720px;
-      margin:0 auto;
-    }
-    .drawer.open{ bottom:0; }
-    .drawhead{
+    .cardTop{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding-bottom:10px;
-      border-bottom:1px solid rgba(255,255,255,.08);
+      margin-bottom: 8px;
     }
-    .drawtitle{
-      font-weight:1000;
-      letter-spacing:.06em;
-    }
-    .drawclose{
-      width:44px;
-      height:40px;
+    .stamp{
+      padding: 6px 10px;
       border-radius: 12px;
-      border:1px solid var(--line);
-      background: rgba(0,0,0,.18);
-      color: var(--text);
-      font-weight:1000;
-      cursor:pointer;
-      user-select:none;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      border:1px solid rgba(72,199,116,0.55);
+      background: rgba(72,199,116,0.12);
+      color: rgba(233,237,241,0.95);
+      font-weight:900;
+      letter-spacing:.1em;
+      font-size: calc(12px * var(--fontScale));
     }
-    .drawcontent{
-      padding-top:10px;
+    .closeBtn{
+      width:40px;height:38px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: rgba(233,237,241,0.9);
+      font-size: 18px;
+      cursor:pointer;
+    }
+    .closeBtn:active{ transform: scale(0.98); }
+
+    .cardBody{
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.20);
+      padding: 12px;
       display:flex;
       flex-direction:column;
       gap:10px;
-      max-height: 52vh; /* drawer itself can scroll if needed, but main page stays 1-screen */
-      overflow:auto;
     }
-    .tag{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:6px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(199,164,92,.30);
-      background: rgba(199,164,92,.10);
-      color:#f3e6c8;
+    .orig{
+      font-size: calc(17px * var(--fontScale));
+      line-height: 1.35;
       font-weight:900;
-      letter-spacing:.06em;
-      width:fit-content;
+      color: rgba(233,237,241,0.96);
+      letter-spacing:.02em;
     }
-    .mini{
-      color: var(--muted);
-      font-size:.95em;
-      line-height:1.45;
+    .trans{
+      font-size: calc(14px * var(--fontScale));
+      line-height: 1.45;
+      color: rgba(233,237,241,0.78);
+      white-space: pre-wrap;
     }
-
-    /* Settings modal content */
-    .seg{
+    .cardBtns{
       display:flex;
       gap:10px;
+      margin-top: 10px;
     }
-    .seg .btn{ flex:1; }
-    .hintnote{
-      color: var(--muted);
-      font-size:.92em;
-      line-height:1.35;
+
+    /* ====== Settings Drawer ====== */
+    .drawer{
+      position: fixed;
+      left:0; right:0; bottom:0;
+      background: rgba(18,22,26,0.98);
+      border-top: 1px solid rgba(215,181,106,0.35);
+      border-radius: 18px 18px 0 0;
+      padding: 14px 14px calc(14px + var(--safeBottom)) 14px;
+      transform: translateY(110%);
+      transition: transform .22s ease;
+      z-index: 60;
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.55);
     }
+    .drawer.open{ transform: translateY(0%); }
+    .drawerHead{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .drawerTitle{
+      color: var(--gold);
+      font-weight:900;
+      letter-spacing:.08em;
+      font-size: calc(14px * var(--fontScale));
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .row:first-of-type{ border-top:none; }
+    .rowLabel{
+      color: rgba(233,237,241,0.88);
+      font-weight:800;
+      font-size: calc(13px * var(--fontScale));
+      letter-spacing:.03em;
+    }
+    .rowHint{
+      color: rgba(233,237,241,0.55);
+      font-size: calc(12px * var(--fontScale));
+      margin-top: 4px;
+    }
+
+    /* Toggle */
+    .toggle{
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.10);
+      position: relative;
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+    .knob{
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(233,237,241,0.92);
+      position:absolute;
+      top: 1px; left: 1px;
+      transition: left .18s ease;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+    }
+    .toggle.on{
+      background: rgba(72,199,116,0.18);
+      border-color: rgba(72,199,116,0.35);
+    }
+    .toggle.on .knob{ left: 24px; }
+
+    input[type="range"]{
+      width: 170px;
+      accent-color: var(--gold);
+    }
+
+    /* Hint pulse (學習提示) */
+    .hintPulse{
+      animation: pulse 1.4s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(215,181,106,0.35);
+    }
+    @keyframes pulse{
+      0%{ box-shadow: 0 0 0 0 rgba(215,181,106,0.28); }
+      70%{ box-shadow: 0 0 0 10px rgba(215,181,106,0.00); }
+      100%{ box-shadow: 0 0 0 0 rgba(215,181,106,0.00); }
+    }
+
   </style>
 </head>
 
 <body>
-  <div class="app">
+  <div class="app" id="app">
+    <!-- Top Bar -->
     <div class="topbar">
-      <div class="toprow">
-        <div class="badge">
-          <div class="rank" id="rankTag">卒</div>
-          <div class="meta">
-            <div class="title" id="missionTitle">始計篇・驗令</div>
-            <div class="subtitle" id="missionSub">段落 1/3 ・文字一字不差（標點不驗）</div>
-          </div>
+      <div class="leftStack">
+        <div class="rankRow">
+          <div class="rankBadge" id="rankBadge">新兵</div>
+          <div class="chapterLabel" id="chapterLabel">始計篇｜演練 1</div>
         </div>
-
-        <div class="controls">
-          <div class="iconbtn on" id="lampBtn" title="燈號(提示)">燈</div>
-          <div class="iconbtn on" id="soundBtn" title="音效">音</div>
-          <div class="iconbtn" id="bookBtn" title="軍書(白話)">書</div>
-          <div class="iconbtn" id="setBtn" title="設定">⋯</div>
+        <div class="statusRow">
+          <div class="statusPill">
+            <span class="statusDot dot-ok" id="statusDot"></span>
+            <span id="statusText">目前無錯字</span>
+          </div>
+          <div class="statusPill" id="hintPill">學習提示：開</div>
         </div>
       </div>
 
-      <div class="progress">
-        <div class="fill" id="progressFill"></div>
+      <div class="rightBtns">
+        <div class="iconBtn" id="btnSettings" title="設定">⚙️</div>
+        <div class="iconBtn" id="btnBook" title="軍書">📜</div>
       </div>
     </div>
 
-    <div class="mid">
-      <div class="panel">
-        <div class="brief">
-          <div class="npc">
-            <div class="seal">令</div>
-            <div class="npcmsg">
-              <div class="line1" id="npcLine1">值星官：</div>
-              <div class="line2" id="npcLine2">校令。按令牌逐字上呈；錯字即紅，退格可撤。</div>
-            </div>
-          </div>
-          <div class="actions">
-            <div class="btn danger" id="clearBtn">撤令</div>
-            <div class="btn" id="undoBtn">退格</div>
-            <div class="btn primary" id="reportBtn" style="display:none;">呈報</div>
-          </div>
-        </div>
+    <!-- Sun Wu -->
+    <div class="sunwu">
+      <div class="sunwuBadge">孫武</div>
+      <div class="sunwuText" id="sunwuText">校令。先把節奏排順，再求一字不差。</div>
+    </div>
 
-        <div class="slots">
-          <div class="slotbar">
-            <div class="status" id="statusText">待命：請自令牌匣取字，完成軍令。</div>
-            <div class="status" id="remainText">缺字：—</div>
-          </div>
-          <div class="slotgrid" id="slotGrid"></div>
+    <!-- Command Area -->
+    <div class="command">
+      <div class="commandHead">
+        <div class="title">校令槽</div>
+        <div class="miniProgress" aria-label="progress">
+          <div class="miniFill" id="miniFill"></div>
         </div>
       </div>
 
-      <div class="keyboard">
-        <div class="kbdtop">
-          <div class="kbdlabel">
-            <span>令牌匣</span>
-            <span class="pagehint" id="pageHint">第 1 頁</span>
-          </div>
-          <div class="pager">
-            <div class="pbtn" id="prevPage">◀</div>
-            <div class="pbtn" id="nextPage">▶</div>
-          </div>
-        </div>
-        <div class="grid" id="tokenGrid"></div>
-        <div class="hintnote" id="hintNote" style="display:none;"></div>
+      <div class="commandBody" id="commandBody">
+        <div class="lineWrap" id="lineWrap"></div>
+        <div class="placeholder" id="placeholder">點下方令牌，依順序上呈</div>
       </div>
+
+      <div class="controls">
+        <button class="btn danger" id="btnUndo">撤令</button>
+        <button class="btn" id="btnReset">重整</button>
+        <button class="btn primary" id="btnCheck">驗令</button>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div class="options">
+      <div class="optionsHead">
+        <div class="optionsLabel">令牌匣</div>
+        <div class="pager">
+          <button class="pagerBtn" id="pagePrev">‹</button>
+          <div class="pagerDots" id="pageDots">1/1</div>
+          <button class="pagerBtn" id="pageNext">›</button>
+        </div>
+      </div>
+      <div class="tokenGrid" id="tokenGrid"></div>
     </div>
   </div>
 
-  <!-- Win modal -->
-  <div class="modal" id="winModal">
+  <!-- Win Modal -->
+  <div class="modal" id="winModal" role="dialog" aria-modal="true">
     <div class="card">
-      <div class="stamper" id="stampText">合格</div>
-      <div class="cardhead">
-        <div>
-          <div class="cardtitle" id="winTitle">軍令合格</div>
-          <div class="carddesc" id="winDesc">此段已驗收。可再操，或進下一段。</div>
-        </div>
+      <div class="cardTop">
+        <div class="stamp" id="stampText">驗令通過</div>
+        <button class="closeBtn" id="closeWin" title="關閉">✕</button>
       </div>
-      <div class="cardbody">
-        <div class="blockquote" id="winQuote"></div>
+      <div class="cardBody">
+        <div class="orig" id="origText"></div>
+        <div class="trans" id="transText"></div>
       </div>
-      <div class="cardactions">
-        <div class="btn" id="replayBtn">再操一次</div>
-        <div class="btn primary" id="nextBtn">下一段</div>
+      <div class="cardBtns">
+        <button class="btn" id="btnReplay">再演練</button>
+        <button class="btn primary" id="btnNext">下一段</button>
       </div>
     </div>
   </div>
 
-  <!-- Rank-up modal -->
-  <div class="modal" id="rankModal">
-    <div class="card">
-      <div class="stamper">授印</div>
-      <div class="cardhead">
-        <div>
-          <div class="cardtitle" id="rankTitle">升遷令</div>
-          <div class="carddesc" id="rankDesc">你已完成始計篇驗令（v1三段）。</div>
-        </div>
+  <!-- Settings Drawer -->
+  <div class="drawer" id="drawer">
+    <div class="drawerHead">
+      <div class="drawerTitle">軍帳設定</div>
+      <button class="closeBtn" id="closeDrawer" title="關閉">✕</button>
+    </div>
+
+    <div class="row">
+      <div>
+        <div class="rowLabel">學習提示</div>
+        <div class="rowHint">只做「溫柔帶路」，不考倒你</div>
       </div>
-      <div class="cardbody">
-        <div class="blockquote" id="rankBody"></div>
+      <div class="toggle on" id="toggleHint"><div class="knob"></div></div>
+    </div>
+
+    <div class="row">
+      <div>
+        <div class="rowLabel">音效</div>
+        <div class="rowHint">落令／翻頁／稀有落印（可關）</div>
       </div>
-      <div class="cardactions">
-        <div class="btn primary" id="rankOkBtn">收令</div>
+      <div class="toggle on" id="toggleSound"><div class="knob"></div></div>
+    </div>
+
+    <div class="row">
+      <div>
+        <div class="rowLabel">字體大小</div>
+        <div class="rowHint">調整整體閱讀舒適度</div>
       </div>
+      <input type="range" id="fontRange" min="0.9" max="1.25" step="0.01" value="1.00" />
     </div>
   </div>
 
-  <!-- Settings modal -->
-  <div class="modal" id="setModal">
-    <div class="card">
-      <div class="cardhead">
-        <div>
-          <div class="cardtitle">軍帳設定</div>
-          <div class="carddesc">音效、字級、提示燈號，皆可切換。</div>
-        </div>
-        <div class="btn" id="setCloseBtn" style="padding:10px 12px;">關閉</div>
-      </div>
-      <div class="cardbody">
-        <div class="tag">字體大小</div>
-        <div class="seg">
-          <div class="btn" id="fontS">小</div>
-          <div class="btn primary" id="fontM">中</div>
-          <div class="btn" id="fontL">大</div>
-        </div>
+  <script>
+    /***********************
+     * v1：始計篇小段驗證
+     ***********************/
+    const PASSAGES = [
+      {
+        id: "sc_01",
+        chapter: "始計篇",
+        label: "演練 1",
+        // 以「詞組」為最小單位（順口背誦）
+        segments: ["兵者","國之大事","死生之地","存亡之道","不可不察也"],
+        punctuation: "，", // v1先用逗號串起來（不把標點當考試）
+        translation:
+`【白話】戰爭是國家的大事，關係到軍民的生死、國家的存亡，因此絕對不可不仔細審察。`
+      }
+    ];
 
-        <div class="tag" style="margin-top:6px;">快速切換</div>
-        <div class="seg">
-          <div class="btn" id="toggleLamp2">燈號：<span id="lampState2">開</span></div>
-          <div class="btn" id="toggleSound2">音效：<span id="soundState2">開</span></div>
-        </div>
+    /***********************
+     * 孫武：白話、低頻、狀態判斷
+     ***********************/
+    const SUNWU = {
+      base: [
+        "校令。先把節奏排順，再求一字不差。",
+        "先順口，再穩住；穩住了，背起來就不費力。",
+        "不必急，讓它變成你嘴裡自然會出來的句子。"
+      ],
+      stable: [
+        "這段已經順了。",
+        "這一句，很穩。",
+        "節奏抓到了。",
+        "這段定下來了。",
+        "不用再多看。",
+        "記得住了。"
+      ],
+      lessHelp: [
+        "其實你已經不太需要提示了。",
+        "這段靠自己就行。",
+        "不用外助，也走得完。",
+        "提示只是備用。",
+        "這一句，心裡有了。"
+      ],
+      revisit: [
+        "隔了一陣子，還記得。",
+        "沒生疏。",
+        "這段沒有忘。",
+        "再看一次，也還在。",
+        "記憶沒有退。"
+      ],
+      failSoft: [
+        "陣勢有點亂，撤回重排就好。",
+        "先撤一令，節奏就會回來。",
+        "不急，按順序來。"
+      ],
+      winSoft: [
+        "好。這段可以了。",
+        "可以，這段穩。",
+        "行，已成。"
+      ]
+    };
 
-        <div class="hintnote">
-          說明：本 v1 驗令僅檢查「文字一字不差」，標點符號不納入。提示燈號開啟時，會照亮下一個正確令牌；若該字不在本頁，會提示應翻到哪一頁。
-        </div>
-      </div>
-    </div>
-  </div>
+    /***********************
+     * 儲存與狀態
+     ***********************/
+    const LS_KEY = "sunzi_v1_state";
+    const now = () => Date.now();
 
-  <!-- Drawer: Military book -->
-  <div class="drawer" id="bookDrawer" aria-hidden="true">
-    <div class="drawhead">
-      <div class="drawtitle" id="bookTitle">軍書</div>
-      <div class="drawclose" id="bookClose">收</div>
-    </div>
-    <div class="drawcontent">
-      <div class="tag">原文</div>
-      <div class="blockquote" id="bookOriginal"></div>
-
-      <div class="tag">白話</div>
-      <div class="mini" id="bookExplain"></div>
-
-      <div class="tag">教官短評</div>
-      <div class="mini" id="bookCoach"></div>
-    </div>
-  </div>
-
-<script>
-/* =========================
-   v1 data (始計篇三段)
-   ========================= */
-const passages = [
-  {
-    name: "始計篇・段一",
-    original: "兵者，國之大事，死生之地，存亡之道，不可不察也。",
-    explain: "【白話】戰爭是國家的大事，關係軍民生死，也關係國家存亡，絕不能不審慎考察。",
-    coach: "值星官：你若把它背熟，後面十三篇就不會學成「只會背術，不懂重量」。"
-  },
-  {
-    name: "始計篇・段二",
-    original: "一曰道，二曰天，三曰地，四曰將，五曰法。",
-    explain: "【白話】作戰必須評估五個關鍵：道、天、地、將、法。",
-    coach: "值星官：背這一句，不是背名詞，是背「檢查表」。每次決策先對照一次。"
-  },
-  {
-    name: "始計篇・段三",
-    original: "道者，令民與上同意也，故可與之死，可與之生，而不畏危。",
-    explain: "【白話】所謂「道」，是使民心與上位者同向；如此才能同生共死，不畏危難。",
-    coach: "值星官：你若只會叫人拚命，卻背不出這段，你就不是將，只是喊話的人。"
-  }
-];
-
-/* =========================
-   Rules:
-   - Compare TEXT ONLY, ignore punctuation/whitespace
-   ========================= */
-const IGNORE_REGEX = /[，。、！？；：、．「」『』（）()［］\[\]【】《》〈〉…—\s]/g;
-
-function normalizeText(s){
-  return (s || "").replace(IGNORE_REGEX, "");
-}
-
-/* =========================
-   App state
-   ========================= */
-let state = {
-  idx: 0,
-  rank: "卒",
-  lamp: true,
-  sound: true,
-  font: "M", // S/M/L
-  page: 0,
-  perPage: 16,
-  tokensAll: [],
-  tokensPages: [],
-  typed: [],
-  correctness: [],
-  usedCounter: new Map(),
-  finishedSet: new Set()
-};
-
-const el = {
-  rankTag: document.getElementById("rankTag"),
-  missionTitle: document.getElementById("missionTitle"),
-  missionSub: document.getElementById("missionSub"),
-  progressFill: document.getElementById("progressFill"),
-
-  lampBtn: document.getElementById("lampBtn"),
-  soundBtn: document.getElementById("soundBtn"),
-  bookBtn: document.getElementById("bookBtn"),
-  setBtn: document.getElementById("setBtn"),
-
-  npcLine1: document.getElementById("npcLine1"),
-  npcLine2: document.getElementById("npcLine2"),
-  clearBtn: document.getElementById("clearBtn"),
-  undoBtn: document.getElementById("undoBtn"),
-  reportBtn: document.getElementById("reportBtn"),
-
-  statusText: document.getElementById("statusText"),
-  remainText: document.getElementById("remainText"),
-  slotGrid: document.getElementById("slotGrid"),
-
-  pageHint: document.getElementById("pageHint"),
-  prevPage: document.getElementById("prevPage"),
-  nextPage: document.getElementById("nextPage"),
-  tokenGrid: document.getElementById("tokenGrid"),
-  hintNote: document.getElementById("hintNote"),
-
-  winModal: document.getElementById("winModal"),
-  stampText: document.getElementById("stampText"),
-  winTitle: document.getElementById("winTitle"),
-  winDesc: document.getElementById("winDesc"),
-  winQuote: document.getElementById("winQuote"),
-  replayBtn: document.getElementById("replayBtn"),
-  nextBtn: document.getElementById("nextBtn"),
-
-  rankModal: document.getElementById("rankModal"),
-  rankTitle: document.getElementById("rankTitle"),
-  rankDesc: document.getElementById("rankDesc"),
-  rankBody: document.getElementById("rankBody"),
-  rankOkBtn: document.getElementById("rankOkBtn"),
-
-  setModal: document.getElementById("setModal"),
-  setCloseBtn: document.getElementById("setCloseBtn"),
-  fontS: document.getElementById("fontS"),
-  fontM: document.getElementById("fontM"),
-  fontL: document.getElementById("fontL"),
-  toggleLamp2: document.getElementById("toggleLamp2"),
-  toggleSound2: document.getElementById("toggleSound2"),
-  lampState2: document.getElementById("lampState2"),
-  soundState2: document.getElementById("soundState2"),
-
-  bookDrawer: document.getElementById("bookDrawer"),
-  bookClose: document.getElementById("bookClose"),
-  bookTitle: document.getElementById("bookTitle"),
-  bookOriginal: document.getElementById("bookOriginal"),
-  bookExplain: document.getElementById("bookExplain"),
-  bookCoach: document.getElementById("bookCoach"),
-};
-
-/* =========================
-   Sound (WebAudio, no external files)
-   ========================= */
-let audioCtx = null;
-function beep(freq=440, dur=0.05, type="sine", vol=0.05){
-  if(!state.sound) return;
-  try{
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const t0 = audioCtx.currentTime;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(vol, t0);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(t0);
-    osc.stop(t0 + dur);
-  }catch(e){}
-}
-
-function clickSound(){ beep(520, 0.045, "triangle", 0.06); }
-function undoSound(){ beep(260, 0.05, "sine", 0.05); }
-function errorSound(){ beep(180, 0.07, "square", 0.04); }
-function winSound(){
-  beep(420, 0.06, "triangle", 0.06);
-  setTimeout(()=>beep(620, 0.07, "triangle", 0.06), 80);
-}
-function stampSound(){ beep(140, 0.08, "square", 0.03); }
-
-/* =========================
-   Vibration helper
-   ========================= */
-function vib(ms=12){
-  try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){}
-}
-
-/* =========================
-   Token building
-   - Base tokens: unique chars in current target
-   - Add distractors from other passages union
-   ========================= */
-function shuffle(arr){
-  const a = arr.slice();
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function buildTokenPoolFor(idx){
-  const target = normalizeText(passages[idx].original);
-  const chars = Array.from(target);
-  const uniq = Array.from(new Set(chars));
-
-  // Build distractors from other passages (unique chars not in current)
-  const others = [];
-  for(let i=0;i<passages.length;i++){
-    if(i===idx) continue;
-    others.push(...Array.from(new Set(Array.from(normalizeText(passages[i].original)))));
-  }
-  const othersUniq = Array.from(new Set(others)).filter(c=>!uniq.includes(c));
-
-  // Determine pool size: keep it playable on mobile
-  const desired = Math.min(Math.max(uniq.length + 8, 18), 32); // 18~32
-  const need = Math.max(0, desired - uniq.length);
-  const distract = shuffle(othersUniq).slice(0, need);
-
-  const pool = shuffle(uniq.concat(distract));
-  return { target, pool };
-}
-
-function paginateTokens(tokens){
-  state.perPage = (window.innerWidth <= 420) ? 12 : 16; // small phones 12
-  const pages = [];
-  for(let i=0;i<tokens.length;i+=state.perPage){
-    pages.push(tokens.slice(i, i+state.perPage));
-  }
-  return pages;
-}
-
-/* =========================
-   Rendering
-   ========================= */
-function applyFontScale(){
-  const root = document.documentElement;
-  // base sizes tuned so 1-screen still holds
-  if(state.font==="S"){
-    root.style.setProperty("--base","15px");
-    root.style.setProperty("--slot","38px");
-  }else if(state.font==="L"){
-    root.style.setProperty("--base","18px");
-    root.style.setProperty("--slot","44px");
-  }else{
-    root.style.setProperty("--base","16px");
-    root.style.setProperty("--slot","40px");
-  }
-
-  // Buttons highlight
-  el.fontS.classList.toggle("primary", state.font==="S");
-  el.fontM.classList.toggle("primary", state.font==="M");
-  el.fontL.classList.toggle("primary", state.font==="L");
-}
-
-function renderTop(){
-  el.rankTag.textContent = state.rank;
-  el.missionTitle.textContent = "始計篇・驗令";
-  el.missionSub.textContent = `段落 ${state.idx+1}/${passages.length} ・文字一字不差（標點不驗）`;
-
-  const pct = Math.round((state.finishedSet.size / passages.length) * 100);
-  el.progressFill.style.width = `${pct}%`;
-
-  el.lampBtn.classList.toggle("on", state.lamp);
-  el.soundBtn.classList.toggle("on", state.sound);
-
-  el.lampState2.textContent = state.lamp ? "開" : "關";
-  el.soundState2.textContent = state.sound ? "開" : "關";
-}
-
-function renderNpc(){
-  const p = passages[state.idx];
-  el.npcLine1.textContent = "值星官：";
-  // Slightly different tone when lamp off
-  el.npcLine2.textContent = state.lamp
-    ? "校令。燈號在。逐字上呈；錯字即紅，退格可撤。"
-    : "熄燈夜訓。全憑你記憶逐字上呈；錯字即紅，退格可撤。";
-
-  // Status
-  const target = state.target;
-  const need = target.length - state.typed.length;
-  el.remainText.textContent = `缺字：${need}`;
-  if(state.typed.length===0){
-    el.statusText.textContent = "待命：請自令牌匣取字，完成軍令。";
-  }else{
-    const wrongCount = state.correctness.filter(x=>x===false).length;
-    el.statusText.textContent = wrongCount>0
-      ? `校令中：目前錯字 ${wrongCount} 處（退格可撤）。`
-      : "校令中：目前無錯字。";
-  }
-}
-
-function renderSlots(){
-  el.slotGrid.innerHTML = "";
-  const targetLen = state.target.length;
-
-  // Create placeholders
-  for(let i=0;i<targetLen;i++){
-    const s = document.createElement("div");
-    s.className = "slot";
-    const ch = state.typed[i];
-
-    if(!ch){
-      s.classList.add("empty");
-      s.textContent = "·";
-    }else{
-      s.textContent = ch;
-      const ok = state.correctness[i];
-      if(ok===true) s.classList.add("correct");
-      if(ok===false) s.classList.add("wrong");
-
-      // tap to remove this char and all after it (like rewinding order)
-      s.onclick = ()=>{
-        // remove from i to end
-        if(state.typed.length>i){
-          state.typed = state.typed.slice(0, i);
-          state.correctness = state.correctness.slice(0, i);
-          undoSound();
-          renderAll();
-        }
-      };
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return {};
+        return JSON.parse(raw);
+      }catch(e){
+        return {};
+      }
+    }
+    function saveState(state){
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
     }
 
-    el.slotGrid.appendChild(s);
-  }
+    const appState = {
+      passageIndex: 0,
+      selection: [],
+      pool: [],
+      page: 0,
+      perPage: 6, // 2欄/3欄會自動排，這裡控制一次顯示多少令牌
+      hintOn: true,
+      soundOn: true,
+      fontScale: 1.0,
 
-  // Report button shown only when full and all correct
-  const isFull = state.typed.length === targetLen;
-  const allCorrect = isFull && state.correctness.every(v=>v===true);
-  el.reportBtn.style.display = allCorrect ? "inline-flex" : "none";
-}
+      // 操作紀錄（用於溫柔提醒與驚喜）
+      lastActionAt: 0,
+      usedHintThisRun: false,
+      wrongCountThisRun: 0,
+      undoCountThisRun: 0,
 
-function renderKeyboard(){
-  el.pageHint.textContent = `第 ${state.page+1} 頁 / ${state.tokensPages.length || 1} 頁`;
-  el.tokenGrid.innerHTML = "";
+      // 長期紀錄（每段）
+      stats: loadState()
+    };
 
-  const pageTokens = state.tokensPages[state.page] || [];
-  pageTokens.forEach(tok=>{
-    const b = document.createElement("div");
-    b.className = "token";
-    b.textContent = tok;
+    /***********************
+     * DOM
+     ***********************/
+    const rankBadge = document.getElementById("rankBadge");
+    const chapterLabel = document.getElementById("chapterLabel");
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+    const hintPill = document.getElementById("hintPill");
+    const sunwuText = document.getElementById("sunwuText");
 
-    // dim tokens that have been used many times to give subtle feedback (still clickable)
-    const used = state.usedCounter.get(tok) || 0;
-    if(used >= 2) b.classList.add("dim");
+    const lineWrap = document.getElementById("lineWrap");
+    const placeholder = document.getElementById("placeholder");
+    const miniFill = document.getElementById("miniFill");
 
-    b.onclick = ()=> onToken(tok);
-    el.tokenGrid.appendChild(b);
-  });
+    const tokenGrid = document.getElementById("tokenGrid");
+    const pagePrev = document.getElementById("pagePrev");
+    const pageNext = document.getElementById("pageNext");
+    const pageDots = document.getElementById("pageDots");
 
-  // Fill empty spots to keep grid stable
-  const emptyCount = Math.max(0, state.perPage - pageTokens.length);
-  for(let i=0;i<emptyCount;i++){
-    const ph = document.createElement("div");
-    ph.style.height = "46px";
-    ph.style.borderRadius = "14px";
-    ph.style.border = "1px solid rgba(255,255,255,.06)";
-    ph.style.background = "rgba(0,0,0,.10)";
-    el.tokenGrid.appendChild(ph);
-  }
+    const btnUndo = document.getElementById("btnUndo");
+    const btnReset = document.getElementById("btnReset");
+    const btnCheck = document.getElementById("btnCheck");
 
-  // Lamp hint highlight
-  applyLampHint();
-}
+    const btnSettings = document.getElementById("btnSettings");
+    const btnBook = document.getElementById("btnBook");
 
-function applyLampHint(){
-  // Clear
-  Array.from(el.tokenGrid.querySelectorAll(".token")).forEach(x=>x.classList.remove("hint"));
-  el.hintNote.style.display = "none";
-  el.hintNote.textContent = "";
+    const winModal = document.getElementById("winModal");
+    const closeWin = document.getElementById("closeWin");
+    const origText = document.getElementById("origText");
+    const transText = document.getElementById("transText");
+    const btnReplay = document.getElementById("btnReplay");
+    const btnNext = document.getElementById("btnNext");
+    const stampText = document.getElementById("stampText");
 
-  if(!state.lamp) return;
+    const drawer = document.getElementById("drawer");
+    const closeDrawer = document.getElementById("closeDrawer");
+    const toggleHint = document.getElementById("toggleHint");
+    const toggleSound = document.getElementById("toggleSound");
+    const fontRange = document.getElementById("fontRange");
 
-  const nextIndex = state.typed.length;
-  if(nextIndex >= state.target.length) return;
+    /***********************
+     * 音效（WebAudio，無需檔案）
+     ***********************/
+    let audioCtx = null;
+    function ensureAudio(){
+      if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(audioCtx.state === "suspended"){
+        audioCtx.resume().catch(()=>{});
+      }
+    }
 
-  const needChar = state.target[nextIndex];
-  const tokens = state.tokensAll;
+    function playTone({type="sine", freq=220, dur=0.07, gain=0.12, ramp=true}){
+      if(!appState.soundOn) return;
+      ensureAudio();
+      const t0 = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.value = 0.0001;
 
-  // If token not present (shouldn't happen), no hint
-  const pos = tokens.indexOf(needChar);
-  if(pos < 0) return;
+      osc.connect(g);
+      g.connect(audioCtx.destination);
 
-  const page = Math.floor(pos / state.perPage);
-  if(page !== state.page){
-    el.hintNote.style.display = "block";
-    el.hintNote.textContent = `燈號：下一字「${needChar}」不在本頁，請翻到第 ${page+1} 頁。`;
-    return;
-  }
+      if(ramp){
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(gain, t0 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      }else{
+        g.gain.setValueAtTime(gain, t0);
+        g.gain.setValueAtTime(0.0001, t0 + dur);
+      }
 
-  // Highlight within page
-  const inPageIndex = pos - page*state.perPage;
-  const btn = el.tokenGrid.querySelectorAll(".token")[inPageIndex];
-  if(btn) btn.classList.add("hint");
-}
+      osc.start(t0);
+      osc.stop(t0 + dur + 0.02);
+    }
 
-function renderAll(){
-  renderTop();
-  renderNpc();
-  renderSlots();
-  renderKeyboard();
-}
+    function playClick(){ // 落令
+      playTone({type:"triangle", freq: 240, dur: 0.06, gain: 0.09});
+    }
+    function playFlip(){ // 翻頁
+      playTone({type:"sine", freq: 330, dur: 0.09, gain: 0.07});
+      setTimeout(()=>playTone({type:"sine", freq: 220, dur: 0.08, gain: 0.06}), 40);
+    }
+    function playStamp(){ // 稀有落印（低沉）
+      playTone({type:"sine", freq: 120, dur: 0.10, gain: 0.10});
+    }
+    function playWarn(){ // 錯誤提醒（很輕，不刺激）
+      playTone({type:"sine", freq: 170, dur: 0.07, gain: 0.06});
+    }
 
-/* =========================
-   Interactions
-   ========================= */
-function computeCorrectnessAt(i, ch){
-  return ch === state.target[i];
-}
+    /***********************
+     * 階級（先輕量：不綁全書）
+     ***********************/
+    function computeRank(statsObj){
+      // 只看「完成段落次數」與「不同段落數」— v1只有一段，先讓它能動起來
+      const totalWins = Object.values(statsObj).reduce((a,b)=>a + (b.wins||0), 0);
+      const distinct = Object.values(statsObj).filter(s => (s.wins||0) > 0).length;
 
-function onToken(tok){
-  if(state.typed.length >= state.target.length){
-    // already full
-    vib(8);
-    return;
-  }
+      // 這套是「服役感」：慢升、不施壓
+      if(totalWins >= 12 && distinct >= 2) return "什長";
+      if(totalWins >= 8) return "伍長";
+      if(totalWins >= 3) return "老兵";
+      return "新兵";
+    }
 
-  // append
-  const i = state.typed.length;
-  state.typed.push(tok);
-  const ok = computeCorrectnessAt(i, tok);
-  state.correctness.push(ok);
+    /***********************
+     * 孫武語句：低頻、非罐頭
+     ***********************/
+    function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
-  // feedback
-  if(ok){
-    clickSound();
-    vib(10);
-  }else{
-    errorSound();
-    vib(20);
-  }
+    function maybeSpeak(kind, passageId){
+      // 低頻控制：同一回合最多講一次驚喜/提醒
+      const s = getPassageStat(passageId);
+      const cooldownMs = 16000; // 避免太常說話
+      if(now() - (s.lastSpeakAt||0) < cooldownMs) return;
 
-  // count use
-  state.usedCounter.set(tok, (state.usedCounter.get(tok)||0) + 1);
+      let line = null;
+      if(kind === "stable") line = pick(SUNWU.stable);
+      if(kind === "lessHelp") line = pick(SUNWU.lessHelp);
+      if(kind === "revisit") line = pick(SUNWU.revisit);
+      if(kind === "failSoft") line = pick(SUNWU.failSoft);
+      if(kind === "winSoft") line = pick(SUNWU.winSoft);
 
-  renderAll();
-}
+      if(!line) return;
+      sunwuText.textContent = line;
+      s.lastSpeakAt = now();
+      setPassageStat(passageId, s);
+    }
 
-function undo(){
-  if(state.typed.length===0){
-    vib(8);
-    return;
-  }
-  state.typed.pop();
-  state.correctness.pop();
-  undoSound();
-  vib(10);
-  renderAll();
-}
+    function setBaseLine(){
+      sunwuText.textContent = pick(SUNWU.base);
+    }
 
-function clearAll(){
-  state.typed = [];
-  state.correctness = [];
-  state.usedCounter = new Map();
-  stampSound();
-  vib(12);
-  renderAll();
-}
+    /***********************
+     * Passage stats
+     ***********************/
+    function getPassageStat(id){
+      if(!appState.stats[id]) appState.stats[id] = {};
+      const s = appState.stats[id];
+      if(typeof s.wins !== "number") s.wins = 0;
+      if(typeof s.bestStreak !== "number") s.bestStreak = 0;
+      if(typeof s.lastPlayedAt !== "number") s.lastPlayedAt = 0;
+      if(typeof s.lastSpeakAt !== "number") s.lastSpeakAt = 0;
+      if(typeof s.surpriseCount !== "number") s.surpriseCount = 0;
+      if(typeof s.hintOffWins !== "number") s.hintOffWins = 0;
+      if(typeof s.perfectWins !== "number") s.perfectWins = 0;
+      return s;
+    }
+    function setPassageStat(id, s){
+      appState.stats[id] = s;
+      saveState(appState.stats);
+      rankBadge.textContent = computeRank(appState.stats);
+    }
 
-function report(){
-  // Safety: require full and correct
-  const isFull = state.typed.length === state.target.length;
-  const allCorrect = isFull && state.correctness.every(v=>v===true);
-  if(!allCorrect){
-    errorSound();
-    vib(25);
-    return;
-  }
+    /***********************
+     * 初始化/載入段落
+     ***********************/
+    function loadPassage(i){
+      appState.passageIndex = i;
+      appState.selection = [];
+      appState.pool = [];
+      appState.page = 0;
 
-  // Mark finished
-  state.finishedSet.add(state.idx);
+      appState.usedHintThisRun = false;
+      appState.wrongCountThisRun = 0;
+      appState.undoCountThisRun = 0;
 
-  // Win modal content
-  const p = passages[state.idx];
-  el.winTitle.textContent = "軍令合格";
-  el.winDesc.textContent = "此段已驗收。可再操，或進下一段。";
-  el.winQuote.textContent = p.original;
-  el.stampText.textContent = "合格";
+      const p = PASSAGES[i];
+      chapterLabel.textContent = `${p.chapter}｜${p.label}`;
+      setBaseLine();
 
-  winSound();
-  el.winModal.style.display = "flex";
-  renderTop();
-}
+      // 建池：打亂
+      appState.pool = [...p.segments].sort(()=>Math.random()-0.5);
 
-function nextPassage(){
-  el.winModal.style.display = "none";
-  if(state.idx < passages.length - 1){
-    state.idx += 1;
-    loadPassage(state.idx);
-    return;
-  }
+      // 回訪溫柔提醒（很低頻）
+      const st = getPassageStat(p.id);
+      const gap = now() - (st.lastPlayedAt || 0);
+      st.lastPlayedAt = now();
+      setPassageStat(p.id, st);
 
-  // Completed all in v1: rank up
-  state.rank = "伍長";
-  el.rankTitle.textContent = "升遷令";
-  el.rankDesc.textContent = "你已完成始計篇驗令（v1三段）。";
-  el.rankBody.innerHTML =
-    "授階：伍長。<br><br>" +
-    "值星官：你不是靠運氣過關，是靠「逐字把軍令扛起來」。<br>" +
-    "下一步，才輪到把整本《孫子》鋪成一條可長跑的操課路。";
-  el.rankModal.style.display = "flex";
-  stampSound();
-  renderTop();
-}
+      if(gap > 1000*60*60*10 && st.wins > 0){
+        // 隔很久回來，偶爾說一句
+        if(Math.random() < 0.55) maybeSpeak("revisit", p.id);
+      }
 
-function replay(){
-  el.winModal.style.display = "none";
-  loadPassage(state.idx);
-}
+      renderAll();
+      updateStatus();
+    }
 
-function closeRank(){
-  el.rankModal.style.display = "none";
-  renderTop();
-}
+    /***********************
+     * UI 更新
+     ***********************/
+    function setFontScale(v){
+      appState.fontScale = v;
+      document.documentElement.style.setProperty("--fontScale", String(v));
+    }
 
-/* =========================
-   Drawer (Book)
-   ========================= */
-function openBook(){
-  const p = passages[state.idx];
-  el.bookTitle.textContent = `軍書・${p.name}`;
-  el.bookOriginal.textContent = p.original;
-  el.bookExplain.textContent = p.explain;
-  el.bookCoach.textContent = p.coach;
+    function updateHintPill(){
+      hintPill.textContent = `學習提示：${appState.hintOn ? "開" : "關"}`;
+    }
 
-  el.bookDrawer.classList.add("open");
-  el.bookDrawer.setAttribute("aria-hidden","false");
-  clickSound();
-}
+    function updateStatus(){
+      const p = PASSAGES[appState.passageIndex];
 
-function closeBook(){
-  el.bookDrawer.classList.remove("open");
-  el.bookDrawer.setAttribute("aria-hidden","true");
-  undoSound();
-}
+      // 進度
+      const pct = (appState.selection.length / p.segments.length) * 100;
+      miniFill.style.width = `${pct}%`;
 
-/* =========================
-   Settings modal
-   ========================= */
-function openSettings(){
-  el.setModal.style.display = "flex";
-  renderTop();
-}
-function closeSettings(){
-  el.setModal.style.display = "none";
-}
+      // 錯字顯示：v1不嚴，但仍提示
+      if(appState.wrongCountThisRun > 0){
+        statusDot.classList.remove("dot-ok");
+        statusDot.classList.add("dot-warn");
+        statusText.textContent = `已退回 ${appState.wrongCountThisRun} 次`;
+      }else{
+        statusDot.classList.remove("dot-warn");
+        statusDot.classList.add("dot-ok");
+        statusText.textContent = "目前無錯字";
+      }
 
-/* =========================
-   Toggle buttons
-   ========================= */
-function toggleLamp(){
-  state.lamp = !state.lamp;
-  clickSound();
-  renderAll();
-}
-function toggleSound(){
-  state.sound = !state.sound;
-  // If turning on, play a tiny confirmation
-  if(state.sound) clickSound();
-  renderAll();
-}
+      updateHintPill();
+      applyHintPulse();
+    }
 
-function setFontSize(mode){
-  state.font = mode;
-  applyFontScale();
-  renderAll();
-}
+    function applyHintPulse(){
+      // 學習提示：只亮「下一個正確令牌」，而且很溫柔
+      const gridBtns = tokenGrid.querySelectorAll(".token");
+      gridBtns.forEach(b => b.classList.remove("hintPulse"));
 
-/* =========================
-   Passage loading
-   ========================= */
-function loadPassage(idx){
-  const { target, pool } = buildTokenPoolFor(idx);
-  state.target = target;
-  state.tokensAll = pool;
-  state.tokensPages = paginateTokens(pool);
-  state.page = 0;
+      if(!appState.hintOn) return;
 
-  state.typed = [];
-  state.correctness = [];
-  state.usedCounter = new Map();
+      const p = PASSAGES[appState.passageIndex];
+      const nextIdx = appState.selection.length;
+      if(nextIdx >= p.segments.length) return;
 
-  // Adjust UI titles
-  renderAll();
-}
+      const next = p.segments[nextIdx];
+      // 在當頁找
+      gridBtns.forEach(b=>{
+        if(b.dataset.text === next) b.classList.add("hintPulse");
+      });
+    }
 
-/* =========================
-   Paging
-   ========================= */
-function prevPage(){
-  if(state.page<=0){ vib(8); return; }
-  state.page -= 1;
-  clickSound();
-  renderKeyboard();
-}
-function nextPage(){
-  if(state.page>=state.tokensPages.length-1){ vib(8); return; }
-  state.page += 1;
-  clickSound();
-  renderKeyboard();
-}
+    function renderLine(){
+      lineWrap.innerHTML = "";
+      if(appState.selection.length === 0){
+        placeholder.style.display = "block";
+        return;
+      }
+      placeholder.style.display = "none";
 
-/* =========================
-   Init
-   ========================= */
-function bind(){
-  el.lampBtn.onclick = toggleLamp;
-  el.soundBtn.onclick = toggleSound;
-  el.bookBtn.onclick = openBook;
-  el.bookClose.onclick = closeBook;
-  el.setBtn.onclick = openSettings;
-  el.setCloseBtn.onclick = closeSettings;
+      appState.selection.forEach((t, idx)=>{
+        const el = document.createElement("div");
+        el.className = "token selected";
+        el.textContent = t;
+        el.title = "點一下可撤回此令（會撤到這裡）";
+        el.onclick = ()=>{
+          // 撤到 idx
+          const removed = appState.selection.splice(idx);
+          // 放回池
+          appState.pool.push(...removed);
+          appState.undoCountThisRun += 1;
+          renderAll();
+          updateStatus();
+          maybeSoftCoach();
+        };
+        lineWrap.appendChild(el);
+      });
+    }
 
-  el.clearBtn.onclick = clearAll;
-  el.undoBtn.onclick = undo;
-  el.reportBtn.onclick = report;
+    function renderOptions(){
+      tokenGrid.innerHTML = "";
 
-  el.replayBtn.onclick = replay;
-  el.nextBtn.onclick = nextPassage;
+      const total = appState.pool.length;
+      const pages = Math.max(1, Math.ceil(total / appState.perPage));
+      appState.page = Math.min(appState.page, pages-1);
 
-  el.rankOkBtn.onclick = closeRank;
+      const start = appState.page * appState.perPage;
+      const view = appState.pool.slice(start, start + appState.perPage);
 
-  el.prevPage.onclick = prevPage;
-  el.nextPage.onclick = nextPage;
+      view.forEach(text=>{
+        const b = document.createElement("div");
+        b.className = "token small";
+        b.textContent = text;
+        b.dataset.text = text;
+        b.onclick = ()=>{
+          onPickToken(text, b);
+        };
+        tokenGrid.appendChild(b);
+      });
 
-  el.fontS.onclick = ()=>setFontSize("S");
-  el.fontM.onclick = ()=>setFontSize("M");
-  el.fontL.onclick = ()=>setFontSize("L");
+      pageDots.textContent = `${appState.page+1}/${pages}`;
+      pagePrev.disabled = appState.page <= 0;
+      pageNext.disabled = appState.page >= pages-1;
 
-  el.toggleLamp2.onclick = toggleLamp;
-  el.toggleSound2.onclick = toggleSound;
+      applyHintPulse();
+    }
 
-  // Close modals on background tap
-  el.winModal.addEventListener("click", (e)=>{
-    if(e.target === el.winModal) el.winModal.style.display = "none";
-  });
-  el.setModal.addEventListener("click", (e)=>{
-    if(e.target === el.setModal) closeSettings();
-  });
-  el.rankModal.addEventListener("click", (e)=>{
-    if(e.target === el.rankModal) closeRank();
-  });
+    function renderAll(){
+      renderLine();
+      renderOptions();
+      updateHintPill();
+    }
 
-  // Re-paginate on resize (keeps 1-screen stability)
-  window.addEventListener("resize", ()=>{
-    if(!state.tokensAll || state.tokensAll.length===0) return;
-    state.tokensPages = paginateTokens(state.tokensAll);
-    state.page = Math.min(state.page, state.tokensPages.length-1);
-    renderAll();
-  });
-}
+    /***********************
+     * 選令與驗令
+     ***********************/
+    function onPickToken(text, btnEl){
+      const p = PASSAGES[appState.passageIndex];
+      const expected = p.segments[appState.selection.length];
 
-function init(){
-  applyFontScale();
-  bind();
-  state.rank = "卒";
-  state.finishedSet = new Set();
-  state.lamp = true;
-  state.sound = true;
-  loadPassage(0);
-}
+      // 記錄「是否用到提示」：只要提示開著且點的正是下一個提示，就算使用
+      if(appState.hintOn && text === expected){
+        appState.usedHintThisRun = true;
+      }
 
-init();
-</script>
+      // v1：不考倒人，但順序仍要對（不然背不起來）
+      if(text !== expected){
+        // 錯：輕微反饋 + 不把人打趴
+        appState.wrongCountThisRun += 1;
+        playWarn();
+        btnEl.classList.add("wrongFlash");
+        setTimeout(()=>btnEl.classList.remove("wrongFlash"), 380);
+        maybeSpeak("failSoft", p.id);
+        updateStatus();
+        return;
+      }
+
+      // 對：收進選擇，從池移除
+      appState.selection.push(text);
+      const idx = appState.pool.indexOf(text);
+      if(idx >= 0) appState.pool.splice(idx, 1);
+
+      playClick();
+      renderAll();
+      updateStatus();
+
+      if(appState.selection.length === p.segments.length){
+        // 自動進入可驗令狀態
+        // 這裡不跳話，讓學員先自己感覺完成
+        maybeSoftCoach(true);
+      }else{
+        maybeSoftCoach(false);
+      }
+    }
+
+    function buildOriginalText(p){
+      // 用逗號串起（v1不把標點當考試）
+      return p.segments.join(p.punctuation) + "。";
+    }
+
+    function checkAnswer(){
+      const p = PASSAGES[appState.passageIndex];
+
+      if(appState.selection.length !== p.segments.length){
+        maybeSpeak("failSoft", p.id);
+        return;
+      }
+
+      // v1：詞組必須一字不差（詞組本身已固定），標點不嚴
+      const ok = appState.selection.every((v,i)=>v === p.segments[i]);
+
+      if(!ok){
+        appState.wrongCountThisRun += 1;
+        playWarn();
+        maybeSpeak("failSoft", p.id);
+        updateStatus();
+        return;
+      }
+
+      // Win stats
+      const st = getPassageStat(p.id);
+      st.wins += 1;
+
+      // streak：以「本次錯退次數少」作為穩定判斷
+      const perfect = (appState.wrongCountThisRun === 0);
+      if(perfect) st.perfectWins += 1;
+
+      // bestStreak：簡化為連續 perfect 次數（用 local 變數維護）
+      st._tempStreak = (st._tempStreak || 0);
+      st._tempStreak = perfect ? (st._tempStreak + 1) : 0;
+      st.bestStreak = Math.max(st.bestStreak, st._tempStreak);
+
+      if(!appState.hintOn) st.hintOffWins += 1;
+
+      setPassageStat(p.id, st);
+
+      // 孫武溫柔提醒 + 驚喜（不公告）
+      maybeWinSpeakAndSurprise(p);
+
+      // Modal
+      origText.textContent = buildOriginalText(p);
+      transText.textContent = p.translation;
+      stampText.textContent = perfect ? "驗令通過（穩）" : "驗令通過";
+      openWin();
+    }
+
+    function maybeWinSpeakAndSurprise(p){
+      // 先一句溫柔提醒（低頻）
+      // 條件：完段且大致穩
+      const st = getPassageStat(p.id);
+      const perfect = (appState.wrongCountThisRun === 0);
+
+      // 1) 依賴下降：提示關，或提示開但幾乎沒用（這裡用 hintOff 判斷）
+      if(!appState.hintOn && Math.random() < 0.75){
+        maybeSpeak("lessHelp", p.id);
+      } else if(perfect && appState.hintOn && !appState.usedHintThisRun && Math.random() < 0.45){
+        // 提示開但沒靠它（體感會很有成長）
+        maybeSpeak("lessHelp", p.id);
+      } else {
+        // 2) 穩定度：perfect 或 退回很少
+        if(perfect && Math.random() < 0.65) maybeSpeak("stable", p.id);
+        else if(Math.random() < 0.35) maybeSpeak("winSoft", p.id);
+      }
+
+      // 3) 稀有落印（驚喜）：不講、只發生
+      // 條件：perfect 且有一定累積
+      if(perfect && st.wins >= 3){
+        const chance = Math.min(0.18, 0.06 + st.wins*0.01); // 慢慢升，但不超過 18%
+        if(Math.random() < chance){
+          st.surpriseCount += 1;
+          setPassageStat(p.id, st);
+          // 稀有音效
+          playStamp();
+          // 也可讓孫武補一小句更白話，但仍低頻
+          if(Math.random() < 0.55){
+            setTimeout(()=>maybeSpeak("winSoft", p.id), 180);
+          }
+        }else{
+          playFlip(); // 完段小翻頁（不算驚喜）
+        }
+      }else{
+        playFlip();
+      }
+    }
+
+    function maybeSoftCoach(isJustCompleted=false){
+      const p = PASSAGES[appState.passageIndex];
+      const st = getPassageStat(p.id);
+
+      // 溫柔提醒：當「錯退少」或「撤令少」時，偶爾說一句（不常）
+      if(isJustCompleted){
+        // 完成但還沒驗令：保持安靜較有沈浸感
+        return;
+      }
+
+      // 操作中不多話，只在某些狀態轉好時講一次
+      const picked = appState.selection.length;
+      if(picked === 0) return;
+
+      // 如果連續操作順（沒有錯退）到一定比例，偶爾提示「節奏對了」
+      if(appState.wrongCountThisRun === 0 && picked >= 3 && Math.random() < 0.10){
+        maybeSpeak("stable", p.id);
+      }
+    }
+
+    /***********************
+     * 操作按鈕
+     ***********************/
+    function undo(){
+      if(appState.selection.length === 0) return;
+      const last = appState.selection.pop();
+      appState.pool.push(last);
+      appState.undoCountThisRun += 1;
+      renderAll();
+      updateStatus();
+      playClick();
+      maybeSoftCoach();
+    }
+
+    function resetRun(){
+      const p = PASSAGES[appState.passageIndex];
+      // 把選擇全部丟回池並洗牌
+      appState.pool = [...p.segments].sort(()=>Math.random()-0.5);
+      appState.selection = [];
+      appState.page = 0;
+      appState.usedHintThisRun = false;
+      appState.wrongCountThisRun = 0;
+      appState.undoCountThisRun = 0;
+      setBaseLine();
+      renderAll();
+      updateStatus();
+    }
+
+    /***********************
+     * Modal & Drawer
+     ***********************/
+    function openWin(){ winModal.style.display = "flex"; }
+    function closeWinModal(){ winModal.style.display = "none"; }
+
+    function openDrawer(){ drawer.classList.add("open"); }
+    function closeDrawerPanel(){ drawer.classList.remove("open"); }
+
+    /***********************
+     * Book（v1先做：顯示本段軍書）
+     ***********************/
+    function showBook(){
+      const p = PASSAGES[appState.passageIndex];
+      origText.textContent = buildOriginalText(p);
+      transText.textContent = p.translation;
+      stampText.textContent = "軍書";
+      openWin();
+    }
+
+    /***********************
+     * Paging
+     ***********************/
+    function prevPage(){
+      appState.page = Math.max(0, appState.page - 1);
+      renderOptions();
+    }
+    function nextPage(){
+      const total = appState.pool.length;
+      const pages = Math.max(1, Math.ceil(total / appState.perPage));
+      appState.page = Math.min(pages-1, appState.page + 1);
+      renderOptions();
+    }
+
+    /***********************
+     * 設定切換
+     ***********************/
+    function setToggle(el, on){
+      el.classList.toggle("on", !!on);
+    }
+
+    function toggleHintOn(){
+      appState.hintOn = !appState.hintOn;
+      setToggle(toggleHint, appState.hintOn);
+      updateStatus();
+
+      // 切換時孫武不嘮叨，只回一句「操作感」的話（很低頻）
+      const p = PASSAGES[appState.passageIndex];
+      if(!appState.hintOn){
+        if(Math.random() < 0.65) sunwuText.textContent = "好。自己來一輪，感覺會更清楚。";
+      }else{
+        if(Math.random() < 0.55) sunwuText.textContent = "學習提示只是帶路，你仍是主帥。";
+      }
+    }
+
+    function toggleSoundOn(){
+      appState.soundOn = !appState.soundOn;
+      setToggle(toggleSound, appState.soundOn);
+      if(appState.soundOn){
+        // 用一個很輕的「落令」作回饋
+        playClick();
+      }
+    }
+
+    /***********************
+     * 事件綁定
+     ***********************/
+    btnUndo.addEventListener("click", ()=>{ ensureAudio(); undo(); });
+    btnReset.addEventListener("click", ()=>{ ensureAudio(); resetRun(); });
+    btnCheck.addEventListener("click", ()=>{ ensureAudio(); checkAnswer(); });
+
+    pagePrev.addEventListener("click", prevPage);
+    pageNext.addEventListener("click", nextPage);
+
+    btnSettings.addEventListener("click", ()=>{ ensureAudio(); openDrawer(); });
+    closeDrawer.addEventListener("click", closeDrawerPanel);
+
+    toggleHint.addEventListener("click", ()=>{ ensureAudio(); toggleHintOn(); });
+    toggleSound.addEventListener("click", ()=>{ ensureAudio(); toggleSoundOn(); });
+
+    fontRange.addEventListener("input", (e)=>{
+      const v = Number(e.target.value);
+      setFontScale(v);
+    });
+
+    btnBook.addEventListener("click", ()=>{ ensureAudio(); showBook(); });
+
+    closeWin.addEventListener("click", closeWinModal);
+    winModal.addEventListener("click", (e)=>{
+      if(e.target === winModal) closeWinModal();
+    });
+
+    btnReplay.addEventListener("click", ()=>{
+      closeWinModal();
+      resetRun();
+    });
+    btnNext.addEventListener("click", ()=>{
+      // v1只有一段：下一段先回到同段（之後你要擴段落我會把這裡接上）
+      closeWinModal();
+      resetRun();
+      sunwuText.textContent = "再走一輪。第二輪最容易把它背牢。";
+    });
+
+    /***********************
+     * 啟動
+     ***********************/
+    (function boot(){
+      // 初始字體
+      setFontScale(appState.fontScale);
+      fontRange.value = String(appState.fontScale);
+
+      // 初始 toggle 顯示
+      setToggle(toggleHint, appState.hintOn);
+      setToggle(toggleSound, appState.soundOn);
+
+      // 階級
+      rankBadge.textContent = computeRank(appState.stats);
+
+      // 載入第一段
+      loadPassage(0);
+
+      // iOS：第一次互動後再啟動 AudioContext（已在 click 中 ensureAudio）
+    })();
+  </script>
 </body>
 </html>
