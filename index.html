@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>孫子兵法：大將軍之路 (全本背誦版)</title>
+    <title>孫子兵法：大將軍之路 (v6.5 學習加強版)</title>
     <style>
         :root {
             /* 軍營沈浸配色 */
-            --bg-canvas: #e0d6c4; /* 帳篷帆布 */
-            --wood-frame: #4e342e; /* 深紅木 */
-            --wood-light: #795548;
-            --ink-black: #212121;
+            --bg-canvas: #e0d6c4;
+            --wood-frame: #4e342e;
+            --wood-light: #8d6e63;
             --rank-gold: #ffb300;
             --army-red: #b71c1c;
-            --paper-texture: #f5f5dc;
+            --hint-glow: #ffeb3b; /* 提示光暈 */
         }
 
         body {
-            font-family: "Kaiti TC", "楷體", "STKaiti", serif; /* 強制使用楷體，增加古風 */
+            font-family: "Kaiti TC", "楷體", "STKaiti", serif;
             margin: 0;
             padding: 0;
             background-color: #5d4037;
@@ -30,7 +29,7 @@
             align-items: center;
         }
 
-        /* === 頂部軍情條 === */
+        /* === 頂部軍情條 (保留妳喜歡的設計) === */
         header {
             width: 100%;
             background: var(--wood-frame);
@@ -52,7 +51,6 @@
             font-size: 1.1rem;
             font-weight: bold;
             color: var(--rank-gold);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
         }
         
         .rank-icon {
@@ -67,12 +65,33 @@
             font-size: 1.2rem;
         }
 
-        .progress-info {
-            font-size: 0.9rem;
-            color: #bcaaa4;
+        /* 功能按鈕區 (靜音/提示) */
+        .settings-area {
+            display: flex;
+            gap: 15px;
+        }
+        .icon-btn {
+            background: none;
+            border: 1px solid #8d6e63;
+            border-radius: 50%;
+            color: #d7ccc8;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.2s;
+        }
+        .icon-btn.active {
+            background: var(--rank-gold);
+            color: var(--wood-frame);
+            border-color: var(--rank-gold);
+            box-shadow: 0 0 10px var(--rank-gold);
         }
 
-        /* === 主戰場 (沙盤) === */
+        /* === 主戰場 === */
         #battlefield {
             flex: 1;
             width: 100%;
@@ -87,17 +106,7 @@
             overflow: hidden;
         }
 
-        /* 燭光特效 */
-        #battlefield::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 50% 30%, transparent 40%, rgba(0,0,0,0.2) 90%);
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        /* NPC 帥印區 */
+        /* NPC 區 */
         .npc-container {
             display: flex;
             gap: 15px;
@@ -127,21 +136,18 @@
             padding: 12px 18px;
             border-radius: 4px 15px 15px 15px;
             border: 2px solid var(--wood-frame);
-            font-size: 1.1rem;
+            font-size: 1rem;
             line-height: 1.5;
             position: relative;
             box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
         }
         .npc-dialogue::before {
-            content: '';
-            position: absolute;
-            top: 15px; left: -10px;
-            border-width: 6px 10px 6px 0;
-            border-style: solid;
+            content: ''; position: absolute; top: 15px; left: -10px;
+            border-width: 6px 10px 6px 0; border-style: solid;
             border-color: transparent var(--wood-frame) transparent transparent;
         }
 
-        /* 題示區 (竹簡放置處) */
+        /* 目標區 (卷軸) */
         .scroll-area {
             flex: 1;
             background: rgba(255, 255, 255, 0.5);
@@ -155,26 +161,9 @@
             gap: 10px;
             margin-bottom: 15px;
             z-index: 10;
-            transition: all 0.3s;
         }
 
-        .scroll-area.correct-flash {
-            background-color: rgba(46, 125, 50, 0.2);
-            border-color: #2e7d32;
-        }
-        .scroll-area.wrong-flash {
-            background-color: rgba(183, 28, 28, 0.2);
-            border-color: var(--army-red);
-            animation: shake 0.4s;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        /* 候選區 (下方) */
+        /* 候選區 */
         .deck-area {
             min-height: 120px;
             background: rgba(62, 39, 35, 0.1);
@@ -205,77 +194,59 @@
             position: relative;
         }
         .bamboo-tile:active { transform: scale(0.95); }
-        
-        /* 繩結裝飾 */
-        .bamboo-tile::before {
-            content: ''; position: absolute; top: 50%; left: 4px; right: 4px; height: 1px;
-            background: rgba(0,0,0,0.1); pointer-events: none;
-        }
 
-        /* 按鈕群 */
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            justify-content: center;
+        /* 🌟 提示特效 (呼吸燈) */
+        .bamboo-tile.hint-active {
+            animation: hintPulse 1.2s infinite alternate;
+            border-color: #ff6f00;
+            box-shadow: 0 0 15px var(--hint-glow);
             z-index: 20;
-            margin-bottom: 5px;
         }
-        
-        .army-btn {
-            background: var(--wood-frame);
-            color: #fff;
-            border: 2px solid #8d6e63;
-            padding: 10px 25px;
-            font-size: 1.1rem;
-            font-family: inherit;
-            border-radius: 5px;
-            cursor: pointer;
-            box-shadow: 0 3px 0 #3e2723;
+        @keyframes hintPulse {
+            0% { transform: scale(1); filter: brightness(1); }
+            100% { transform: scale(1.05); filter: brightness(1.2); }
         }
-        .army-btn:active { transform: translateY(3px); box-shadow: none; }
-        .army-btn.primary { background: var(--army-red); border-color: #d32f2f; }
 
-        /* 晉升視窗 */
+        /* 視窗通用 (晉升 & 翻譯) */
         .modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85);
             display: none; justify-content: center; align-items: center; z-index: 2000;
         }
-        .rank-up-scroll {
+        .paper-scroll {
             background: #fff8e1;
-            width: 80%; max-width: 400px;
-            padding: 30px;
+            width: 85%; max-width: 450px;
+            padding: 25px;
             text-align: center;
-            border-top: 20px solid var(--wood-frame);
-            border-bottom: 20px solid var(--wood-frame);
+            border-top: 15px solid var(--wood-frame);
+            border-bottom: 15px solid var(--wood-frame);
             box-shadow: 0 0 30px #000;
             position: relative;
         }
-        .rank-stamp {
-            position: absolute; top: 10px; right: 20px;
-            width: 80px; height: 80px;
-            border: 4px solid var(--army-red);
-            color: var(--army-red);
-            border-radius: 8px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1.5rem; font-weight: bold;
-            transform: rotate(15deg);
-            opacity: 0; animation: stampDown 0.5s forwards 0.5s;
-        }
 
-        @keyframes stampDown {
-            0% { transform: scale(2) rotate(15deg); opacity: 0; }
-            100% { transform: scale(1) rotate(15deg); opacity: 1; }
+        /* 翻譯文字 */
+        .translation-box {
+            background: #efebe9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            margin: 15px 0;
+            line-height: 1.6;
+            color: #3e2723;
+            font-size: 1rem;
         }
-
-        .chapter-title {
-            position: absolute;
-            top: 5px; right: 10px;
-            font-size: 0.8rem;
-            color: rgba(62, 39, 35, 0.4);
-            font-weight: bold;
+        
+        .army-btn {
+            background: var(--wood-frame);
+            color: #fff;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
         }
+        .army-btn.primary { background: var(--army-red); }
 
     </style>
 </head>
@@ -285,168 +256,129 @@
     <div class="rank-badge">
         <div class="rank-icon" id="rank-icon">卒</div>
         <span id="rank-name">步卒</span>
+        <span style="font-size:0.8rem; margin-left:5px; color:#bcaaa4;" id="level-display">(1/33)</span>
     </div>
-    <div class="progress-info" id="level-display">關卡 1</div>
+    
+    <div class="settings-area">
+        <button class="icon-btn active" id="hint-btn" onclick="toggleHint()">💡</button>
+        <button class="icon-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
+    </div>
 </header>
 
 <div id="battlefield">
-    <div class="chapter-title" id="chapter-name">第一篇：始計</div>
+    <div style="position:absolute; top:5px; right:10px; font-size:0.8rem; color:rgba(62,39,35,0.4); font-weight:bold;" id="chapter-name">第一篇：始計</div>
     
     <div class="npc-container">
         <div class="npc-portrait">孫</div>
-        <div class="npc-dialogue" id="npc-text">新兵，聽我號令！將竹簡依序排好！</div>
+        <div class="npc-dialogue" id="npc-text">新兵！依竹簡光芒，佈下陣勢！</div>
     </div>
 
     <div class="scroll-area" id="target-zone">
-        <div style="color:#8d6e63; margin-top:30px;">(點擊下方竹簡進行排列)</div>
-    </div>
-
-    <div class="btn-group">
-        <button class="army-btn" onclick="resetLevel()">重整</button>
-        <button class="army-btn primary" id="check-btn" style="display:none;" onclick="nextLevel()">領命 (下一關)</button>
+        <div style="color:#8d6e63; margin-top:30px;">(點擊下方竹簡)</div>
     </div>
 
     <div class="deck-area" id="source-zone">
         </div>
 </div>
 
+<div class="modal" id="win-modal">
+    <div class="paper-scroll">
+        <h2 style="color:var(--army-red); margin:0;">★ 軍令達成 ★</h2>
+        <div style="font-size:1.2rem; font-weight:bold; margin:15px 0;" id="win-original-text"></div>
+        <div class="translation-box">
+            <strong>【白話釋義】</strong><br>
+            <span id="win-translation-text"></span>
+        </div>
+        <button class="army-btn primary" onclick="nextLevel()">領命 (下一關)</button>
+    </div>
+</div>
+
 <div class="modal" id="rank-modal">
-    <div class="rank-up-scroll">
-        <div class="rank-stamp">晉升</div>
-        <h2 style="color:var(--army-red); font-size:2rem; margin:10px 0;">官階晉升</h2>
+    <div class="paper-scroll">
+        <div style="position:absolute; top:10px; right:20px; border:3px solid var(--army-red); color:var(--army-red); padding:5px; transform:rotate(15deg); font-weight:bold;">晉升令</div>
+        <h2 style="color:var(--army-red); font-size:1.8rem;">官階晉升</h2>
         <p>戰功彪炳，特此拔擢為</p>
         <h1 id="new-rank-title" style="font-size:2.5rem; margin:10px 0; color:var(--wood-frame)">伍長</h1>
-        <button class="army-btn primary" onclick="closeRankModal()">謝主隆恩</button>
+        <button class="army-btn" onclick="closeRankModal()">謝主隆恩</button>
     </div>
 </div>
 
 <script>
-    // === 1. 大數據庫 (這裡未來可以無限擴充) ===
-    const chapters = {
-        "始計篇": [
-            "兵者，國之大事",
-            "死生之地，存亡之道，不可不察也",
-            "故經之以五事，校之以計，而索其情",
-            "一曰道，二曰天，三曰地，四曰將，五曰法",
-            "道者，令民與上同意也",
-            "故可與之死，可與之生，而不畏危",
-            "天者，陰陽、寒暑、時制也",
-            "地者，遠近、險易、廣狹、死生也",
-            "將者，智、信、仁、勇、嚴也",
-            "法者，曲制、官道、主用也",
-            "凡此五者，將莫不聞，知之者勝，不知者不勝",
-            "故校之以計，而索其情",
-            "曰：主孰有道？將孰有能？",
-            "天地孰得？法令孰行？",
-            "兵眾孰強？士卒孰練？賞罰孰明？",
-            "吾以此知勝負矣",
-            "將聽吾計，用之必勝，留之",
-            "將不聽吾計，用之必敗，去之",
-            "計利以聽，乃為之勢，以佐其外",
-            "勢者，因利而制權也",
-            "兵者，詭道也",
-            "故能而示之不能，用而示之不用",
-            "近而示之遠，遠而示之近",
-            "利而誘之，亂而取之",
-            "實而備之，強而避之",
-            "怒而撓之，卑而驕之",
-            "佚而勞之，親而離之",
-            "攻其無備，出其不意",
-            "此兵家之勝，不可先傳也",
-            "夫未戰而廟算勝者，得算多也",
-            "未戰而廟算不勝者，得算少也",
-            "多算勝，少算不勝，而況於無算乎",
-            "吾以此觀之，勝負見矣"
-        ],
-        // 之後可以在這裡加 "作戰篇": [ ... ],
-    };
+    // === 1. 題庫與翻譯資料 (範例) ===
+    const levelsData = [
+        { text: "兵者，國之大事", translation: "戰爭是國家的大事。" },
+        { text: "死生之地，存亡之道，不可不察也", translation: "關係到軍民的生死，國家的存亡，是絕對不可以不認真考察研究的。" },
+        { text: "故經之以五事，校之以計，而索其情", translation: "所以要從五個方面來分析研究，用這五方面的內容進行比較，從而探求戰爭勝負的情勢。" },
+        { text: "一曰道，二曰天，三曰地，四曰將，五曰法", translation: "第一是道（政治），第二是天（天時），第三是地（地利），第四是將（將領），第五是法（法制）。" },
+        { text: "道者，令民與上同意也", translation: "所謂「道」，就是使民眾與君主的意願一致。" },
+        { text: "故可與之死，可與之生，而不畏危", translation: "這樣，民眾就能與君主同生死、共患難，而不畏懼危險。" },
+        { text: "天者，陰陽、寒暑、時制也", translation: "所謂「天」，就是指晝夜陰陽的變化，寒冬暑季的更替，以及適於作戰的季節氣候。" },
+        { text: "地者，遠近、險易、廣狹、死生也", translation: "所謂「地」，是指路程的遠近、地勢的險要或平坦、戰場的廣闊或狹窄，以及地形是絕地還是生路。" },
+        { text: "將者，智、信、仁、勇、嚴也", translation: "所謂「將」，就是將領要具備智慧、誠信、仁愛、勇敢、嚴明這五種素質。" },
+        { text: "法者，曲制、官道、主用也", translation: "所謂「法」，是指軍隊的組織編制、將吏的職責管理、以及軍需物資的供應管理。" }
+    ];
 
-    // 將所有關卡扁平化處理
-    let allLevels = [];
-    let chapterNames = Object.keys(chapters);
-    
-    chapterNames.forEach(name => {
-        chapters[name].forEach(line => {
-            // 自動切分句子成為竹簡 (以逗號、句號為分隔，但這裡我們手動定義了比較好)
-            // 這裡簡單處理：如果句子很長，可以再切，目前預設一行就是一關的重組素材
-            // 為了遊戲性，我們將句子拆解成詞組
-            let segments = splitSentence(line);
-            allLevels.push({
-                chapter: name,
-                fullText: line,
-                segments: segments
-            });
-        });
-    });
+    // === 2. 系統變數 ===
+    let currentLevel = 0;
+    let currentSelection = [];
+    let currentPool = [];
+    let isHintOn = true;
+    let isMuted = false;
 
-    // 簡單的中文分詞算法 (模擬)
-    function splitSentence(str) {
-        // 先移除標點符號，再隨機切分? 
-        // 不，最好的方式是保留標點，讓使用者重組完整的句子
-        // 這裡我們用正則表達式把句子切成 2-4 個字的碎片
-        // 為了展示效果，這裡做一個簡單的切分邏輯：以標點符號切分，如果沒有標點，就對半切
-        let parts = str.split(/[，、？：；]/);
-        // 過濾空字串並修剪
-        parts = parts.map(p => p.trim()).filter(p => p);
-        
-        // 如果切出來太少(例如只有一句)，就強制切字
-        if (parts.length === 1 && str.length > 4) {
-            let mid = Math.floor(str.length / 2);
-            return [str.substring(0, mid), str.substring(mid)];
-        }
-        return parts;
-    }
-
-    // === 2. 軍階系統定義 ===
     const ranks = [
         { title: "步卒", icon: "卒", min: 0 },
         { title: "伍長", icon: "伍", min: 5 },
         { title: "百夫長", icon: "百", min: 10 },
         { title: "千夫長", icon: "千", min: 20 },
-        { title: "偏將軍", icon: "將", min: 30 }, // 背完第一篇左右
-        { title: "大將軍", icon: "帥", min: 60 },
-        { title: "大都督", icon: "督", min: 100 },
-        { title: "兵聖", icon: "聖", min: 200 }
+        { title: "將軍", icon: "將", min: 30 }
     ];
 
-    // === 3. 遊戲狀態 ===
-    let currentLevelIndex = 0;
-    let currentSelection = [];
-    let currentPool = [];
-    
-    // 讀取進度
-    if (localStorage.getItem('sunTzuProgress')) {
-        currentLevelIndex = parseInt(localStorage.getItem('sunTzuProgress'));
-        // 保護機制：如果存檔超過題庫
-        if (currentLevelIndex >= allLevels.length) currentLevelIndex = 0;
-    }
-
-    // === 4. 核心功能 ===
-    function initGame() {
-        loadLevel(currentLevelIndex);
+    // === 3. 初始化 ===
+    window.onload = function() {
+        if(localStorage.getItem('sunTzuProgress')) {
+            currentLevel = parseInt(localStorage.getItem('sunTzuProgress'));
+            if(currentLevel >= levelsData.length) currentLevel = 0;
+        }
+        loadLevel(currentLevel);
         updateRankDisplay();
-    }
+    };
 
     function loadLevel(idx) {
-        const levelData = allLevels[idx];
-        document.getElementById('level-display').innerText = `關卡 ${idx + 1} / ${allLevels.length}`;
-        document.getElementById('chapter-name').innerText = levelData.chapter;
+        // 保護機制：如果超過題庫，暫時回到第一題
+        if (idx >= levelsData.length) { idx = 0; currentLevel = 0; }
+        
+        const data = levelsData[idx];
+        document.getElementById('level-display').innerText = `(${idx + 1}/${levelsData.length})`;
         
         // NPC 對話
         const npcText = document.getElementById('npc-text');
-        npcText.innerText = getNPCDialogue(idx);
+        npcText.innerText = isHintOn ? "依閃爍竹簡，排列陣勢！" : "將軍，請憑記憶佈陣！";
         npcText.style.color = "#000";
 
-        // 準備竹簡
+        // 準備竹簡 (分詞)
         currentSelection = [];
-        // 複製並打亂
-        currentPool = [...levelData.segments].sort(() => Math.random() - 0.5);
+        let segments = splitSentence(data.text);
+        currentPool = [...segments].sort(() => Math.random() - 0.5); // 打亂
 
         renderBoard();
-        document.getElementById('check-btn').style.display = 'none';
-        
-        // 重置區域樣式
+        document.getElementById('win-modal').style.display = 'none';
         document.getElementById('target-zone').className = 'scroll-area';
+    }
+
+    function splitSentence(str) {
+        // 簡單依標點符號切分，保留標點
+        let parts = str.split(/(?=[，、。；])/); 
+        // 處理一下，讓標點跟著上一句或獨立? 
+        // 這裡改用簡單邏輯：如果有逗號，就依逗號切
+        let res = [];
+        let temp = str.split(/[，、。；]/).filter(s => s.trim() !== "");
+        // 這裡為了遊戲性，我們簡單把字串拆成幾個部分
+        if (str.length <= 4) return [str];
+        // 模擬切分：對半切
+        let mid = Math.floor(str.length / 2);
+        // 如果有標點，優先用標點切
+        if (str.includes('，')) return str.split('，').map((s, i, arr) => i < arr.length -1 ? s + '，' : s);
+        return [str.substring(0, mid), str.substring(mid)];
     }
 
     function renderBoard() {
@@ -456,25 +388,28 @@
         targetZone.innerHTML = '';
         sourceZone.innerHTML = '';
 
-        // 渲染已選區
+        // 已選區
         if (currentSelection.length === 0) {
-            targetZone.innerHTML = '<div style="color:#8d6e63; margin-top:30px;">(點擊下方竹簡進行排列)</div>';
+            targetZone.innerHTML = '<div style="color:#8d6e63; margin-top:30px; opacity:0.6;">(點擊下方竹簡)</div>';
         } else {
-            currentSelection.forEach((text, i) => {
-                targetZone.appendChild(createTile(text, 'target', i));
+            currentSelection.forEach((text) => {
+                targetZone.appendChild(createTile(text, 'target'));
             });
         }
 
-        // 渲染候選區
-        currentPool.forEach((text, i) => {
-            sourceZone.appendChild(createTile(text, 'source', i));
+        // 候選區
+        currentPool.forEach((text) => {
+            sourceZone.appendChild(createTile(text, 'source'));
         });
+
+        if (isHintOn) applyHintEffect();
     }
 
-    function createTile(text, type, index) {
+    function createTile(text, type) {
         const div = document.createElement('div');
         div.className = 'bamboo-tile';
         div.innerText = text;
+        div.setAttribute('data-text', text); // 用於提示比對
         div.onclick = () => moveTile(text, type);
         return div;
     }
@@ -492,175 +427,117 @@
         checkAnswer();
     }
 
-    function checkAnswer() {
-        const correctSegments = allLevels[currentLevelIndex].segments;
+    // 🌟 提示系統邏輯
+    function applyHintEffect() {
+        const data = levelsData[currentLevel];
+        // 取得正確順序的 segments (這裡我們重新切分一次來比對)
+        let correctSegments = splitSentence(data.text);
         
-        // 如果長度還不夠，不檢查
-        if (currentSelection.length !== correctSegments.length) return;
-
-        // 檢查順序 (將陣列轉字串比對)
-        const userStr = currentSelection.join('');
-        // 移除原句標點來寬鬆比對 (這裡簡化處理，嚴格比對 segments)
-        const correctStr = correctSegments.join('');
-
-        // 這裡我們的 segments 切分邏輯比較簡單，直接比對內容順序
-        // 為了讓判斷準確，我們比較 "還原後的句子" 是否包含原句的關鍵字
-        // 但最簡單的是直接比對 segments 是否一致
-        // 由於我們是打亂 segments，所以使用者只要還原順序即可
+        // 找出下一個應該選什麼
+        let nextIndex = currentSelection.length;
+        if (nextIndex >= correctSegments.length) return;
         
-        // 但要注意，splitSentence 產生的 segments 順序就是正確順序
-        // 所以我們直接比對陣列
-        let isCorrect = true;
-        for(let i=0; i<correctSegments.length; i++) {
-            if (currentSelection[i] !== correctSegments[i]) {
-                isCorrect = false;
-                break;
+        let nextText = correctSegments[nextIndex];
+
+        // 在 sourceZone 裡找到對應的按鈕加 class
+        const buttons = document.getElementById('source-zone').children;
+        for (let btn of buttons) {
+            if (btn.getAttribute('data-text') === nextText) {
+                btn.classList.add('hint-active');
+                break; // 只提示一個
             }
-        }
-
-        if (isCorrect) {
-            levelPassed();
-        } else {
-            // 錯誤回饋
-            playErrorSound();
-            const area = document.getElementById('target-zone');
-            area.classList.add('wrong-flash');
-            document.getElementById('npc-text').innerText = "孫武：「陣形大亂！請重新調度！」";
-            setTimeout(() => area.classList.remove('wrong-flash'), 400);
         }
     }
 
-    function levelPassed() {
-        playWinSound();
-        const area = document.getElementById('target-zone');
-        area.classList.add('correct-flash');
-        
-        const fullText = allLevels[currentLevelIndex].fullText;
-        document.getElementById('npc-text').innerHTML = `<span style="color:#b71c1c; font-weight:bold;">正確！</span><br>${fullText}`;
-        
-        document.getElementById('check-btn').style.display = 'block';
+    function toggleHint() {
+        isHintOn = !isHintOn;
+        document.getElementById('hint-btn').className = isHintOn ? 'icon-btn active' : 'icon-btn';
+        document.getElementById('hint-btn').innerText = isHintOn ? '💡' : '🌑';
+        renderBoard(); // 重新渲染以套用/移除特效
+    }
+
+    function toggleMute() {
+        isMuted = !isMuted;
+        document.getElementById('mute-btn').innerText = isMuted ? '🔇' : '🔊';
+        document.getElementById('mute-btn').className = isMuted ? 'icon-btn active' : 'icon-btn';
+    }
+
+    function checkAnswer() {
+        const data = levelsData[currentLevel];
+        // 簡單比對：使用者組出來的句子 = 原句
+        if (currentSelection.join('') === data.text) {
+            playWinSound();
+            showWinModal(data);
+        }
+    }
+
+    function showWinModal(data) {
+        document.getElementById('win-original-text').innerText = data.text;
+        document.getElementById('win-translation-text').innerText = data.translation;
+        document.getElementById('win-modal').style.display = 'flex';
     }
 
     function nextLevel() {
-        currentLevelIndex++;
-        // 存檔
-        localStorage.setItem('sunTzuProgress', currentLevelIndex);
+        document.getElementById('win-modal').style.display = 'none';
+        currentLevel++;
+        localStorage.setItem('sunTzuProgress', currentLevel);
         
-        // 檢查晉升
         checkRankUp();
-        
-        if (currentLevelIndex < allLevels.length) {
-            loadLevel(currentLevelIndex);
-        } else {
-            alert("恭喜將軍！始計篇已全數背誦完畢！請等待後續篇章更新！");
-            currentLevelIndex = 0; // 暫時循環
-            loadLevel(0);
-        }
+        loadLevel(currentLevel);
     }
 
-    function resetLevel() {
-        loadLevel(currentLevelIndex);
-    }
-
-    // === 5. 晉升邏輯 ===
+    // === 官階與音效 ===
     function checkRankUp() {
-        // 找出目前積分對應的最高階級
         let newRank = ranks[0];
-        for (let r of ranks) {
-            if (currentLevelIndex >= r.min) newRank = r;
-        }
-
-        // 讀取舊階級 (顯示用)
-        let currentRankTitle = document.getElementById('rank-name').innerText;
+        for (let r of ranks) { if (currentLevel >= r.min) newRank = r; }
         
-        if (newRank.title !== currentRankTitle) {
-            // 觸發晉升
-            showRankModal(newRank);
+        let currentTitle = document.getElementById('rank-name').innerText;
+        if (newRank.title !== currentTitle) {
+            document.getElementById('new-rank-title').innerText = newRank.title;
+            document.getElementById('rank-modal').style.display = 'flex';
+            playWinSound();
         }
         updateRankDisplay();
     }
 
     function updateRankDisplay() {
-        let currentRank = ranks[0];
-        for (let r of ranks) {
-            if (currentLevelIndex >= r.min) currentRank = r;
-        }
-        document.getElementById('rank-icon').innerText = currentRank.icon;
-        document.getElementById('rank-name').innerText = currentRank.title;
-    }
-
-    function showRankModal(rank) {
-        document.getElementById('new-rank-title').innerText = rank.title;
-        document.getElementById('rank-modal').style.display = 'flex';
-        playWinSound(); // 這裡可以換成更隆重的音效
+        let r = ranks[0];
+        for (let item of ranks) { if (currentLevel >= item.min) r = item; }
+        document.getElementById('rank-icon').innerText = r.icon;
+        document.getElementById('rank-name').innerText = r.title;
     }
 
     function closeRankModal() {
         document.getElementById('rank-modal').style.display = 'none';
     }
 
-    function getNPCDialogue(idx) {
-        // 根據進度給予不同鼓勵
-        if (idx === 0) return "兵者，國之大事。第一句該如何起頭？";
-        if (idx < 5) return "很好，繼續保持這股氣勢！";
-        if (idx < 10) return "熟讀兵法，方能百戰不殆。";
-        return "將軍英明！請繼續推演！";
-    }
-
-    // === 6. 音效系統 (使用瀏覽器原生 AudioContext) ===
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
     function playClickSound() {
+        if (isMuted) return;
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        // 模擬木頭敲擊聲 (短促低頻)
-        osc.type = 'triangle';
+        osc.connect(gain); gain.connect(audioCtx.destination);
         osc.frequency.setValueAtTime(300, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
-    }
-
-    function playErrorSound() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-        osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
         gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
     }
-
     function playWinSound() {
+        if (isMuted) return;
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const now = audioCtx.currentTime;
-        // 簡單的和弦
-        [440, 554, 659].forEach((freq, i) => {
+        [440, 554, 659].forEach((f, i) => {
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.type = 'square';
-            osc.frequency.value = freq;
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.frequency.value = f;
             gain.gain.setValueAtTime(0.1, now + i*0.1);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + i*0.1 + 0.5);
-            osc.start(now + i*0.1);
-            osc.stop(now + i*0.1 + 0.5);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i*0.1 + 0.4);
+            osc.start(now + i*0.1); osc.stop(now + i*0.1 + 0.4);
         });
     }
-
-    // 啟動
-    window.onload = initGame;
 
 </script>
 </body>
