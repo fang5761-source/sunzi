@@ -1,591 +1,1382 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>孫子：謀略之戰 v5.0 (軍營戰地版)</title>
-    <style>
-        :root {
-            /* 軍營配色 */
-            --bg-camp: #e6e2d3; /* 帆布/軍帳色 */
-            --wood-dark: #3e2723; /* 深木頭 */
-            --wood-light: #5d4037; 
-            --bamboo-light: #ffecb3;
-            --bamboo-dark: #ffca28;
-            --accent-red: #b71c1c; /* 帥印紅 */
-            --success-green: #2e7d32;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>孫子兵法・軍帳驗令 v1</title>
+  <style>
+    :root{
+      /* Theme */
+      --bg0:#0e1410;
+      --bg1:#111a14;
+      --panel:#121c16;
+      --panel2:#0f1712;
+      --line:#2a3a30;
+      --muted:#9fb2a6;
+      --text:#e6efe9;
+      --accent:#c7a45c;       /* brass */
+      --accent2:#7aa37e;      /* calm green */
+      --danger:#e06666;
+      --ok:#77d18a;
+      --stamp:#b32d2d;
 
-        body {
-            font-family: "Microsoft JhengHei", "Heiti TC", serif;
-            margin: 0;
-            padding: 0;
-            background-color: #d7ccc8; /* 背景加深 */
-            background-image: repeating-linear-gradient(45deg, #d7ccc8 25%, #d7ccc8 50%, #cfd8dc 50%, #cfd8dc 75%); /* 增加一點紋理 */
-            background-size: 20px 20px;
-            color: var(--wood-dark);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh; /* 固定高度，防止整個頁面滾動 */
-            overflow: hidden; /* 禁止整個頁面滾動 */
-        }
+      /* Typography scale (controlled) */
+      --base:16px;            /* small=15, medium=16, large=18 */
+      --slot:40px;
+      --radius:14px;
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+      --shadow2: 0 6px 16px rgba(0,0,0,.28);
+    }
 
-        /* === 頂部軍帳風格 Header === */
-        header {
-            width: 100%;
-            background: var(--bg-camp);
-            padding: 10px 0 15px 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            position: relative;
-            z-index: 10;
-            border-bottom: 5px solid var(--wood-dark);
-            flex-shrink: 0; /* 防止被壓縮 */
-        }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: "Microsoft JhengHei", "PingFang TC", "Noto Serif CJK TC", system-ui, serif;
+      font-size: var(--base);
+      color: var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(199,164,92,.10), transparent 55%),
+        radial-gradient(900px 600px at 80% 20%, rgba(122,163,126,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow:hidden; /* no page scrolling */
+    }
 
-        /* 裝飾：軍帳頂部的三角形 */
-        header::before {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: linear-gradient(45deg, var(--wood-dark) 25%, transparent 25%) -10px 0,
-                        linear-gradient(-45deg, var(--wood-dark) 25%, transparent 25%) -10px 0;
-            background-size: 20px 20px;
-        }
+    /* Layout: 1-screen */
+    .app{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:12px;
+      max-width:720px;
+      margin:0 auto;
+    }
 
-        h1 {
-            font-size: 1.5rem;
-            margin: 0;
-            text-align: center;
-            color: var(--wood-dark);
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
-            letter-spacing: 2px;
-        }
+    .topbar{
+      flex: 0 0 auto;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      padding:10px 10px 8px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
 
-        .header-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 90%;
-            max-width: 500px;
-            margin: 10px auto 0;
-        }
+    .toprow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
 
-        .level-tag {
-            background: var(--wood-dark);
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
+    .badge{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 0;
+    }
 
-        /* Switch Toggle */
-        .switch-container {
-            display: flex;
-            align-items: center;
-            font-size: 0.9rem;
-            color: var(--wood-dark);
-            gap: 5px;
-            font-weight: bold;
-        }
-        .switch-input { display: none; }
-        .switch-track {
-            width: 40px;
-            height: 22px;
-            background-color: #aaa;
-            border-radius: 20px;
-            position: relative;
-            transition: 0.3s;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .switch-knob {
-            width: 18px;
-            height: 18px;
-            background-color: #fff;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .switch-input:checked + .switch-track { background-color: var(--accent-red); }
-        .switch-input:checked + .switch-track .switch-knob { transform: translateX(18px); }
+    .rank{
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(199,164,92,.45);
+      background: rgba(199,164,92,.10);
+      color: #f3e6c8;
+      font-weight:700;
+      letter-spacing:.08em;
+      white-space:nowrap;
+    }
 
-        /* 進度條 */
-        .progress-bar {
-            width: 90%;
-            height: 6px;
-            background: #bbb;
-            margin: 8px auto 0;
-            border-radius: 3px;
-            overflow: hidden;
-            border: 1px solid #999;
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--accent-red);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
+    .meta{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      gap:2px;
+    }
+    .title{
+      font-weight:800;
+      letter-spacing:.04em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .subtitle{
+      font-size: .9em;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
 
-        /* === 遊戲主區域 (Flex 佈局) === */
-        #game-container {
-            flex-grow: 1; /* 佔滿剩餘空間 */
-            width: 100%;
-            max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            box-sizing: border-box;
-            overflow: hidden; /* 防止溢出 */
-        }
+    .controls{
+      display:flex;
+      gap:8px;
+      flex:0 0 auto;
+    }
 
-        /* NPC 對話框 */
-        .npc-area {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-shrink: 0; /* 固定高度 */
-        }
-        .npc-avatar {
-            width: 50px;
-            height: 50px;
-            background: var(--wood-dark);
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            border: 3px solid #bcaaa4;
-            box-shadow: 0 4px 4px rgba(0,0,0,0.3);
-        }
-        .npc-text {
-            background: #fff;
-            padding: 10px 15px;
-            border-radius: 15px;
-            border: 2px solid var(--wood-dark);
-            font-size: 0.95rem;
-            line-height: 1.4;
-            flex: 1;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-            position: relative;
-        }
-        .npc-text::after { /* 對話框小箭頭 */
-            content: '';
-            position: absolute;
-            left: -8px;
-            top: 15px;
-            border-width: 8px 8px 8px 0;
-            border-style: solid;
-            border-color: transparent var(--wood-dark) transparent transparent;
-        }
+    .iconbtn{
+      width:42px;
+      height:42px;
+      border-radius: 12px;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.12));
+      box-shadow: 0 6px 14px rgba(0,0,0,.25);
+      color: var(--text);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      cursor:pointer;
+      user-select:none;
+    }
+    .iconbtn:active{ transform: translateY(1px); }
+    .iconbtn.on{
+      border-color: rgba(199,164,92,.60);
+      box-shadow: 0 0 0 2px rgba(199,164,92,.18), 0 6px 14px rgba(0,0,0,.25);
+    }
 
-        /* === 1. 上方放置區 (解決無限拉長問題) === */
-        .target-zone-wrapper {
-            flex-grow: 1; /* 吃掉中間所有空間 */
-            background: #fdfbf7;
-            border: 6px solid var(--wood-dark);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            position: relative;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.1), 0 5px 15px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; /* 關鍵：讓內部可以滾動 */
-        }
+    .progress{
+      height:8px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .fill{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(199,164,92,.95), rgba(122,163,126,.95));
+      transition: width .25s ease;
+    }
 
-        .scroll-board {
-            padding: 15px;
-            overflow-y: auto; /* 關鍵：內容多時，這裡出現卷軸 */
-            height: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
+    .mid{
+      flex: 1 1 auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height: 0;
+    }
 
-        .hint-text {
-            color: #999;
-            margin-top: 20px;
-            font-weight: bold;
-            pointer-events: none;
-        }
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.15));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
 
-        /* === 2. 下方候選區 (固定在底部) === */
-        .source-zone-wrapper {
-            flex-shrink: 0; /* 不被壓縮 */
-            background: rgba(255,255,255,0.4);
-            border-top: 2px dashed var(--wood-dark);
-            padding: 10px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .section-label {
-            font-size: 0.9rem;
-            color: var(--wood-dark);
-            margin-bottom: 5px;
-            font-weight: bold;
-            background: rgba(255,255,255,0.8);
-            padding: 2px 10px;
-            border-radius: 10px;
-        }
+    .brief{
+      padding:10px 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      background: rgba(0,0,0,.16);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .npc{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      min-width:0;
+    }
+    .seal{
+      width:40px;
+      height:40px;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.22), transparent 45%),
+        linear-gradient(180deg, rgba(199,164,92,.22), rgba(0,0,0,.15));
+      border: 1px solid rgba(199,164,92,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      color:#f3e6c8;
+      flex: 0 0 auto;
+    }
+    .npcmsg{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .npcmsg .line1{
+      font-weight:800;
+      letter-spacing:.02em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .npcmsg .line2{
+      color: var(--muted);
+      font-size: .92em;
+      line-height: 1.2;
+    }
 
-        .options-board {
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap; /* 允許換行 */
-            justify-content: center;
-            gap: 10px;
-            min-height: 80px; /* 確保有空間 */
-        }
+    .actions{
+      display:flex;
+      gap:8px;
+      flex:0 0 auto;
+    }
+    .btn{
+      border-radius: 12px;
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.18));
+      color: var(--text);
+      padding:10px 12px;
+      font-weight:800;
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      border-color: rgba(122,163,126,.55);
+      box-shadow: 0 0 0 2px rgba(122,163,126,.16);
+    }
+    .btn.danger{
+      border-color: rgba(224,102,102,.55);
+      box-shadow: 0 0 0 2px rgba(224,102,102,.14);
+    }
 
-        /* === 3. 竹簡樣式 (軍營立體風) === */
-        .bamboo-slip {
-            /* 漸層打造立體竹子感 */
-            background: linear-gradient(to right, #eecfa1 0%, #d7a566 50%, #eecfa1 100%);
-            border: 1px solid #8d6e63;
-            border-top: 3px solid #5d4037; /* 竹節頂 */
-            border-bottom: 3px solid #5d4037; /* 竹節底 */
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #3e2723;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-            
-            /* 控制大小，防止變形 */
-            flex: 0 0 auto; /* 不會自動放大填滿 */
-            min-width: 80px;
-            text-align: center;
-            
-            transition: transform 0.1s;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            position: relative;
-        }
+    /* Command slots */
+    .slots{
+      padding:10px 10px 8px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height: 0;
+    }
 
-        /* 裝飾：竹簡上的繩子 */
-        .bamboo-slip::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 5px;
-            width: 100%;
-            height: 2px;
-            background: rgba(62, 39, 35, 0.2);
-            z-index: 0;
-            pointer-events: none;
-        }
+    .slotgrid{
+      display:grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap:8px;
+      align-items:stretch;
+      justify-items:stretch;
+    }
 
-        .bamboo-slip:active {
-            transform: scale(0.95);
-        }
+    /* Responsive: adjust columns based on width */
+    @media (max-width: 520px){
+      .slotgrid{ grid-template-columns: repeat(7, 1fr); }
+    }
+    @media (max-width: 420px){
+      .slotgrid{ grid-template-columns: repeat(6, 1fr); }
+    }
 
-        /* 提示特效 */
-        .bamboo-slip.hint-active {
-            background: linear-gradient(to right, #fff59d 0%, #fbc02d 50%, #fff59d 100%);
-            border-color: #f57f17;
-            box-shadow: 0 0 15px #ffeb3b;
-            z-index: 2; /* 浮起來 */
-            animation: pulse 1.5s infinite;
-        }
+    .slot{
+      height: var(--slot);
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size: 1.06em;
+      color: rgba(230,239,233,.92);
+      position:relative;
+      user-select:none;
+    }
+    .slot.correct{
+      border-color: rgba(119,209,138,.55);
+      box-shadow: 0 0 0 2px rgba(119,209,138,.12);
+      color: #eafff0;
+    }
+    .slot.wrong{
+      border-color: rgba(224,102,102,.60);
+      box-shadow: 0 0 0 2px rgba(224,102,102,.14);
+      color: #ffdede;
+    }
+    .slot.empty{
+      color: rgba(159,178,166,.35);
+    }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
+    .slot .idx{
+      position:absolute;
+      left:6px;
+      top:4px;
+      font-size:.62em;
+      color: rgba(159,178,166,.35);
+      font-weight:800;
+      display:none; /* keep clean; can enable later */
+    }
 
-        /* 按鈕區 */
-        .action-area {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            justify-content: center;
-            margin-bottom: 5px;
-        }
+    .slotbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .status{
+      color: var(--muted);
+      font-size: .92em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
 
-        button {
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
-            color: white;
-            flex: 1;
-            max-width: 150px;
-        }
-        #check-answer-btn {
-            background: var(--success-green);
-            display: none;
-        }
-        #reset-btn {
-            background: #795548;
-        }
+    /* Keyboard */
+    .keyboard{
+      flex: 0 0 auto;
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.16));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
 
-        /* Modal */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        .modal-content {
-            background: #fdfbf7;
-            width: 85%;
-            max-width: 400px;
-            padding: 20px;
-            border-radius: 10px;
-            border: 5px solid var(--wood-dark);
-            text-align: center;
-            position: relative;
-        }
-        /* 裝飾：印章 */
-        .stamp {
-            position: absolute;
-            top: -20px;
-            right: -10px;
-            width: 60px;
-            height: 60px;
-            border: 3px solid var(--accent-red);
-            border-radius: 5px;
-            color: var(--accent-red);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            transform: rotate(15deg);
-            background: rgba(255, 255, 255, 0.8);
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-        }
+    .kbdtop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
 
-        .translation-text {
-            text-align: left;
-            margin: 20px 0;
-            line-height: 1.6;
-            color: #333;
-            background: #efebe9;
-            padding: 10px;
-            border-radius: 5px;
-        }
+    .kbdlabel{
+      font-weight:900;
+      letter-spacing:.06em;
+      color: #f1e8d2;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
 
-    </style>
+    .pagehint{
+      color: var(--muted);
+      font-size:.92em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .pager{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex:0 0 auto;
+    }
+
+    .pbtn{
+      width:44px;
+      height:42px;
+      border-radius: 12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      font-weight:900;
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .pbtn:active{ transform: translateY(1px); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap:8px;
+      align-items:stretch;
+    }
+    @media (max-width: 520px){
+      .grid{ grid-template-columns: repeat(7, 1fr); }
+    }
+    @media (max-width: 420px){
+      .grid{ grid-template-columns: repeat(6, 1fr); }
+    }
+
+    .token{
+      height: 46px;
+      border-radius: 14px;
+      border:1px solid rgba(199,164,92,.35);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,.10), transparent 45%),
+        linear-gradient(180deg, rgba(199,164,92,.10), rgba(0,0,0,.18));
+      box-shadow: 0 6px 14px rgba(0,0,0,.22);
+      color: #f3e6c8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1000;
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+    }
+    .token:active{ transform: translateY(1px) scale(.99); }
+    .token.dim{
+      opacity:.60;
+      border-color: rgba(255,255,255,.10);
+      color: rgba(230,239,233,.70);
+      background: rgba(0,0,0,.14);
+    }
+
+    /* Lamp hint */
+    .token.hint{
+      border-color: rgba(255,230,140,.80);
+      box-shadow: 0 0 0 2px rgba(255,230,140,.18), 0 10px 18px rgba(0,0,0,.26);
+      animation: glow 1.35s ease-in-out infinite;
+    }
+    @keyframes glow{
+      0%{ transform: translateY(0); filter: brightness(1); }
+      50%{ transform: translateY(-1px); filter: brightness(1.15); }
+      100%{ transform: translateY(0); filter: brightness(1); }
+    }
+
+    /* Modal */
+    .modal{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.72);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      z-index:9999;
+    }
+    .card{
+      width:min(520px, 100%);
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(20,28,22,.96), rgba(10,14,11,.96));
+      box-shadow: 0 20px 50px rgba(0,0,0,.55);
+      overflow:hidden;
+      position:relative;
+    }
+    .cardhead{
+      padding:14px 14px 10px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .stamper{
+      position:absolute;
+      top:12px;
+      right:12px;
+      width:72px;
+      height:72px;
+      border-radius: 16px;
+      border:2px solid rgba(179,45,45,.85);
+      color: rgba(255,210,210,.96);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1000;
+      letter-spacing:.1em;
+      transform: rotate(12deg);
+      background: rgba(179,45,45,.10);
+      box-shadow: 0 10px 22px rgba(0,0,0,.35);
+      pointer-events:none;
+    }
+    .cardtitle{
+      font-weight:1000;
+      letter-spacing:.06em;
+    }
+    .carddesc{
+      margin-top:4px;
+      color: var(--muted);
+      font-size:.95em;
+      line-height:1.25;
+    }
+    .cardbody{
+      padding:12px 14px 14px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .blockquote{
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.20);
+      line-height:1.5;
+      color: rgba(230,239,233,.92);
+    }
+    .cardactions{
+      display:flex;
+      gap:10px;
+      padding:12px 14px 14px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .cardactions .btn{ flex:1; text-align:center; }
+
+    /* Drawer (Military book) */
+    .drawer{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:-100%;
+      background: linear-gradient(180deg, rgba(18,28,22,.98), rgba(8,12,9,.98));
+      border-top:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 -18px 45px rgba(0,0,0,.55);
+      border-radius: 18px 18px 0 0;
+      padding:12px 12px 18px 12px;
+      transition: bottom .25s ease;
+      z-index: 8888;
+      max-width: 720px;
+      margin:0 auto;
+    }
+    .drawer.open{ bottom:0; }
+    .drawhead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .drawtitle{
+      font-weight:1000;
+      letter-spacing:.06em;
+    }
+    .drawclose{
+      width:44px;
+      height:40px;
+      border-radius: 12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      font-weight:1000;
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .drawcontent{
+      padding-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height: 52vh; /* drawer itself can scroll if needed, but main page stays 1-screen */
+      overflow:auto;
+    }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(199,164,92,.30);
+      background: rgba(199,164,92,.10);
+      color:#f3e6c8;
+      font-weight:900;
+      letter-spacing:.06em;
+      width:fit-content;
+    }
+    .mini{
+      color: var(--muted);
+      font-size:.95em;
+      line-height:1.45;
+    }
+
+    /* Settings modal content */
+    .seg{
+      display:flex;
+      gap:10px;
+    }
+    .seg .btn{ flex:1; }
+    .hintnote{
+      color: var(--muted);
+      font-size:.92em;
+      line-height:1.35;
+    }
+  </style>
 </head>
+
 <body>
-
-    <header>
-        <h1>孫子：謀略之戰</h1>
-        <div class="header-controls">
-            <div class="level-tag" id="level-indicator">載入中...</div>
-            <label class="switch-container">
-                <input type="checkbox" id="hint-toggle" class="switch-input" checked onchange="toggleHint()">
-                <div class="switch-track"><div class="switch-knob"></div></div>
-                <span>提示</span>
-            </label>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" id="progress-bar"></div></div>
-    </header>
-
-    <div id="game-container">
-        
-        <div class="npc-area">
-            <div class="npc-avatar">孫武</div>
-            <div class="npc-text" id="npc-text">佈陣中...</div>
+  <div class="app">
+    <div class="topbar">
+      <div class="toprow">
+        <div class="badge">
+          <div class="rank" id="rankTag">卒</div>
+          <div class="meta">
+            <div class="title" id="missionTitle">始計篇・驗令</div>
+            <div class="subtitle" id="missionSub">段落 1/3 ・文字一字不差（標點不驗）</div>
+          </div>
         </div>
 
-        <div class="target-zone-wrapper">
-            <div class="scroll-board" id="target-zone">
-                <div class="hint-text" id="hint-text">(請點擊下方閃爍竹簡)</div>
-            </div>
+        <div class="controls">
+          <div class="iconbtn on" id="lampBtn" title="燈號(提示)">燈</div>
+          <div class="iconbtn on" id="soundBtn" title="音效">音</div>
+          <div class="iconbtn" id="bookBtn" title="軍書(白話)">書</div>
+          <div class="iconbtn" id="setBtn" title="設定">⋯</div>
         </div>
+      </div>
 
-        <div class="action-area">
-            <button id="reset-btn" onclick="resetCurrentLevel()">↺ 重整旗鼓</button>
-            <button id="check-answer-btn" onclick="showModal()">📜 查看軍書</button>
-        </div>
-
-        <div class="source-zone-wrapper">
-            <div class="section-label">▼ 候選竹簡 ▼</div>
-            <div class="options-board" id="source-zone"></div>
-        </div>
-
+      <div class="progress">
+        <div class="fill" id="progressFill"></div>
+      </div>
     </div>
 
-    <div class="modal" id="win-modal">
-        <div class="modal-content">
-            <div class="stamp">完勝</div>
-            <h2 style="color: var(--wood-dark); margin-top:10px;">★ 謀略正確 ★</h2>
-            <div class="translation-text" id="modal-content"></div>
-            <div style="display:flex; gap:10px;">
-                <button style="background:#757575;" onclick="replayLevel()">再次演練</button>
-                <button style="background:var(--wood-dark);" onclick="nextLevel()">下一關</button>
+    <div class="mid">
+      <div class="panel">
+        <div class="brief">
+          <div class="npc">
+            <div class="seal">令</div>
+            <div class="npcmsg">
+              <div class="line1" id="npcLine1">值星官：</div>
+              <div class="line2" id="npcLine2">校令。按令牌逐字上呈；錯字即紅，退格可撤。</div>
             </div>
+          </div>
+          <div class="actions">
+            <div class="btn danger" id="clearBtn">撤令</div>
+            <div class="btn" id="undoBtn">退格</div>
+            <div class="btn primary" id="reportBtn" style="display:none;">呈報</div>
+          </div>
         </div>
+
+        <div class="slots">
+          <div class="slotbar">
+            <div class="status" id="statusText">待命：請自令牌匣取字，完成軍令。</div>
+            <div class="status" id="remainText">缺字：—</div>
+          </div>
+          <div class="slotgrid" id="slotGrid"></div>
+        </div>
+      </div>
+
+      <div class="keyboard">
+        <div class="kbdtop">
+          <div class="kbdlabel">
+            <span>令牌匣</span>
+            <span class="pagehint" id="pageHint">第 1 頁</span>
+          </div>
+          <div class="pager">
+            <div class="pbtn" id="prevPage">◀</div>
+            <div class="pbtn" id="nextPage">▶</div>
+          </div>
+        </div>
+        <div class="grid" id="tokenGrid"></div>
+        <div class="hintnote" id="hintNote" style="display:none;"></div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        window.onload = function() { initGame(); };
+  <!-- Win modal -->
+  <div class="modal" id="winModal">
+    <div class="card">
+      <div class="stamper" id="stampText">合格</div>
+      <div class="cardhead">
+        <div>
+          <div class="cardtitle" id="winTitle">軍令合格</div>
+          <div class="carddesc" id="winDesc">此段已驗收。可再操，或進下一段。</div>
+        </div>
+      </div>
+      <div class="cardbody">
+        <div class="blockquote" id="winQuote"></div>
+      </div>
+      <div class="cardactions">
+        <div class="btn" id="replayBtn">再操一次</div>
+        <div class="btn primary" id="nextBtn">下一段</div>
+      </div>
+    </div>
+  </div>
 
-        const levels = [
-            { segments: ["兵者", "國之大事", "死生之地", "存亡之道", "不可不察也"], translation: "【白話】戰爭是國家的大事，關係到軍民的生死，國家的存亡，是絕對不可以不認真考察研究的。", npcWin: "孫武：「不錯！不知死生，不配言兵。」" },
-            { segments: ["一曰道", "二曰天", "三曰地", "四曰將", "五曰法"], translation: "【白話】這五個方面是：第一是道（政治），第二是天（天時），第三是地（地利），第四是將（將領），第五是法（法制）。", npcWin: "孫武：「此五者，將領不可不察。」" },
-            { segments: ["道者", "令民與上同意也", "故可與之死", "可與之生", "而不畏危"], translation: "【白話】所謂「道」，就是使民眾與君主的意願一致。這樣，民眾就能與君主同生死、共患難，而不畏懼危險。", npcWin: "孫武：「上下同欲者勝，此乃道也。」" },
-            { segments: ["天者", "陰陽", "寒暑", "時制也"], translation: "【白話】所謂「天」，就是指晝夜陰陽的變化，寒冬暑季的更替，以及適於作戰的季節氣候。", npcWin: "孫武：「知天時者，可借風雨之力。」" },
-            { segments: ["地者", "遠近", "險易", "廣狹", "死生也"], translation: "【白話】所謂「地」，是指路程的遠近、地勢的險要或平坦、戰場的廣闊或狹窄，以及地形是絕地還是生路。", npcWin: "孫武：「地利者，兵之助也。」" },
-            { segments: ["將者", "智", "信", "仁", "勇", "嚴也"], translation: "【白話】所謂「將」，就是將領要具備智慧、誠信、仁愛、勇敢、嚴明這五種素質。", npcWin: "孫武：「為將者，當具備此五德。」" },
-            { segments: ["法者", "曲制", "官道", "主用也"], translation: "【白話】所謂「法」，是指軍隊的組織編制、將吏的職責管理、以及軍需物資的供應管理。", npcWin: "孫武：「法制不明，則軍令不行。」" }
-        ];
+  <!-- Rank-up modal -->
+  <div class="modal" id="rankModal">
+    <div class="card">
+      <div class="stamper">授印</div>
+      <div class="cardhead">
+        <div>
+          <div class="cardtitle" id="rankTitle">升遷令</div>
+          <div class="carddesc" id="rankDesc">你已完成始計篇驗令（v1三段）。</div>
+        </div>
+      </div>
+      <div class="cardbody">
+        <div class="blockquote" id="rankBody"></div>
+      </div>
+      <div class="cardactions">
+        <div class="btn primary" id="rankOkBtn">收令</div>
+      </div>
+    </div>
+  </div>
 
-        let currentLevel = 0;
-        let currentSelection = [];
-        let pool = [];
-        let isHintOn = true;
+  <!-- Settings modal -->
+  <div class="modal" id="setModal">
+    <div class="card">
+      <div class="cardhead">
+        <div>
+          <div class="cardtitle">軍帳設定</div>
+          <div class="carddesc">音效、字級、提示燈號，皆可切換。</div>
+        </div>
+        <div class="btn" id="setCloseBtn" style="padding:10px 12px;">關閉</div>
+      </div>
+      <div class="cardbody">
+        <div class="tag">字體大小</div>
+        <div class="seg">
+          <div class="btn" id="fontS">小</div>
+          <div class="btn primary" id="fontM">中</div>
+          <div class="btn" id="fontL">大</div>
+        </div>
 
-        const targetZone = document.getElementById('target-zone');
-        const sourceZone = document.getElementById('source-zone');
-        const hintText = document.getElementById('hint-text');
-        const npcText = document.getElementById('npc-text');
-        const levelIndicator = document.getElementById('level-indicator');
-        const progressBar = document.getElementById('progress-bar');
-        const winModal = document.getElementById('win-modal');
-        const modalContent = document.getElementById('modal-content');
-        const hintToggle = document.getElementById('hint-toggle');
-        const checkBtn = document.getElementById('check-answer-btn');
-        const resetBtn = document.getElementById('reset-btn');
+        <div class="tag" style="margin-top:6px;">快速切換</div>
+        <div class="seg">
+          <div class="btn" id="toggleLamp2">燈號：<span id="lampState2">開</span></div>
+          <div class="btn" id="toggleSound2">音效：<span id="soundState2">開</span></div>
+        </div>
 
-        function initGame() { loadLevel(currentLevel); }
-        function toggleHint() { isHintOn = hintToggle.checked; updateHintEffect(); updateNpcText(); }
+        <div class="hintnote">
+          說明：本 v1 驗令僅檢查「文字一字不差」，標點符號不納入。提示燈號開啟時，會照亮下一個正確令牌；若該字不在本頁，會提示應翻到哪一頁。
+        </div>
+      </div>
+    </div>
+  </div>
 
-        function updateNpcText() {
-            if (checkBtn.style.display === 'block') return; // 過關後不更新
-            npcText.innerText = isHintOn ? "孫武：「依竹簡光芒，佈下陣勢。」" : "孫武：「戰場無情，全憑將軍決斷！」";
-            npcText.style.color = "#000";
+  <!-- Drawer: Military book -->
+  <div class="drawer" id="bookDrawer" aria-hidden="true">
+    <div class="drawhead">
+      <div class="drawtitle" id="bookTitle">軍書</div>
+      <div class="drawclose" id="bookClose">收</div>
+    </div>
+    <div class="drawcontent">
+      <div class="tag">原文</div>
+      <div class="blockquote" id="bookOriginal"></div>
+
+      <div class="tag">白話</div>
+      <div class="mini" id="bookExplain"></div>
+
+      <div class="tag">教官短評</div>
+      <div class="mini" id="bookCoach"></div>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   v1 data (始計篇三段)
+   ========================= */
+const passages = [
+  {
+    name: "始計篇・段一",
+    original: "兵者，國之大事，死生之地，存亡之道，不可不察也。",
+    explain: "【白話】戰爭是國家的大事，關係軍民生死，也關係國家存亡，絕不能不審慎考察。",
+    coach: "值星官：你若把它背熟，後面十三篇就不會學成「只會背術，不懂重量」。"
+  },
+  {
+    name: "始計篇・段二",
+    original: "一曰道，二曰天，三曰地，四曰將，五曰法。",
+    explain: "【白話】作戰必須評估五個關鍵：道、天、地、將、法。",
+    coach: "值星官：背這一句，不是背名詞，是背「檢查表」。每次決策先對照一次。"
+  },
+  {
+    name: "始計篇・段三",
+    original: "道者，令民與上同意也，故可與之死，可與之生，而不畏危。",
+    explain: "【白話】所謂「道」，是使民心與上位者同向；如此才能同生共死，不畏危難。",
+    coach: "值星官：你若只會叫人拚命，卻背不出這段，你就不是將，只是喊話的人。"
+  }
+];
+
+/* =========================
+   Rules:
+   - Compare TEXT ONLY, ignore punctuation/whitespace
+   ========================= */
+const IGNORE_REGEX = /[，。、！？；：、．「」『』（）()［］\[\]【】《》〈〉…—\s]/g;
+
+function normalizeText(s){
+  return (s || "").replace(IGNORE_REGEX, "");
+}
+
+/* =========================
+   App state
+   ========================= */
+let state = {
+  idx: 0,
+  rank: "卒",
+  lamp: true,
+  sound: true,
+  font: "M", // S/M/L
+  page: 0,
+  perPage: 16,
+  tokensAll: [],
+  tokensPages: [],
+  typed: [],
+  correctness: [],
+  usedCounter: new Map(),
+  finishedSet: new Set()
+};
+
+const el = {
+  rankTag: document.getElementById("rankTag"),
+  missionTitle: document.getElementById("missionTitle"),
+  missionSub: document.getElementById("missionSub"),
+  progressFill: document.getElementById("progressFill"),
+
+  lampBtn: document.getElementById("lampBtn"),
+  soundBtn: document.getElementById("soundBtn"),
+  bookBtn: document.getElementById("bookBtn"),
+  setBtn: document.getElementById("setBtn"),
+
+  npcLine1: document.getElementById("npcLine1"),
+  npcLine2: document.getElementById("npcLine2"),
+  clearBtn: document.getElementById("clearBtn"),
+  undoBtn: document.getElementById("undoBtn"),
+  reportBtn: document.getElementById("reportBtn"),
+
+  statusText: document.getElementById("statusText"),
+  remainText: document.getElementById("remainText"),
+  slotGrid: document.getElementById("slotGrid"),
+
+  pageHint: document.getElementById("pageHint"),
+  prevPage: document.getElementById("prevPage"),
+  nextPage: document.getElementById("nextPage"),
+  tokenGrid: document.getElementById("tokenGrid"),
+  hintNote: document.getElementById("hintNote"),
+
+  winModal: document.getElementById("winModal"),
+  stampText: document.getElementById("stampText"),
+  winTitle: document.getElementById("winTitle"),
+  winDesc: document.getElementById("winDesc"),
+  winQuote: document.getElementById("winQuote"),
+  replayBtn: document.getElementById("replayBtn"),
+  nextBtn: document.getElementById("nextBtn"),
+
+  rankModal: document.getElementById("rankModal"),
+  rankTitle: document.getElementById("rankTitle"),
+  rankDesc: document.getElementById("rankDesc"),
+  rankBody: document.getElementById("rankBody"),
+  rankOkBtn: document.getElementById("rankOkBtn"),
+
+  setModal: document.getElementById("setModal"),
+  setCloseBtn: document.getElementById("setCloseBtn"),
+  fontS: document.getElementById("fontS"),
+  fontM: document.getElementById("fontM"),
+  fontL: document.getElementById("fontL"),
+  toggleLamp2: document.getElementById("toggleLamp2"),
+  toggleSound2: document.getElementById("toggleSound2"),
+  lampState2: document.getElementById("lampState2"),
+  soundState2: document.getElementById("soundState2"),
+
+  bookDrawer: document.getElementById("bookDrawer"),
+  bookClose: document.getElementById("bookClose"),
+  bookTitle: document.getElementById("bookTitle"),
+  bookOriginal: document.getElementById("bookOriginal"),
+  bookExplain: document.getElementById("bookExplain"),
+  bookCoach: document.getElementById("bookCoach"),
+};
+
+/* =========================
+   Sound (WebAudio, no external files)
+   ========================= */
+let audioCtx = null;
+function beep(freq=440, dur=0.05, type="sine", vol=0.05){
+  if(!state.sound) return;
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur);
+  }catch(e){}
+}
+
+function clickSound(){ beep(520, 0.045, "triangle", 0.06); }
+function undoSound(){ beep(260, 0.05, "sine", 0.05); }
+function errorSound(){ beep(180, 0.07, "square", 0.04); }
+function winSound(){
+  beep(420, 0.06, "triangle", 0.06);
+  setTimeout(()=>beep(620, 0.07, "triangle", 0.06), 80);
+}
+function stampSound(){ beep(140, 0.08, "square", 0.03); }
+
+/* =========================
+   Vibration helper
+   ========================= */
+function vib(ms=12){
+  try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){}
+}
+
+/* =========================
+   Token building
+   - Base tokens: unique chars in current target
+   - Add distractors from other passages union
+   ========================= */
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildTokenPoolFor(idx){
+  const target = normalizeText(passages[idx].original);
+  const chars = Array.from(target);
+  const uniq = Array.from(new Set(chars));
+
+  // Build distractors from other passages (unique chars not in current)
+  const others = [];
+  for(let i=0;i<passages.length;i++){
+    if(i===idx) continue;
+    others.push(...Array.from(new Set(Array.from(normalizeText(passages[i].original)))));
+  }
+  const othersUniq = Array.from(new Set(others)).filter(c=>!uniq.includes(c));
+
+  // Determine pool size: keep it playable on mobile
+  const desired = Math.min(Math.max(uniq.length + 8, 18), 32); // 18~32
+  const need = Math.max(0, desired - uniq.length);
+  const distract = shuffle(othersUniq).slice(0, need);
+
+  const pool = shuffle(uniq.concat(distract));
+  return { target, pool };
+}
+
+function paginateTokens(tokens){
+  state.perPage = (window.innerWidth <= 420) ? 12 : 16; // small phones 12
+  const pages = [];
+  for(let i=0;i<tokens.length;i+=state.perPage){
+    pages.push(tokens.slice(i, i+state.perPage));
+  }
+  return pages;
+}
+
+/* =========================
+   Rendering
+   ========================= */
+function applyFontScale(){
+  const root = document.documentElement;
+  // base sizes tuned so 1-screen still holds
+  if(state.font==="S"){
+    root.style.setProperty("--base","15px");
+    root.style.setProperty("--slot","38px");
+  }else if(state.font==="L"){
+    root.style.setProperty("--base","18px");
+    root.style.setProperty("--slot","44px");
+  }else{
+    root.style.setProperty("--base","16px");
+    root.style.setProperty("--slot","40px");
+  }
+
+  // Buttons highlight
+  el.fontS.classList.toggle("primary", state.font==="S");
+  el.fontM.classList.toggle("primary", state.font==="M");
+  el.fontL.classList.toggle("primary", state.font==="L");
+}
+
+function renderTop(){
+  el.rankTag.textContent = state.rank;
+  el.missionTitle.textContent = "始計篇・驗令";
+  el.missionSub.textContent = `段落 ${state.idx+1}/${passages.length} ・文字一字不差（標點不驗）`;
+
+  const pct = Math.round((state.finishedSet.size / passages.length) * 100);
+  el.progressFill.style.width = `${pct}%`;
+
+  el.lampBtn.classList.toggle("on", state.lamp);
+  el.soundBtn.classList.toggle("on", state.sound);
+
+  el.lampState2.textContent = state.lamp ? "開" : "關";
+  el.soundState2.textContent = state.sound ? "開" : "關";
+}
+
+function renderNpc(){
+  const p = passages[state.idx];
+  el.npcLine1.textContent = "值星官：";
+  // Slightly different tone when lamp off
+  el.npcLine2.textContent = state.lamp
+    ? "校令。燈號在。逐字上呈；錯字即紅，退格可撤。"
+    : "熄燈夜訓。全憑你記憶逐字上呈；錯字即紅，退格可撤。";
+
+  // Status
+  const target = state.target;
+  const need = target.length - state.typed.length;
+  el.remainText.textContent = `缺字：${need}`;
+  if(state.typed.length===0){
+    el.statusText.textContent = "待命：請自令牌匣取字，完成軍令。";
+  }else{
+    const wrongCount = state.correctness.filter(x=>x===false).length;
+    el.statusText.textContent = wrongCount>0
+      ? `校令中：目前錯字 ${wrongCount} 處（退格可撤）。`
+      : "校令中：目前無錯字。";
+  }
+}
+
+function renderSlots(){
+  el.slotGrid.innerHTML = "";
+  const targetLen = state.target.length;
+
+  // Create placeholders
+  for(let i=0;i<targetLen;i++){
+    const s = document.createElement("div");
+    s.className = "slot";
+    const ch = state.typed[i];
+
+    if(!ch){
+      s.classList.add("empty");
+      s.textContent = "·";
+    }else{
+      s.textContent = ch;
+      const ok = state.correctness[i];
+      if(ok===true) s.classList.add("correct");
+      if(ok===false) s.classList.add("wrong");
+
+      // tap to remove this char and all after it (like rewinding order)
+      s.onclick = ()=>{
+        // remove from i to end
+        if(state.typed.length>i){
+          state.typed = state.typed.slice(0, i);
+          state.correctness = state.correctness.slice(0, i);
+          undoSound();
+          renderAll();
         }
+      };
+    }
 
-        function loadLevel(idx) {
-            currentSelection = [];
-            pool = [...levels[idx].segments].sort(() => Math.random() - 0.5);
+    el.slotGrid.appendChild(s);
+  }
 
-            levelIndicator.innerText = `關卡 ${idx + 1}/${levels.length}`;
-            progressBar.style.width = `${((idx) / levels.length) * 100}%`;
-            
-            checkBtn.style.display = 'none'; 
-            resetBtn.style.display = 'block'; 
-            winModal.style.display = 'none';
+  // Report button shown only when full and all correct
+  const isFull = state.typed.length === targetLen;
+  const allCorrect = isFull && state.correctness.every(v=>v===true);
+  el.reportBtn.style.display = allCorrect ? "inline-flex" : "none";
+}
 
-            // 重置樣式
-            document.querySelector('.target-zone-wrapper').style.borderColor = "#3e2723";
-            npcText.innerText = "...";
+function renderKeyboard(){
+  el.pageHint.textContent = `第 ${state.page+1} 頁 / ${state.tokensPages.length || 1} 頁`;
+  el.tokenGrid.innerHTML = "";
 
-            setTimeout(() => {
-                renderBoard();
-                npcText.innerText = isHintOn ? "孫武：「依竹簡光芒，佈下陣勢。」" : "孫武：「戰場無情，全憑將軍決斷！」";
-            }, 50);
-        }
+  const pageTokens = state.tokensPages[state.page] || [];
+  pageTokens.forEach(tok=>{
+    const b = document.createElement("div");
+    b.className = "token";
+    b.textContent = tok;
 
-        function renderBoard() {
-            targetZone.innerHTML = '';
-            if (currentSelection.length === 0) targetZone.appendChild(hintText);
-            else currentSelection.forEach((text, i) => targetZone.appendChild(createBamboo(text, 'target', i)));
+    // dim tokens that have been used many times to give subtle feedback (still clickable)
+    const used = state.usedCounter.get(tok) || 0;
+    if(used >= 2) b.classList.add("dim");
 
-            sourceZone.innerHTML = '';
-            pool.forEach((text, i) => {
-                const btn = createBamboo(text, 'source', i);
-                btn.setAttribute('data-text', text);
-                sourceZone.appendChild(btn);
-            });
-            updateHintEffect();
-        }
+    b.onclick = ()=> onToken(tok);
+    el.tokenGrid.appendChild(b);
+  });
 
-        function updateHintEffect() {
-            const allBtns = sourceZone.querySelectorAll('.bamboo-slip');
-            allBtns.forEach(btn => btn.classList.remove('hint-active'));
-            if (!isHintOn) return;
+  // Fill empty spots to keep grid stable
+  const emptyCount = Math.max(0, state.perPage - pageTokens.length);
+  for(let i=0;i<emptyCount;i++){
+    const ph = document.createElement("div");
+    ph.style.height = "46px";
+    ph.style.borderRadius = "14px";
+    ph.style.border = "1px solid rgba(255,255,255,.06)";
+    ph.style.background = "rgba(0,0,0,.10)";
+    el.tokenGrid.appendChild(ph);
+  }
 
-            const data = levels[currentLevel];
-            if (currentSelection.length >= data.segments.length) return;
-            const nextText = data.segments[currentSelection.length];
+  // Lamp hint highlight
+  applyLampHint();
+}
 
-            for(let btn of allBtns) {
-                if (btn.getAttribute('data-text') === nextText) {
-                    btn.classList.add('hint-active');
-                    break;
-                }
-            }
-        }
+function applyLampHint(){
+  // Clear
+  Array.from(el.tokenGrid.querySelectorAll(".token")).forEach(x=>x.classList.remove("hint"));
+  el.hintNote.style.display = "none";
+  el.hintNote.textContent = "";
 
-        function createBamboo(text, type, index) {
-            if (checkBtn.style.display === 'block') return document.createElement('div'); // 過關後回傳空div
+  if(!state.lamp) return;
 
-            const btn = document.createElement('div');
-            btn.className = 'bamboo-slip';
-            btn.innerText = text;
-            btn.onclick = function() {
-                if (navigator.vibrate) navigator.vibrate(15);
-                if (type === 'source') {
-                    currentSelection.push(text);
-                    pool.splice(pool.indexOf(text), 1);
-                } else {
-                    pool.push(text);
-                    currentSelection.splice(currentSelection.indexOf(text), 1);
-                }
-                renderBoard();
-                checkWin();
-            };
-            return btn;
-        }
+  const nextIndex = state.typed.length;
+  if(nextIndex >= state.target.length) return;
 
-        function checkWin() {
-            const data = levels[currentLevel];
-            if (currentSelection.length !== data.segments.length) return;
+  const needChar = state.target[nextIndex];
+  const tokens = state.tokensAll;
 
-            const isCorrect = currentSelection.every((val, i) => val === data.segments[i]);
+  // If token not present (shouldn't happen), no hint
+  const pos = tokens.indexOf(needChar);
+  if(pos < 0) return;
 
-            if (isCorrect) {
-                npcText.innerText = data.npcWin;
-                npcText.style.color = "#b71c1c";
-                document.querySelector('.target-zone-wrapper').style.borderColor = "#2e7d32";
-                checkBtn.style.display = 'block';
-                resetBtn.style.display = 'none';
-            } else {
-                npcText.innerText = "孫武：「陣勢已亂！請重整旗鼓。」";
-            }
-        }
+  const page = Math.floor(pos / state.perPage);
+  if(page !== state.page){
+    el.hintNote.style.display = "block";
+    el.hintNote.textContent = `燈號：下一字「${needChar}」不在本頁，請翻到第 ${page+1} 頁。`;
+    return;
+  }
 
-        function showModal() {
-             const data = levels[currentLevel];
-             modalContent.innerHTML = `<strong>${data.segments.join('，')}</strong><br><br>${data.translation}`;
-             winModal.style.display = 'flex';
-        }
+  // Highlight within page
+  const inPageIndex = pos - page*state.perPage;
+  const btn = el.tokenGrid.querySelectorAll(".token")[inPageIndex];
+  if(btn) btn.classList.add("hint");
+}
 
-        function nextLevel() {
-            currentLevel++;
-            if (currentLevel >= levels.length) { alert("恭喜將軍！始計篇修練完畢！"); currentLevel = 0; }
-            loadLevel(currentLevel);
-        }
+function renderAll(){
+  renderTop();
+  renderNpc();
+  renderSlots();
+  renderKeyboard();
+}
 
-        function replayLevel() { loadLevel(currentLevel); }
-        function resetCurrentLevel() { loadLevel(currentLevel); }
-    </script>
+/* =========================
+   Interactions
+   ========================= */
+function computeCorrectnessAt(i, ch){
+  return ch === state.target[i];
+}
+
+function onToken(tok){
+  if(state.typed.length >= state.target.length){
+    // already full
+    vib(8);
+    return;
+  }
+
+  // append
+  const i = state.typed.length;
+  state.typed.push(tok);
+  const ok = computeCorrectnessAt(i, tok);
+  state.correctness.push(ok);
+
+  // feedback
+  if(ok){
+    clickSound();
+    vib(10);
+  }else{
+    errorSound();
+    vib(20);
+  }
+
+  // count use
+  state.usedCounter.set(tok, (state.usedCounter.get(tok)||0) + 1);
+
+  renderAll();
+}
+
+function undo(){
+  if(state.typed.length===0){
+    vib(8);
+    return;
+  }
+  state.typed.pop();
+  state.correctness.pop();
+  undoSound();
+  vib(10);
+  renderAll();
+}
+
+function clearAll(){
+  state.typed = [];
+  state.correctness = [];
+  state.usedCounter = new Map();
+  stampSound();
+  vib(12);
+  renderAll();
+}
+
+function report(){
+  // Safety: require full and correct
+  const isFull = state.typed.length === state.target.length;
+  const allCorrect = isFull && state.correctness.every(v=>v===true);
+  if(!allCorrect){
+    errorSound();
+    vib(25);
+    return;
+  }
+
+  // Mark finished
+  state.finishedSet.add(state.idx);
+
+  // Win modal content
+  const p = passages[state.idx];
+  el.winTitle.textContent = "軍令合格";
+  el.winDesc.textContent = "此段已驗收。可再操，或進下一段。";
+  el.winQuote.textContent = p.original;
+  el.stampText.textContent = "合格";
+
+  winSound();
+  el.winModal.style.display = "flex";
+  renderTop();
+}
+
+function nextPassage(){
+  el.winModal.style.display = "none";
+  if(state.idx < passages.length - 1){
+    state.idx += 1;
+    loadPassage(state.idx);
+    return;
+  }
+
+  // Completed all in v1: rank up
+  state.rank = "伍長";
+  el.rankTitle.textContent = "升遷令";
+  el.rankDesc.textContent = "你已完成始計篇驗令（v1三段）。";
+  el.rankBody.innerHTML =
+    "授階：伍長。<br><br>" +
+    "值星官：你不是靠運氣過關，是靠「逐字把軍令扛起來」。<br>" +
+    "下一步，才輪到把整本《孫子》鋪成一條可長跑的操課路。";
+  el.rankModal.style.display = "flex";
+  stampSound();
+  renderTop();
+}
+
+function replay(){
+  el.winModal.style.display = "none";
+  loadPassage(state.idx);
+}
+
+function closeRank(){
+  el.rankModal.style.display = "none";
+  renderTop();
+}
+
+/* =========================
+   Drawer (Book)
+   ========================= */
+function openBook(){
+  const p = passages[state.idx];
+  el.bookTitle.textContent = `軍書・${p.name}`;
+  el.bookOriginal.textContent = p.original;
+  el.bookExplain.textContent = p.explain;
+  el.bookCoach.textContent = p.coach;
+
+  el.bookDrawer.classList.add("open");
+  el.bookDrawer.setAttribute("aria-hidden","false");
+  clickSound();
+}
+
+function closeBook(){
+  el.bookDrawer.classList.remove("open");
+  el.bookDrawer.setAttribute("aria-hidden","true");
+  undoSound();
+}
+
+/* =========================
+   Settings modal
+   ========================= */
+function openSettings(){
+  el.setModal.style.display = "flex";
+  renderTop();
+}
+function closeSettings(){
+  el.setModal.style.display = "none";
+}
+
+/* =========================
+   Toggle buttons
+   ========================= */
+function toggleLamp(){
+  state.lamp = !state.lamp;
+  clickSound();
+  renderAll();
+}
+function toggleSound(){
+  state.sound = !state.sound;
+  // If turning on, play a tiny confirmation
+  if(state.sound) clickSound();
+  renderAll();
+}
+
+function setFontSize(mode){
+  state.font = mode;
+  applyFontScale();
+  renderAll();
+}
+
+/* =========================
+   Passage loading
+   ========================= */
+function loadPassage(idx){
+  const { target, pool } = buildTokenPoolFor(idx);
+  state.target = target;
+  state.tokensAll = pool;
+  state.tokensPages = paginateTokens(pool);
+  state.page = 0;
+
+  state.typed = [];
+  state.correctness = [];
+  state.usedCounter = new Map();
+
+  // Adjust UI titles
+  renderAll();
+}
+
+/* =========================
+   Paging
+   ========================= */
+function prevPage(){
+  if(state.page<=0){ vib(8); return; }
+  state.page -= 1;
+  clickSound();
+  renderKeyboard();
+}
+function nextPage(){
+  if(state.page>=state.tokensPages.length-1){ vib(8); return; }
+  state.page += 1;
+  clickSound();
+  renderKeyboard();
+}
+
+/* =========================
+   Init
+   ========================= */
+function bind(){
+  el.lampBtn.onclick = toggleLamp;
+  el.soundBtn.onclick = toggleSound;
+  el.bookBtn.onclick = openBook;
+  el.bookClose.onclick = closeBook;
+  el.setBtn.onclick = openSettings;
+  el.setCloseBtn.onclick = closeSettings;
+
+  el.clearBtn.onclick = clearAll;
+  el.undoBtn.onclick = undo;
+  el.reportBtn.onclick = report;
+
+  el.replayBtn.onclick = replay;
+  el.nextBtn.onclick = nextPassage;
+
+  el.rankOkBtn.onclick = closeRank;
+
+  el.prevPage.onclick = prevPage;
+  el.nextPage.onclick = nextPage;
+
+  el.fontS.onclick = ()=>setFontSize("S");
+  el.fontM.onclick = ()=>setFontSize("M");
+  el.fontL.onclick = ()=>setFontSize("L");
+
+  el.toggleLamp2.onclick = toggleLamp;
+  el.toggleSound2.onclick = toggleSound;
+
+  // Close modals on background tap
+  el.winModal.addEventListener("click", (e)=>{
+    if(e.target === el.winModal) el.winModal.style.display = "none";
+  });
+  el.setModal.addEventListener("click", (e)=>{
+    if(e.target === el.setModal) closeSettings();
+  });
+  el.rankModal.addEventListener("click", (e)=>{
+    if(e.target === el.rankModal) closeRank();
+  });
+
+  // Re-paginate on resize (keeps 1-screen stability)
+  window.addEventListener("resize", ()=>{
+    if(!state.tokensAll || state.tokensAll.length===0) return;
+    state.tokensPages = paginateTokens(state.tokensAll);
+    state.page = Math.min(state.page, state.tokensPages.length-1);
+    renderAll();
+  });
+}
+
+function init(){
+  applyFontScale();
+  bind();
+  state.rank = "卒";
+  state.finishedSet = new Set();
+  state.lamp = true;
+  state.sound = true;
+  loadPassage(0);
+}
+
+init();
+</script>
 </body>
 </html>
