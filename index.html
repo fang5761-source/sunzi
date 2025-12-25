@@ -1520,6 +1520,38 @@
     }
   }
 
+  // ✅✅✅ 新增：下一關控制（芳不用再找小螞蟻）
+  function goNextLearnSegment(){
+    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    if(!ch) return;
+
+    const nextIndex = currentSegIndex + 1;
+
+    // 還有下一段 → 進下一關
+    if(nextIndex < ch.segments.length){
+      currentSegIndex = nextIndex;
+      startLearnSegment(currentSegIndex, { firstEntry:false, preserve:false });
+      return;
+    }
+
+    // 已是最後一段 → 本篇完成
+    openModal("本篇完成", `
+      <div class="plain">你已完成：${escapeHtml(ch.name)} 🎉</div>
+      <div class="plain">要回篇章首頁看整篇，或回總覽挑下一篇？</div>
+    `, `
+      <button class="btn" id="btnDoneHome">回到篇章首頁</button>
+      <button class="btn primary" id="btnDoneOverview">回到總覽</button>
+    `);
+
+    setTimeout(() => {
+      const a = document.getElementById("btnDoneHome");
+      const b = document.getElementById("btnDoneOverview");
+      if(a) a.onclick = () => { modalClose.click(); openChapterHome(); };
+      if(b) b.onclick = () => { modalClose.click(); btnOverview.click(); };
+    }, 0);
+  }
+
+  // ✅✅✅ 替換：過關後彈出「下一關」
   function onSegmentPassed(){
     btnBook.disabled = false;
     btnBook.classList.add("pulseStrong");
@@ -1530,6 +1562,30 @@
     saveProgress();
 
     renderTestBar();
+
+    const isLast = (currentSegIndex >= ch.segments.length - 1);
+    openModal("過關", `
+      <div class="plain">這段拿下了 ✅</div>
+      <div class="plain">${isLast ? "你已完成本篇最後一段。" : "要直接進下一關，還是先看兵書？"}</div>
+    `, `
+      <button class="btn" id="btnAfterReadBook">看兵書</button>
+      <button class="btn primary" id="btnAfterNext">${isLast ? "本篇完成" : "下一關"}</button>
+    `);
+
+    setTimeout(() => {
+      const a = document.getElementById("btnAfterReadBook");
+      const b = document.getElementById("btnAfterNext");
+
+      if(a) a.onclick = () => {
+        modalClose.click();
+        btnBook.click();
+      };
+
+      if(b) b.onclick = () => {
+        modalClose.click();
+        goNextLearnSegment();
+      };
+    }, 0);
   }
 
   function checkTestWin(){
@@ -1581,10 +1637,12 @@
   /***********************
    * BOOK（原文 + 白話）
    ***********************/
+  // ✅✅✅ 修正：未來若允許測驗也能看兵書，不會抓錯段
   btnBook.onclick = () => {
     if(btnBook.disabled) return;
     const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    const seg = ch.segments[currentSegIndex];
+    const idx = (mode==="test") ? testCursor : currentSegIndex;
+    const seg = ch.segments[idx];
 
     openModal("兵書", `
       <div class="quote">${escapeHtml(seg.quote)}</div>
@@ -1772,12 +1830,7 @@
     showView(viewOverview);
   }
 
-  // 讓「篇章」可從總覽進入首頁後再開始背
-  // 初始：就讓你從總覽點第一篇進去玩
   init();
-
-  // convenience：總覽點第一篇後可直接進首頁（你原本就這樣用）
-  // 這裡不自動跳，避免干擾你測試流程
 })();
 </script>
 </body>
