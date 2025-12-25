@@ -2,1065 +2,1042 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>孫子兵法｜謀略之戰 v1.1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>孫子兵法・佈令演練 v1.2</title>
   <style>
     :root{
-      --bg0:#0b0f0c;
-      --bg1:#0f1712;
-      --panel:rgba(22,30,24,.82);
-      --panel2:rgba(28,38,30,.88);
-      --line:rgba(230,200,120,.35);
-      --line2:rgba(230,200,120,.22);
-      --gold:#d8b96b;
-      --gold2:#b89442;
-      --ink:#e9e6db;
-      --muted:rgba(233,230,219,.75);
-      --danger:#c95151;
-      --ok:#4fbf84;
-      --hint:#f6d56b;
-      --shadow:rgba(0,0,0,.35);
-      --radius:18px;
-      --fs:18px; /* 可由設定調整：16/18/20/22 */
+      --bg:#0b0f0d;
+      --panel:#111815;
+      --panel2:#0f1412;
+      --gold:#d6b36a;
+      --gold2:#9a7b40;
+      --line:rgba(214,179,106,.35);
+      --muted:rgba(255,255,255,.65);
+      --text:rgba(255,255,255,.92);
+      --ok:#2fbf71;
+      --warn:#d85c5c;
+      --chip:#151f1a;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:20px;
+
+      --fs-base: 16px; /* 由設定滑桿控制 */
+      --fs-small: calc(var(--fs-base) - 1px);
+      --fs-large: calc(var(--fs-base) + 2px);
+
+      --breathe: 2.8s; /* 呼吸慢一點 */
     }
 
-    *{box-sizing:border-box;}
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", "Noto Serif CJK TC", serif;
-      background:
-        radial-gradient(1200px 600px at 30% 10%, rgba(70,90,60,.35), transparent 60%),
-        radial-gradient(900px 500px at 90% 30%, rgba(120,90,40,.25), transparent 55%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      color:var(--ink);
-      height:100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      background: radial-gradient(1200px 800px at 20% 10%, rgba(214,179,106,.10), transparent 60%),
+                  radial-gradient(900px 700px at 80% 30%, rgba(47,191,113,.08), transparent 55%),
+                  linear-gradient(180deg, #070a08, #0b0f0d);
+      color:var(--text);
       overflow:hidden;
+      font-size: var(--fs-base);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
-    /* iPhone safe area */
+    /* 安全區 */
+    .safeTop{height: env(safe-area-inset-top);}
+    .safeBottom{height: env(safe-area-inset-bottom);}
+
     .app{
-      height:100vh;
-      padding: calc(env(safe-area-inset-top) + 10px) 12px calc(env(safe-area-inset-bottom) + 10px) 12px;
+      height:100%;
       display:flex;
       flex-direction:column;
+      padding: 10px 12px 10px 12px;
       gap:10px;
-      max-width: 720px;
-      margin:0 auto;
     }
 
+    /* 頂部狀態列（更扁、更省空間） */
     .topbar{
-      background: var(--panel);
-      border: 1px solid var(--line2);
+      background: rgba(17,24,21,.75);
+      border:1px solid var(--line);
       border-radius: var(--radius);
-      box-shadow: 0 10px 25px var(--shadow);
-      padding:12px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      min-height: 64px;
+    }
+    .top-left{
       display:flex;
       align-items:center;
       gap:10px;
-      min-height: 74px;
+      min-width:0;
     }
-
     .rank{
-      flex:0 0 auto;
       padding:8px 12px;
       border-radius: 999px;
       border:1px solid var(--line);
-      background: rgba(0,0,0,.25);
       color: var(--gold);
-      font-weight:700;
-      letter-spacing:.08em;
-      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      background: rgba(0,0,0,.18);
+      flex: 0 0 auto;
     }
-
     .meta{
-      flex: 1 1 auto;
       display:flex;
       flex-direction:column;
-      gap:6px;
-      min-width: 0;
-    }
-    .meta .row1{
-      display:flex;
-      gap:10px;
-      align-items:center;
+      gap:4px;
       min-width:0;
     }
-    .meta .title{
+    .chapter{
+      font-weight:800;
+      color: rgba(255,255,255,.88);
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-      color: var(--muted);
-      font-weight:700;
-      letter-spacing:.04em;
-      font-size: 14px;
     }
-    .pill{
-      display:inline-flex;
+    .submeta{
+      display:flex;
       align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius: 999px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.22);
-      min-width: 0;
-      font-size: 13px;
+      gap:10px;
+      font-size: var(--fs-small);
       color: var(--muted);
     }
     .dot{
       width:10px;height:10px;border-radius:50%;
       background: var(--ok);
-      box-shadow: 0 0 0 3px rgba(79,191,132,.18);
+      box-shadow: 0 0 10px rgba(47,191,113,.55);
       flex:0 0 auto;
     }
-    .spacer{flex:1 1 auto;}
+    .hint-pill{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.20);
+      white-space:nowrap;
+    }
 
-    .icon-btn{
-      flex:0 0 auto;
-      width:48px;height:48px;
-      border-radius: 14px;
-      border:1px solid var(--line2);
-      background: rgba(0,0,0,.25);
-      color: var(--ink);
+    .top-right{
       display:flex;
       align-items:center;
-      justify-content:center;
-      box-shadow: 0 8px 16px var(--shadow);
-      cursor:pointer;
-      -webkit-tap-highlight-color: transparent;
-      position:relative;
-      user-select:none;
-    }
-    .icon-btn:active{ transform: scale(.98); }
-    .icon{
-      font-size: 20px;
-      filter: drop-shadow(0 2px 2px rgba(0,0,0,.4));
-    }
-
-    /* 書卷按鈕呼吸燈（更亮、更慢） */
-    .breath{
-      animation: breath 4.6s ease-in-out infinite;
-      box-shadow:
-        0 0 0 1px rgba(246,213,107,.22),
-        0 0 18px rgba(246,213,107,.34),
-        0 0 36px rgba(246,213,107,.18);
-      border-color: rgba(246,213,107,.45) !important;
-    }
-    @keyframes breath{
-      0%{ filter: brightness(1); transform: translateZ(0); }
-      50%{ filter: brightness(1.18); }
-      100%{ filter: brightness(1); }
-    }
-
-    /* 孫武對話 */
-    .npc{
-      background: var(--panel2);
-      border: 1px solid var(--line2);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 25px var(--shadow);
-      padding:12px;
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-      min-height: 70px;
-    }
-    .npc-badge{
-      flex:0 0 auto;
-      width:52px;height:52px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,.28);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: var(--gold);
-      font-weight:900;
-      letter-spacing:.08em;
-    }
-    .npc-text{
-      flex:1 1 auto;
-      min-width:0;
-      font-size: var(--fs);
-      line-height: 1.35;
-      color: var(--ink);
-      display:-webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow:hidden;
-      cursor:pointer;
-      user-select:none;
-    }
-    .npc-text .more{
-      color: rgba(246,213,107,.9);
-      font-weight:700;
-      margin-left:6px;
-    }
-
-    /* 佈令板 */
-    .board{
-      background: rgba(10,14,11,.55);
-      border: 1px solid var(--line2);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 25px var(--shadow);
-      padding:12px;
-      display:flex;
-      flex-direction:column;
       gap:10px;
       flex: 0 0 auto;
     }
-    .board-head{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .board-title{
-      color: var(--gold);
-      font-weight:900;
-      letter-spacing:.08em;
-      font-size: 16px;
-    }
-    .board-stat{
-      margin-left:auto;
-      color: var(--muted);
-      font-weight:700;
-      font-size: 14px;
-    }
-
-    .slots{
-      border: 1px dashed rgba(216,185,107,.35);
-      border-radius: 16px;
-      padding:10px;
-      display:grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap:10px;
-      background: rgba(0,0,0,.18);
-      min-height: 88px; /* 固定高度，避免掉出 */
-    }
-    .slot{
-      height:48px;
+    .iconbtn{
+      width:44px;height:44px;
       border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.18);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color: rgba(233,230,219,.35);
-      font-weight:800;
-      letter-spacing:.06em;
-      font-size: 14px;
-      overflow:hidden;
-      padding:0 10px;
-    }
-    .slot.filled{
-      color: var(--ink);
-      border-color: rgba(246,213,107,.22);
-      background: rgba(20,26,21,.55);
-    }
-    .slot.flash{
-      animation: flash .22s ease-in-out;
-    }
-    @keyframes flash{
-      0%{ filter: brightness(1); }
-      50%{ filter: brightness(1.25); }
-      100%{ filter: brightness(1); }
-    }
-
-    /* 操作列 */
-    .actions{
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.22);
       display:grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap:10px;
-      flex:0 0 auto;
-    }
-    .btn{
-      height:50px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.25);
-      color: var(--ink);
-      font-weight:900;
-      letter-spacing:.08em;
-      cursor:pointer;
-      box-shadow: 0 8px 16px var(--shadow);
-      -webkit-tap-highlight-color: transparent;
+      place-items:center;
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      color: rgba(255,255,255,.9);
       user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      position:relative;
     }
-    .btn:active{ transform: scale(.99); }
-    .btn.danger{ border-color: rgba(201,81,81,.35); }
-    .btn.ok{ border-color: rgba(79,191,132,.35); }
-    .btn.gold{ border-color: rgba(216,185,107,.45); background: rgba(40,34,18,.35); }
+    .iconbtn:active{transform: scale(.98)}
+    .icon{
+      font-size:20px;
+      opacity:.95;
+    }
 
-    /* 令牌區（固定在底部，不滾動） */
-    .cards{
-      background: rgba(10,14,11,.38);
-      border: 1px solid var(--line2);
+    /* 兵書呼吸燈（更亮、更慢） */
+    .breath::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius: 16px;
+      border:2px solid rgba(214,179,106,.65);
+      filter: drop-shadow(0 0 10px rgba(214,179,106,.35));
+      animation: breathe var(--breathe) ease-in-out infinite;
+      pointer-events:none;
+    }
+    @keyframes breathe{
+      0%{opacity:.25; transform: scale(1);}
+      50%{opacity:.95; transform: scale(1.02);}
+      100%{opacity:.25; transform: scale(1);}
+    }
+
+    /* 孫武語錄 */
+    .npc{
+      background: rgba(17,24,21,.65);
+      border:1px solid var(--line);
       border-radius: var(--radius);
-      box-shadow: 0 10px 25px var(--shadow);
-      padding:12px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      min-height: 76px;
+    }
+    .npc-badge{
+      width:52px;height:52px;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      color: var(--gold);
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      letter-spacing:.12em;
+      flex:0 0 auto;
+      background: rgba(0,0,0,.18);
+    }
+    .npc-text{
+      flex:1;
+      line-height: 1.35;
+      font-size: var(--fs-large);
+      position:relative;
+      padding-right: 8px;
+      min-width:0;
+    }
+    .npc-text.fade{
+      mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 72%, rgba(0,0,0,0) 100%);
+      -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 72%, rgba(0,0,0,0) 100%);
+      max-height: calc(1.35em * 3);
+      overflow:hidden;
+    }
+    .npc-more{
+      margin-top:6px;
+      font-size: var(--fs-small);
+      color: rgba(214,179,106,.9);
+      cursor:pointer;
+      user-select:none;
+      width: fit-content;
+    }
+
+    /* 主舞台 */
+    .stage{
+      flex:1;
+      min-height:0;
       display:flex;
       flex-direction:column;
       gap:10px;
-      flex: 1 1 auto; /* 吃掉剩餘高度 */
+    }
+
+    .board{
+      background: rgba(15,20,18,.62);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
       min-height: 0;
     }
-    .cards-head{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .cards-title{
-      color: rgba(233,230,219,.7);
-      font-weight:900;
-      letter-spacing:.08em;
-      font-size: 14px;
-    }
-    .cards-pages{
-      margin-left:auto;
-      color: rgba(233,230,219,.55);
-      font-weight:800;
-      font-size: 13px;
-    }
-    .card-grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-      align-content:start;
-      flex:1 1 auto;
-      min-height:0;
-    }
 
-    .card{
-      height:56px;
-      border-radius: 18px;
-      border: 1px solid rgba(216,185,107,.22);
-      background: rgba(0,0,0,.22);
-      color: var(--ink);
-      font-weight:900;
-      letter-spacing:.06em;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      padding: 0 10px;
-      cursor:pointer;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
-      box-shadow: 0 10px 18px rgba(0,0,0,.25);
-      position:relative;
-      overflow:hidden;
-      font-size: calc(var(--fs) + 2px);
-      line-height: 1.15;
-    }
-    .card:active{ transform: scale(.99); }
-    .card.hint{
-      border-color: rgba(246,213,107,.55);
-      box-shadow:
-        0 0 0 1px rgba(246,213,107,.25),
-        0 0 18px rgba(246,213,107,.30),
-        0 0 44px rgba(246,213,107,.12);
-      animation: breath 4.6s ease-in-out infinite;
-    }
-    .card.disabled{
-      opacity:.45;
-      pointer-events:none;
-      filter: grayscale(.35);
-    }
-
-    /* Modal */
-    .modal{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.72);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
-      z-index: 9999;
-    }
-    .modal.show{ display:flex; }
-    .modal-box{
-      width: min(560px, 100%);
-      border-radius: 20px;
-      border: 1px solid rgba(216,185,107,.25);
-      background: rgba(14,18,15,.96); /* 不透明一些，避免背後字干擾 */
-      box-shadow: 0 22px 60px rgba(0,0,0,.55);
-      overflow:hidden;
-    }
-    .modal-head{
-      padding: 14px 14px 10px 14px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      border-bottom: 1px solid rgba(216,185,107,.16);
-    }
-    .modal-title{
-      font-weight:1000;
-      letter-spacing:.08em;
-      color: var(--gold);
-      font-size: 14px;
-    }
-    .modal-close{
-      margin-left:auto;
-      width:40px;height:40px;
-      border-radius: 12px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(0,0,0,.25);
-      color: var(--ink);
-      font-weight:900;
-      cursor:pointer;
-    }
-    .modal-body{
-      padding: 14px;
-      color: var(--ink);
-      font-size: var(--fs);
-      line-height: 1.5;
-    }
-    .modal-body .quote{
-      font-weight:900;
-      font-size: calc(var(--fs) + 4px);
-      line-height: 1.35;
-      margin: 6px 0 10px 0;
-    }
-    .modal-body .explain{
-      color: rgba(233,230,219,.78);
-      background: rgba(0,0,0,.22);
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: 14px;
-      padding: 10px 12px;
-    }
-    .modal-actions{
-      padding: 12px 14px 14px 14px;
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    .modal-actions .btn{
-      height:52px;
-    }
-
-    /* 教學小字 */
-    .tiny{
-      color: rgba(233,230,219,.65);
-      font-weight:700;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    /* 設定選單 */
-    .settings-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-      margin-top: 8px;
-    }
-    .set-row{
+    .board-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.06);
-      background: rgba(0,0,0,.18);
     }
-    .set-row b{ color: var(--ink); letter-spacing:.04em; }
-    .toggle{
-      width:56px;height:32px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
+    .board-title{
+      font-weight:900;
+      color: var(--gold);
+      letter-spacing:.08em;
+    }
+    .missing{
+      font-weight:800;
+      color: rgba(255,255,255,.75);
+      font-size: var(--fs-small);
+    }
+
+    /* 佈令板：固定兩列+不滑動 */
+    .slots{
+      border:1px dashed rgba(214,179,106,.35);
+      border-radius: 18px;
+      padding: 10px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      min-height: 132px;
+      background: rgba(0,0,0,.12);
+    }
+
+    /* 令牌：更像軍令牌，不像竹簡 */
+    .token{
+      border-radius: 18px;
+      border:1px solid rgba(214,179,106,.35);
+      background: linear-gradient(180deg, rgba(21,31,26,.92), rgba(12,18,15,.92));
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      padding: 14px 12px;
+      text-align:center;
+      font-weight:900;
+      letter-spacing:.06em;
+      color: rgba(255,255,255,.92);
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      cursor:pointer;
+      line-height:1.15;
+      min-height: 56px;
+      display:grid;
+      place-items:center;
+    }
+    .token:active{transform: scale(.99)}
+    .token.hint{
+      border-color: rgba(214,179,106,.95);
+      box-shadow: 0 0 0 2px rgba(214,179,106,.25), 0 0 18px rgba(214,179,106,.35);
+      animation: glow var(--breathe) ease-in-out infinite;
+    }
+    @keyframes glow{
+      0%{filter: brightness(1);}
+      50%{filter: brightness(1.18);}
+      100%{filter: brightness(1);}
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top: 2px;
+    }
+    .btn{
+      flex:1;
+      border:none;
+      border-radius: 18px;
+      padding: 14px 12px;
+      font-weight:900;
+      letter-spacing:.06em;
+      color: rgba(255,255,255,.95);
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(214,179,106,.25);
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      cursor:pointer;
+      font-size: var(--fs-base);
+    }
+    .btn:active{transform: scale(.99)}
+    .btn.red{border-color: rgba(216,92,92,.55); background: rgba(216,92,92,.10)}
+    .btn.green{border-color: rgba(47,191,113,.55); background: rgba(47,191,113,.10)}
+    .btn.gold{border-color: rgba(214,179,106,.65); background: rgba(214,179,106,.10)}
+
+    /* 令牌區：固定兩列格子 + 分頁 */
+    .pool{
+      background: rgba(17,24,21,.58);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 10px 12px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height: 0;
+    }
+    .pool-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-size: var(--fs-small);
+      color: rgba(255,255,255,.72);
+    }
+    .pager{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .pbtn{
+      width:42px;height:36px;
+      border-radius: 14px;
+      border:1px solid rgba(214,179,106,.25);
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.92);
+      display:grid;
+      place-items:center;
+      user-select:none;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pbtn:active{transform: scale(.99)}
+    .pinfo{min-width:50px; text-align:right}
+
+    .pool-grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      min-height: 128px;
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left:50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.68);
+      border:1px solid rgba(214,179,106,.28);
+      color: rgba(255,255,255,.92);
+      padding: 10px 14px;
+      border-radius: 999px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      font-weight:800;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .25s ease;
+      font-size: var(--fs-small);
+    }
+    .toast.show{opacity:1}
+
+    /* Modal（不透明背景，解決妳說的「透明干擾」） */
+    .modal{
+      position: fixed;
+      inset:0;
+      background: rgba(0,0,0,.78);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px 14px;
+      z-index: 50;
+    }
+    .modal.show{display:flex}
+    .card{
+      width: min(520px, 100%);
+      border-radius: 22px;
+      border:1px solid rgba(214,179,106,.35);
+      background: rgba(15,20,18,.96);
+      box-shadow: 0 24px 60px rgba(0,0,0,.55);
+      padding: 14px 14px 16px;
+      position:relative;
+    }
+    .card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 6px 4px 10px;
+    }
+    .card-title{
+      font-weight: 950;
+      color: var(--gold);
+      letter-spacing: .08em;
+    }
+    .x{
+      width:42px;height:42px;border-radius: 14px;
+      border:1px solid rgba(214,179,106,.25);
+      background: rgba(0,0,0,.25);
+      display:grid; place-items:center;
+      cursor:pointer; user-select:none;
+    }
+    .x:active{transform: scale(.99)}
+    .card-body{
+      padding: 6px 6px 0;
+      color: rgba(255,255,255,.9);
+      line-height: 1.55;
+    }
+    .quote{
+      font-weight: 900;
+      font-size: calc(var(--fs-base) + 2px);
+      letter-spacing: .02em;
+    }
+    .plain{
+      margin-top: 10px;
+      color: rgba(255,255,255,.78);
+      background: rgba(0,0,0,.20);
+      border:1px solid rgba(214,179,106,.18);
+      border-radius: 16px;
+      padding: 10px 12px;
+    }
+
+    /* 設定 */
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 10px 6px;
+      border-top: 1px solid rgba(214,179,106,.12);
+    }
+    .row:first-of-type{border-top:none}
+    .label{
+      font-weight: 900;
+      color: rgba(255,255,255,.88);
+    }
+    .sub{
+      font-size: var(--fs-small);
+      color: rgba(255,255,255,.65);
+      margin-top: 2px;
+    }
+    .switch{
+      width: 56px; height: 34px;
+      border-radius: 999px;
+      border:1px solid rgba(214,179,106,.25);
       background: rgba(0,0,0,.25);
       position:relative;
       cursor:pointer;
+      user-select:none;
       flex:0 0 auto;
     }
     .knob{
+      position:absolute; top:4px; left:4px;
       width:26px;height:26px;border-radius:50%;
-      background: rgba(233,230,219,.9);
-      position:absolute;top:2px;left:2px;
-      transition: .18s ease;
-      box-shadow: 0 6px 14px rgba(0,0,0,.35);
+      background: rgba(255,255,255,.88);
+      transition: left .2s ease, background .2s ease;
+      box-shadow: 0 8px 16px rgba(0,0,0,.35);
     }
-    .toggle.on{ border-color: rgba(246,213,107,.35); }
-    .toggle.on .knob{ left:28px; background: rgba(246,213,107,.95); }
+    .switch.on{
+      background: rgba(214,179,106,.22);
+      border-color: rgba(214,179,106,.55);
+    }
+    .switch.on .knob{left:26px; background: rgba(214,179,106,.95)}
+    input[type="range"]{width: 160px}
 
-    .seg{
-      display:inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(216,185,107,.25);
-      background: rgba(0,0,0,.18);
-      margin-right: 6px;
-      margin-bottom: 6px;
-      font-weight:900;
-      color: var(--ink);
+    /* 小螢幕微調 */
+    @media (max-height: 700px){
+      .npc{min-height: 70px}
+      .slots{min-height: 120px}
+      .pool-grid{min-height: 116px}
+      .token{min-height: 52px}
+      .btn{padding: 12px 10px}
     }
   </style>
 </head>
+
 <body>
-  <div class="app">
+  <div class="safeTop"></div>
 
+  <div class="app" id="app">
     <div class="topbar">
-      <div class="rank" id="rankTag">新兵</div>
-
-      <div class="meta">
-        <div class="row1">
-          <div class="title" id="chapterTitle">始計篇｜演練 1</div>
-          <div class="spacer"></div>
-        </div>
-        <div class="row1">
-          <div class="pill"><span class="dot" id="statusDot"></span><span id="statusText">目前無錯字</span></div>
-          <div class="pill" id="hintPill">學習提示：<b style="color:var(--gold);">開</b></div>
+      <div class="top-left">
+        <div class="rank" id="rankTag">新兵</div>
+        <div class="meta">
+          <div class="chapter" id="chapterLine">始計篇｜演練 1</div>
+          <div class="submeta">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">目前無錯字</span>
+            <span class="hint-pill" id="hintPill">學習提示：開</span>
+          </div>
         </div>
       </div>
 
-      <button class="icon-btn" id="btnSettings" aria-label="設定"><span class="icon">⚙️</span></button>
-      <button class="icon-btn" id="btnBook" aria-label="兵書"><span class="icon">📜</span></button>
+      <div class="top-right">
+        <div class="iconbtn" id="btnSettings" title="設定"><span class="icon">⚙️</span></div>
+        <div class="iconbtn" id="btnBook" title="兵書"><span class="icon">📜</span></div>
+      </div>
     </div>
 
-    <div class="npc" id="npcBox" title="點我看完整版">
+    <div class="npc">
       <div class="npc-badge">孫武</div>
-      <div class="npc-text" id="npcText">先順口，再穩住；穩住了，就背起來。<span class="more" id="npcMore" style="display:none;">⋯</span></div>
+      <div class="npc-text" id="npcText"></div>
     </div>
 
-    <div class="board">
-      <div class="board-head">
-        <div class="board-title">佈令板</div>
-        <div class="board-stat" id="missText">缺詞：5</div>
+    <div class="stage">
+      <div class="board">
+        <div class="board-head">
+          <div class="board-title">佈令板</div>
+          <div class="missing" id="missingText">缺詞：0</div>
+        </div>
+
+        <div class="slots" id="slots"></div>
+
+        <div class="actions">
+          <button class="btn red" id="btnUndo">撤令</button>
+          <button class="btn" id="btnReset">重整</button>
+          <button class="btn green" id="btnCheck">驗令</button>
+        </div>
+
+        <button class="btn gold" id="btnTest" style="display:none;">測驗（累積）</button>
       </div>
 
-      <div class="slots" id="slots"></div>
-
-      <div class="actions">
-        <button class="btn danger" id="btnUndo">撤令</button>
-        <button class="btn" id="btnReset">重整</button>
-        <button class="btn ok" id="btnCheck">驗令</button>
+      <div class="pool">
+        <div class="pool-head">
+          <div>令牌區</div>
+          <div class="pager">
+            <div class="pbtn" id="pPrev">‹</div>
+            <div class="pinfo" id="pInfo">1/1</div>
+            <div class="pbtn" id="pNext">›</div>
+          </div>
+        </div>
+        <div class="pool-grid" id="poolGrid"></div>
       </div>
-
-      <button class="btn gold" id="btnDrill" style="display:none;">加練（可選）</button>
     </div>
 
-    <div class="cards">
-      <div class="cards-head">
-        <div class="cards-title">令牌區</div>
-        <div class="cards-pages" id="pageText">1/1</div>
-      </div>
-      <div class="card-grid" id="cardGrid"></div>
-    </div>
-
+    <div class="safeBottom"></div>
   </div>
 
-  <!-- Modal：通用 -->
-  <div class="modal" id="modal">
-    <div class="modal-box">
-      <div class="modal-head">
-        <div class="modal-title" id="modalTitle">兵書</div>
-        <button class="modal-close" id="modalClose">✕</button>
+  <div class="toast" id="toast"></div>
+
+  <!-- 兵書 Modal -->
+  <div class="modal" id="modalBook">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">兵書</div>
+        <div class="x" data-close="modalBook">✕</div>
       </div>
-      <div class="modal-body" id="modalBody"></div>
-      <div class="modal-actions" id="modalActions"></div>
+      <div class="card-body">
+        <div class="quote" id="bookQuote"></div>
+        <div class="plain" id="bookPlain"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 設定 Modal -->
+  <div class="modal" id="modalSettings">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">設定</div>
+        <div class="x" data-close="modalSettings">✕</div>
+      </div>
+
+      <div class="card-body">
+        <div style="color: rgba(255,255,255,.70); font-size: var(--fs-small); margin-bottom: 10px;">
+          v1.2 先把「好背、好玩、不用滑」站穩。朗讀與更深的驚喜先留到後續。
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="label">學習提示</div>
+            <div class="sub">令牌會用呼吸燈提示下一個正確順序</div>
+          </div>
+          <div class="switch" id="swHint"><div class="knob"></div></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="label">音效</div>
+            <div class="sub">點擊/通過時的提示音（可關）</div>
+          </div>
+          <div class="switch" id="swSfx"><div class="knob"></div></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="label">字體大小</div>
+            <div class="sub">滑桿調整（也會影響按鈕字）</div>
+          </div>
+          <input type="range" id="fontRange" min="14" max="20" step="1" />
+        </div>
+
+        <button class="btn gold" id="btnDone">完成</button>
+      </div>
     </div>
   </div>
 
 <script>
-(() => {
-  // ===== 資料：先做始計篇一小段（v1測架構） =====
-  // 標點：目前採「帶標點原文」顯示於兵書；學習拼句以詞牌為主（不嚴苛考試）
-  const levels = [
-    {
-      chapter: "始計篇",
-      title: "演練 1",
-      segments: ["兵者", "國之大事", "死生之地", "存亡之道", "不可不察也"],
-      original: "兵者，國之大事，死生之地，存亡之道，不可不察也。",
-      translation: "【白話】戰爭是國家的大事，關係到軍民的生死、國家的存亡，因此絕對不可不仔細審察。",
-    },
-    {
-      chapter: "始計篇",
-      title: "演練 2",
-      segments: ["一曰道", "二曰天", "三曰地", "四曰將", "五曰法"],
-      original: "一曰道，二曰天，三曰地，四曰將，五曰法。",
-      translation: "【白話】用兵要看五件事：道（上下同心）、天（外在節奏）、地（地形遠近）、將（將領素質）、法（制度編制）。",
-    }
-  ];
-
-  // ===== 狀態 =====
-  const state = {
-    idx: 0,
-    selected: [],
-    pool: [],
-    hintOn: true,          // 學習提示：預設開
-    soundOn: false,        // 有聲朗讀：先不做（保留開關）
-    fontStep: 18,          // 16/18/20/22
-    bookArmed: false,      // 驗令通過後，兵書按鈕提示呼吸燈
-    firstTime: true,       // 教學只顯示一次
-  };
-
-  // ===== DOM =====
-  const rankTag = document.getElementById("rankTag");
-  const chapterTitle = document.getElementById("chapterTitle");
-  const statusDot = document.getElementById("statusDot");
-  const statusText = document.getElementById("statusText");
-  const hintPill = document.getElementById("hintPill");
-  const btnSettings = document.getElementById("btnSettings");
-  const btnBook = document.getElementById("btnBook");
-  const npcBox = document.getElementById("npcBox");
-  const npcText = document.getElementById("npcText");
-  const npcMore = document.getElementById("npcMore");
-  const slots = document.getElementById("slots");
-  const missText = document.getElementById("missText");
-  const cardGrid = document.getElementById("cardGrid");
-  const pageText = document.getElementById("pageText");
-
-  const btnUndo = document.getElementById("btnUndo");
-  const btnReset = document.getElementById("btnReset");
-  const btnCheck = document.getElementById("btnCheck");
-  const btnDrill = document.getElementById("btnDrill");
-
-  const modal = document.getElementById("modal");
-  const modalTitle = document.getElementById("modalTitle");
-  const modalBody = document.getElementById("modalBody");
-  const modalActions = document.getElementById("modalActions");
-  const modalClose = document.getElementById("modalClose");
-
-  // ===== 工具 =====
-  const shuffle = (arr) => arr.slice().sort(() => Math.random() - 0.5);
-
-  function setFont(step){
-    state.fontStep = step;
-    document.documentElement.style.setProperty("--fs", step + "px");
+/* ========= 資料（先做始計篇一小段驗證） ========= */
+const drills = [
+  {
+    id: "SC_01",
+    chapter: "始計篇",
+    title: "演練 1",
+    segments: ["兵者","國之大事","死生之地","存亡之道","不可不察也"],
+    quote: "兵者，國之大事，死生之地，存亡之道，不可不察也。",
+    plain: "【白話】戰爭是國家的大事，關係到軍民生死、國家存亡，所以絕對不能不仔細審察。"
+  },
+  {
+    id: "SC_02",
+    chapter: "始計篇",
+    title: "演練 2",
+    segments: ["一曰道","二曰天","三曰地","四曰將","五曰法"],
+    quote: "一曰道，二曰天，三曰地，四曰將，五曰法。",
+    plain: "【白話】五個面向：道（上下同心）、天（時機變數）、地（地形利害）、將（將領素質）、法（組織制度）。"
   }
+];
 
-  function setHint(on){
-    state.hintOn = on;
-    hintPill.innerHTML = `學習提示：<b style="color:var(--gold);">${on ? "開" : "關"}</b>`;
-    renderCards();
-    updateNpc();
+/* ========= 狀態 ========= */
+let idx = 0;
+let selection = [];     // 已放入佈令板的 segments
+let pool = [];          // 令牌區的 segments（亂序）
+let page = 0;
+const perPage = 4;      // 兩列（2x2）
+let hintOn = true;      // 預設開啟
+let sfxOn = false;      // 預設關閉（先保守）
+let passed = false;     // 此段是否已驗令通過
+
+/* 累積測驗：第 n 段可測前 n 段（妳的想法） */
+let testUnlocked = 0;   // 已解鎖到第幾段（驗令通過才+1）
+
+/* ========= DOM ========= */
+const rankTag = document.getElementById("rankTag");
+const chapterLine = document.getElementById("chapterLine");
+const statusDot = document.getElementById("statusDot");
+const statusText = document.getElementById("statusText");
+const hintPill = document.getElementById("hintPill");
+
+const npcText = document.getElementById("npcText");
+const slotsEl = document.getElementById("slots");
+const missingText = document.getElementById("missingText");
+
+const poolGrid = document.getElementById("poolGrid");
+const pPrev = document.getElementById("pPrev");
+const pNext = document.getElementById("pNext");
+const pInfo = document.getElementById("pInfo");
+
+const btnUndo = document.getElementById("btnUndo");
+const btnReset = document.getElementById("btnReset");
+const btnCheck = document.getElementById("btnCheck");
+const btnBook = document.getElementById("btnBook");
+const btnSettings = document.getElementById("btnSettings");
+const btnTest = document.getElementById("btnTest");
+
+const modalBook = document.getElementById("modalBook");
+const bookQuote = document.getElementById("bookQuote");
+const bookPlain = document.getElementById("bookPlain");
+
+const modalSettings = document.getElementById("modalSettings");
+const swHint = document.getElementById("swHint");
+const swSfx = document.getElementById("swSfx");
+const fontRange = document.getElementById("fontRange");
+const btnDone = document.getElementById("btnDone");
+
+const toast = document.getElementById("toast");
+
+/* ========= 音效（不走外部檔，免得上線麻煩） ========= */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ac = null;
+function beep(freq=660, dur=0.06, type="sine", gain=0.06){
+  if(!sfxOn) return;
+  try{
+    if(!ac) ac = new AudioCtx();
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = gain;
+    o.connect(g); g.connect(ac.destination);
+    o.start();
+    setTimeout(()=>{ o.stop(); }, dur*1000);
+  }catch(e){}
+}
+function sfxClick(){beep(540,0.05,"triangle",0.05)}
+function sfxOk(){beep(880,0.08,"sine",0.06); setTimeout(()=>beep(1175,0.08,"sine",0.05),90)}
+function sfxBad(){beep(220,0.10,"sawtooth",0.03)}
+
+/* ========= 小工具 ========= */
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
   }
-
-  function setBookBreath(on){
-    state.bookArmed = on;
-    if(on) btnBook.classList.add("breath");
-    else btnBook.classList.remove("breath");
-  }
-
-  function setRank(){
-    // 先簡單做：依完成段落數升階（後續可擴充整本）
-    // 新兵 -> 伍長 -> 什長 -> 百夫長 -> 校尉 -> 將軍
-    const tiers = ["新兵","伍長","什長","百夫長","校尉","將軍"];
-    const cleared = parseInt(localStorage.getItem("sunzi_cleared") || "0", 10);
-    const t = Math.min(tiers.length - 1, Math.floor(cleared / 3));
-    rankTag.textContent = tiers[t];
-  }
-
-  function speakLikeSunWu(kind="neutral"){
-    // 「不兇、白話、非罐頭」：依當下狀態隨機
-    const pools = {
-      start: [
-        "先順口，再穩住；穩住了，就背起來。",
-        "不用急。你只要比剛剛更順一點，就夠了。",
-        "今天只求一件事：把這句念得順。"
-      ],
-      hintOn: [
-        "看亮的那張，先跟著走一輪。",
-        "先靠提示走順，順了再關掉。",
-        "先把路走通，再談速度。"
-      ],
-      hintOff: [
-        "好，現在就靠你自己判斷。",
-        "提示關掉了，反而更容易記牢。",
-        "這輪你自己帶隊，我在旁邊看。"
-      ],
-      win: [
-        "穩。你不是靠猜，是靠順口接起來的。",
-        "這句你已經能一口氣接住了，不錯。",
-        "做得好。下一句，照這節奏走就行。"
-      ],
-      miss: [
-        "沒關係，剛剛只是順序亂了。重整一下就回來。",
-        "你不是忘，是還沒接順。再走一輪就好。",
-        "先把前兩張接緊，後面自然跟上。"
-      ],
-      drill: [
-        "加練不長，20秒就好。你會更穩。",
-        "這次只抽一小段，讓你感覺自己更熟。",
-        "加練一下就收工，別把自己逼急。"
-      ]
-    };
-
-    const pick = (arr)=> arr[Math.floor(Math.random()*arr.length)];
-    if(kind === "start") return pick(pools.start);
-    if(kind === "win") return pick(pools.win);
-    if(kind === "miss") return pick(pools.miss);
-    if(kind === "drill") return pick(pools.drill);
-    return state.hintOn ? pick(pools.hintOn) : pick(pools.hintOff);
-  }
-
-  function updateNpc(kind="neutral"){
-    const msg = speakLikeSunWu(kind);
-    npcText.textContent = msg;
-    // 超過三行會被 clamp，顯示⋯提示（保守做法：用長度判斷）
-    npcMore.style.display = (msg.length > 26) ? "inline" : "none";
-  }
-
-  function flashSlot(i){
-    const el = document.querySelector(`[data-slot="${i}"]`);
-    if(!el) return;
-    el.classList.remove("flash");
-    void el.offsetWidth;
-    el.classList.add("flash");
-  }
-
-  // ===== 渲染 =====
-  function loadLevel(i){
-    state.idx = i;
-    const lv = levels[state.idx];
-
-    chapterTitle.textContent = `${lv.chapter}｜${lv.title}`;
-    state.selected = [];
-    state.pool = shuffle(lv.segments);
-
-    setBookBreath(false);
-    btnDrill.style.display = "none";
-
-    statusDot.style.background = "var(--ok)";
-    statusText.textContent = "目前無錯字";
-    missText.textContent = `缺詞：${lv.segments.length}`;
-
-    updateNpc("start");
-
-    renderSlots();
-    renderCards();
-
-    // 教學：只顯示一次
-    const taught = localStorage.getItem("sunzi_taught") === "1";
-    if(!taught){
-      showTutorial();
-      localStorage.setItem("sunzi_taught", "1");
-    }
-
-    setRank();
-  }
-
-  function renderSlots(){
-    const lv = levels[state.idx];
-    slots.innerHTML = "";
-    for(let i=0;i<lv.segments.length;i++){
-      const s = document.createElement("div");
-      s.className = "slot";
-      s.dataset.slot = i;
-      s.textContent = "　";
-      slots.appendChild(s);
-    }
-  }
-
-  function renderSlotsFilled(){
-    const lv = levels[state.idx];
-    for(let i=0;i<lv.segments.length;i++){
-      const el = document.querySelector(`[data-slot="${i}"]`);
-      if(!el) continue;
-      if(state.selected[i]){
-        el.classList.add("filled");
-        el.textContent = state.selected[i];
-      }else{
-        el.classList.remove("filled");
-        el.textContent = "　";
-      }
-    }
-    const miss = lv.segments.length - state.selected.length;
-    missText.textContent = `缺詞：${miss}`;
-  }
-
-  function renderCards(){
-    cardGrid.innerHTML = "";
-    pageText.textContent = "1/1"; // v1先不做翻頁，避免手機流程變複雜
-
-    const lv = levels[state.idx];
-    const nextNeed = lv.segments[state.selected.length];
-
-    state.pool.forEach((seg) => {
-      const c = document.createElement("div");
-      c.className = "card";
-      c.textContent = seg;
-
-      if(state.hintOn && seg === nextNeed){
-        c.classList.add("hint"); // 更亮更慢
-      }
-
-      c.addEventListener("click", () => {
-        // 點令牌：直接填入下一格（更直覺）
-        state.selected.push(seg);
-        const pos = state.pool.indexOf(seg);
-        if(pos >= 0) state.pool.splice(pos,1);
-
-        renderSlotsFilled();
-        flashSlot(state.selected.length-1);
-        renderCards();
-      });
-
-      cardGrid.appendChild(c);
-    });
-
-    // 若已填滿：令牌區顯示空白（避免誤點）
-    if(state.selected.length === lv.segments.length){
-      cardGrid.innerHTML = "";
-      const p = document.createElement("div");
-      p.className = "tiny";
-      p.style.padding = "6px 2px";
-      p.textContent = "令牌已用盡。按「驗令」確認，或「撤令／重整」調整。";
-      cardGrid.appendChild(p);
-    }
-  }
-
-  // ===== 操作 =====
-  btnUndo.addEventListener("click", () => {
-    if(state.selected.length === 0) return;
-    const last = state.selected.pop();
-    state.pool = shuffle([last, ...state.pool]); // 退回令牌：混回池，避免固定位置
-    renderSlotsFilled();
-    renderCards();
-  });
-
-  btnReset.addEventListener("click", () => {
-    loadLevel(state.idx);
-  });
-
-  btnCheck.addEventListener("click", () => {
-    const lv = levels[state.idx];
-    if(state.selected.length !== lv.segments.length){
-      updateNpc("neutral");
-      statusDot.style.background = "var(--danger)";
-      statusText.textContent = "還沒完成佈令";
-      return;
-    }
-
-    // 驗令：順序需一致（背誦核心）
-    const ok = lv.segments.every((s,i)=> state.selected[i] === s);
-
-    if(ok){
-      statusDot.style.background = "var(--ok)";
-      statusText.textContent = "驗令通過（穩）";
-      updateNpc("win");
-
-      // 兵書按鈕呼吸燈提示
-      setBookBreath(true);
-
-      // 顯示「加練（可選）」
-      btnDrill.style.display = "block";
-
-      // 記錄進度（用於升階）
-      const cleared = parseInt(localStorage.getItem("sunzi_cleared") || "0", 10);
-      localStorage.setItem("sunzi_cleared", String(Math.max(cleared, state.idx + 1)));
-      setRank();
-
-      // 直接彈出兵書（你希望預設開啟）
-      openBookModal(true);
-
+  return a;
+}
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"), 1300);
+}
+function setNpc(msg){
+  npcText.textContent = msg;
+  // 超過三行就淡出，並顯示「看完整版」
+  npcText.classList.remove("fade");
+  const lineHeight = 1.35;
+  const maxH = (lineHeight * 3) * parseFloat(getComputedStyle(npcText).fontSize);
+  // 先讓它自然排版，再檢測
+  requestAnimationFrame(()=>{
+    if(npcText.scrollHeight > maxH + 6){
+      npcText.classList.add("fade");
+      ensureNpcMore(msg);
     }else{
-      statusDot.style.background = "var(--danger)";
-      statusText.textContent = "驗令未過（順序亂）";
-      updateNpc("miss");
+      removeNpcMore();
     }
   });
+}
+function ensureNpcMore(full){
+  if(document.getElementById("npcMore")) return;
+  const more = document.createElement("div");
+  more.id = "npcMore";
+  more.className = "npc-more";
+  more.textContent = "看完整版";
+  more.onclick = ()=>{
+    sfxClick();
+    openModalText("孫武", full);
+  };
+  npcText.parentNode.appendChild(more);
+}
+function removeNpcMore(){
+  const el = document.getElementById("npcMore");
+  if(el) el.remove();
+}
 
-  // ===== 兵書 =====
-  function openBookModal(fromWin=false){
-    const lv = levels[state.idx];
-    modalTitle.textContent = fromWin ? "驗令通過｜兵書" : "兵書";
-    modalBody.innerHTML = `
-      <div class="quote">${lv.original}</div>
-      <div class="explain">${lv.translation}</div>
-    `;
+/* 通用文字彈窗 */
+function openModalText(title, content){
+  bookQuote.textContent = title + "：";
+  bookPlain.textContent = content;
+  modalBook.classList.add("show");
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove("show");
+}
 
-    modalActions.innerHTML = "";
-    const btnReplay = document.createElement("button");
-    btnReplay.className = "btn";
-    btnReplay.textContent = "再演練";
-    btnReplay.onclick = () => { closeModal(); loadLevel(state.idx); };
+/* ========= UI渲染 ========= */
+function render(){
+  const d = drills[idx];
+  chapterLine.textContent = `${d.chapter}｜${d.title}`;
+  missingText.textContent = `缺詞：${Math.max(0, d.segments.length - selection.length)}`;
 
-    const btnNext = document.createElement("button");
-    btnNext.className = "btn gold";
-    btnNext.textContent = "下一段";
-    btnNext.onclick = () => {
-      closeModal();
-      const next = (state.idx + 1) % levels.length;
-      loadLevel(next);
+  // 狀態
+  statusDot.style.background = passed ? "var(--ok)" : "rgba(255,255,255,.28)";
+  statusText.textContent = passed ? "驗令通過（穩）" : "尚未驗令";
+  hintPill.textContent = `學習提示：${hintOn ? "開" : "關"}`;
+
+  // 兵書按鈕：通過後才亮 + 呼吸燈提示
+  btnBook.classList.toggle("breath", passed);
+
+  // 佈令板 slots
+  slotsEl.innerHTML = "";
+  const need = d.segments.length;
+  for(let i=0;i<need;i++){
+    const slot = document.createElement("div");
+    slot.className = "token";
+    slot.style.opacity = selection[i] ? "1" : ".30";
+    slot.textContent = selection[i] ? selection[i] : " ";
+    slot.onclick = ()=>{
+      if(!selection[i]) return;
+      sfxClick();
+      // 點 slot 退回 pool
+      const word = selection[i];
+      selection.splice(i,1);
+      pool.push(word);
+      pool = shuffle(pool);
+      passed = false;
+      page = 0;
+      setNpc(randomEncourage(false));
+      render();
     };
-
-    modalActions.appendChild(btnReplay);
-    modalActions.appendChild(btnNext);
-
-    setBookBreath(false); // 點開就不再提示
-    showModal();
+    slotsEl.appendChild(slot);
   }
 
-  btnBook.addEventListener("click", () => openBookModal(false));
+  // 令牌區分頁
+  const totalPages = Math.max(1, Math.ceil(pool.length / perPage));
+  if(page > totalPages-1) page = totalPages-1;
+  pInfo.textContent = `${page+1}/${totalPages}`;
+  pPrev.style.opacity = page===0 ? .35 : 1;
+  pNext.style.opacity = page===totalPages-1 ? .35 : 1;
 
-  // ===== 加練（可選）：短測，不考倒 =====
-  btnDrill.addEventListener("click", () => {
-    const lv = levels[state.idx];
-    updateNpc("drill");
+  poolGrid.innerHTML = "";
+  const start = page*perPage;
+  const slice = pool.slice(start, start+perPage);
+  while(slice.length < perPage) slice.push(null);
 
-    // 題型：抽一個位置，問「下一詞應該是？」（四選一）
-    const pos = Math.floor(Math.random() * lv.segments.length);
-    const answer = lv.segments[pos];
+  slice.forEach((word, i)=>{
+    const t = document.createElement("div");
+    t.className = "token";
+    t.style.visibility = word ? "visible" : "hidden";
+    if(word){
+      t.textContent = word;
 
-    const distract = shuffle(lv.segments.filter(s => s !== answer)).slice(0, 3);
-    const options = shuffle([answer, ...distract]);
+      // 提示：下一個正確詞的呼吸燈
+      if(hintOn && !passed){
+        const next = d.segments[selection.length];
+        if(word === next) t.classList.add("hint");
+      }
 
-    modalTitle.textContent = "加練（20秒）";
-    modalBody.innerHTML = `
-      <div class="tiny">不考倒你，只讓你更穩。</div>
-      <div style="margin-top:10px;">
-        <b style="color:var(--gold); letter-spacing:.06em;">題目：</b>
-        <div style="margin-top:6px;">
-          請選出第 <b style="color:var(--gold)">${pos+1}</b> 個詞牌
-        </div>
-      </div>
-      <div style="margin-top:10px;">
-        ${lv.segments.map((s,i)=> `<span class="seg" style="opacity:${i===pos?1:0.25}">${i===pos?"？":s}</span>`).join("")}
-      </div>
-    `;
+      t.onclick = ()=>{
+        sfxClick();
+        if(passed) return;
 
-    modalActions.innerHTML = "";
-    options.forEach(opt => {
-      const b = document.createElement("button");
-      b.className = "btn";
-      b.textContent = opt;
-      b.onclick = () => {
-        if(opt === answer){
-          modalTitle.textContent = "加練通過（更穩）";
-          modalBody.innerHTML = `
-            <div class="quote">${lv.original}</div>
-            <div class="explain">你剛剛把「位置感」抓到了，背起來會更省力。</div>
-          `;
-          modalActions.innerHTML = "";
-          const okBtn = document.createElement("button");
-          okBtn.className = "btn gold";
-          okBtn.textContent = "回戰場";
-          okBtn.onclick = () => closeModal();
-          modalActions.appendChild(okBtn);
-        }else{
-          modalTitle.textContent = "差一點點";
-          modalBody.innerHTML = `
-            <div class="explain">沒關係，答案是：<b style="color:var(--gold)">${answer}</b>。再看一眼順序，你會更快接起來。</div>
-          `;
-          modalActions.innerHTML = "";
-          const back = document.createElement("button");
-          back.className = "btn";
-          back.textContent = "回戰場";
-          back.onclick = () => closeModal();
-          modalActions.appendChild(back);
-        }
+        // 放入下一個空位（順序上位）
+        if(selection.length >= need) return;
+        selection.push(word);
+
+        // 從 pool 移除（用 indexOf 會移到另一頁造成怪感，這裡用實際索引）
+        const realIndex = pool.indexOf(word);
+        if(realIndex > -1) pool.splice(realIndex,1);
+
+        // 放完後不讓令牌「掉出板」：我們不做拖曳，只做點選，板上永遠穩定
+        setNpc(randomEncourage(false));
+        render();
       };
-      modalActions.appendChild(b);
-    });
-
-    showModal();
+    }
+    poolGrid.appendChild(t);
   });
 
-  // ===== 設定 =====
-  btnSettings.addEventListener("click", () => {
-    modalTitle.textContent = "設定";
-    modalBody.innerHTML = `
-      <div class="tiny">v1.1 先把「好背、好玩、不用滑」站穩。朗讀有聲版先保留到後續驚喜。</div>
-      <div class="settings-grid">
-        <div class="set-row">
-          <b>學習提示</b>
-          <div class="toggle ${state.hintOn ? "on":""}" id="togHint"><div class="knob"></div></div>
-        </div>
-        <div class="set-row">
-          <b>朗讀音效（保留）</b>
-          <div class="toggle ${state.soundOn ? "on":""}" id="togSound"><div class="knob"></div></div>
-        </div>
-        <div class="set-row">
-          <b>字體大小</b>
-          <div style="display:flex; gap:8px;">
-            <button class="btn" style="height:40px; width:70px;" id="fsDown">小</button>
-            <button class="btn gold" style="height:40px; width:70px;" id="fsUp">大</button>
-          </div>
-        </div>
-      </div>
-    `;
-    modalActions.innerHTML = "";
-    const done = document.createElement("button");
-    done.className = "btn gold";
-    done.textContent = "完成";
-    done.onclick = () => closeModal();
-    modalActions.appendChild(done);
+  // 測驗按鈕：至少通過 1 段才出現
+  btnTest.style.display = (testUnlocked >= 1) ? "block" : "none";
+}
 
-    showModal();
+/* ========= 文案（不兇的孫武） ========= */
+function randomEncourage(isPass){
+  const a = [
+    "不用急。你只要比剛剛更順一點，就夠了。",
+    "先順口，再穩住；穩住了，就背起來。",
+    "你不是在背字，你是在把節奏裝進腦子。",
+    "這段你已經抓到門路了，剩下是熟練。",
+    "好，別追完美，追『更順』就行。"
+  ];
+  const b = [
+    "穩。這段先收下，等你想看再翻兵書。",
+    "好，過了。你現在不是記住，是『能說出口』了。",
+    "不錯。你已經把骨架立起來了。",
+    "可以。這段先當成你的「第一支軍令」。"
+  ];
+  const pick = (arr)=>arr[Math.floor(Math.random()*arr.length)];
+  return isPass ? pick(b) : pick(a);
+}
 
-    // 綁定
-    setTimeout(() => {
-      const th = document.getElementById("togHint");
-      const ts = document.getElementById("togSound");
-      const up = document.getElementById("fsUp");
-      const dn = document.getElementById("fsDown");
+/* ========= 流程 ========= */
+function loadDrill(i){
+  idx = i;
+  selection = [];
+  pool = shuffle(drills[idx].segments);
+  page = 0;
+  passed = false;
 
-      if(th) th.onclick = () => setHint(!state.hintOn);
-      if(ts) ts.onclick = () => {
-        state.soundOn = !state.soundOn;
-        ts.classList.toggle("on", state.soundOn);
-      };
+  setNpc(randomEncourage(false));
+  render();
+}
 
-      const steps = [16,18,20,22];
-      if(up) up.onclick = () => {
-        const i = steps.indexOf(state.fontStep);
-        setFont(steps[Math.min(steps.length-1, i+1)]);
-      };
-      if(dn) dn.onclick = () => {
-        const i = steps.indexOf(state.fontStep);
-        setFont(steps[Math.max(0, i-1)]);
-      };
-    }, 0);
-  });
-
-  // ===== 孫武對話展開（點對話框） =====
-  npcBox.addEventListener("click", () => {
-    modalTitle.textContent = "孫武（完整版）";
-    modalBody.innerHTML = `
-      <div class="quote">${npcText.textContent}</div>
-      <div class="explain">提示：你不用一次背完。只要每輪比上一輪順一點，就會越來越穩。</div>
-    `;
-    modalActions.innerHTML = "";
-    const back = document.createElement("button");
-    back.className = "btn gold";
-    back.textContent = "回戰場";
-    back.onclick = () => closeModal();
-    modalActions.appendChild(back);
-    showModal();
-  });
-
-  // ===== Modal 控制 =====
-  modalClose.addEventListener("click", closeModal);
-  modal.addEventListener("click", (e) => { if(e.target === modal) closeModal(); });
-
-  function showModal(){ modal.classList.add("show"); }
-  function closeModal(){ modal.classList.remove("show"); }
-
-  // ===== 教學（一次性） =====
-  function showTutorial(){
-    modalTitle.textContent = "新兵簡報（一次）";
-    modalBody.innerHTML = `
-      <div class="tiny">
-        1) 點下方「令牌」→ 會自動填入佈令板下一格。<br>
-        2) 按「驗令」→ 你會知道順序是否穩。<br>
-        3) 驗令通過後，右上角「兵書」會亮，點開看白話解釋。<br><br>
-        <b style="color:var(--gold);">這不是考試。</b> 你的目標只有一件事：越背越順。
-      </div>
-    `;
-    modalActions.innerHTML = "";
-    const okBtn = document.createElement("button");
-    okBtn.className = "btn gold";
-    okBtn.textContent = "懂了，開練";
-    okBtn.onclick = () => closeModal();
-    modalActions.appendChild(okBtn);
-    showModal();
+function check(){
+  const d = drills[idx];
+  if(selection.length !== d.segments.length){
+    sfxBad();
+    showToast("佈令未滿。先把令牌補齊。");
+    setNpc("先把令牌放滿。滿了再驗令，比較準。");
+    return;
   }
+  // 一字不差（以「詞」為單位）
+  const ok = d.segments.every((w, i)=>selection[i] === w);
+  if(ok){
+    passed = true;
+    sfxOk();
+    showToast("驗令通過（穩）");
+    setNpc(randomEncourage(true));
 
-  // ===== 初始化 =====
-  setFont(state.fontStep);
-  setHint(true);
-  loadLevel(0);
+    // 解鎖累積測驗
+    testUnlocked = Math.max(testUnlocked, idx+1);
 
-})();
+    // 兵書資料備好，但不自動跳
+    bookQuote.textContent = d.quote;
+    bookPlain.textContent = d.plain;
+
+    render();
+  }else{
+    sfxBad();
+    showToast("順序亂了：重整或撤令調整");
+    setNpc("順序有點亂。先重整一下，再來一次會更快。");
+  }
+}
+
+function undo(){
+  if(selection.length===0) return;
+  sfxClick();
+  const word = selection.pop();
+  pool.push(word);
+  pool = shuffle(pool);
+  passed = false;
+  page = 0;
+  setNpc("撤一張就好。你是在修順序，不是在推倒重來。");
+  render();
+}
+
+function reset(){
+  sfxClick();
+  loadDrill(idx);
+  showToast("已重整");
+}
+
+/* ========= 測驗（累積） =========
+   先做「入口與基本流程」：測驗會抽「已通過的段落」其中一段，關掉提示（除非你手動開）。
+*/
+function startTest(){
+  if(testUnlocked < 1){
+    showToast("先通過一段，才有測驗。");
+    return;
+  }
+  // 抽 1 段先測（之後再擴充成：第2段測1+2，第4段測1~3）
+  const max = Math.min(testUnlocked, drills.length);
+  const pickIdx = Math.floor(Math.random()*max);
+  idx = pickIdx;
+  selection = [];
+  pool = shuffle(drills[idx].segments);
+  page = 0;
+  passed = false;
+
+  // 測驗預設把提示關掉（但你可在設定打開）
+  hintOn = false;
+  syncSettingsUI();
+  setNpc("測驗：不靠提示，看看你能不能順口排回來。卡住再開學習提示也行。");
+  showToast("測驗開始");
+  render();
+}
+
+/* ========= 兵書 ========= */
+function openBook(){
+  if(!passed){
+    showToast("先驗令通過，兵書才會開卷。");
+    return;
+  }
+  sfxClick();
+  const d = drills[idx];
+  bookQuote.textContent = d.quote;
+  bookPlain.textContent = d.plain;
+  modalBook.classList.add("show");
+}
+
+/* ========= 設定 ========= */
+function setSwitch(el, on){
+  el.classList.toggle("on", on);
+}
+function syncSettingsUI(){
+  setSwitch(swHint, hintOn);
+  setSwitch(swSfx, sfxOn);
+  fontRange.value = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--fs-base"));
+  hintPill.textContent = `學習提示：${hintOn ? "開" : "關"}`;
+}
+function applyFont(px){
+  document.documentElement.style.setProperty("--fs-base", px+"px");
+}
+
+/* ========= 綁定 ========= */
+btnUndo.onclick = undo;
+btnReset.onclick = reset;
+btnCheck.onclick = check;
+
+pPrev.onclick = ()=>{ if(page>0){ sfxClick(); page--; render(); } };
+pNext.onclick = ()=>{
+  const totalPages = Math.max(1, Math.ceil(pool.length / perPage));
+  if(page<totalPages-1){ sfxClick(); page++; render(); }
+};
+
+btnBook.onclick = openBook;
+btnSettings.onclick = ()=>{
+  sfxClick();
+  syncSettingsUI();
+  modalSettings.classList.add("show");
+};
+
+btnDone.onclick = ()=>{
+  sfxClick();
+  closeModal("modalSettings");
+};
+
+btnTest.onclick = startTest;
+
+document.querySelectorAll("[data-close]").forEach(x=>{
+  x.onclick = ()=>{ sfxClick(); closeModal(x.dataset.close); }
+});
+modalBook.addEventListener("click",(e)=>{ if(e.target===modalBook) closeModal("modalBook"); });
+modalSettings.addEventListener("click",(e)=>{ if(e.target===modalSettings) closeModal("modalSettings"); });
+
+swHint.onclick = ()=>{
+  sfxClick();
+  hintOn = !hintOn;
+  syncSettingsUI();
+  render();
+};
+swSfx.onclick = ()=>{
+  sfxClick();
+  sfxOn = !sfxOn;
+  syncSettingsUI();
+  showToast(sfxOn ? "音效：開" : "音效：關");
+};
+
+fontRange.oninput = ()=>{
+  applyFont(parseInt(fontRange.value,10));
+  // 字變大後即刻重算孫武三行淡出
+  setNpc(npcText.textContent);
+  render();
+};
+
+/* ========= 初始 ========= */
+applyFont(16);
+hintOn = true;   // 預設開啟
+sfxOn = false;   // 預設關閉
+testUnlocked = 0;
+
+loadDrill(0);
 </script>
 </body>
 </html>
