@@ -190,7 +190,7 @@
       flex-wrap:nowrap;
       line-height:1;
       justify-content:flex-end;
-      margin-left:auto; /* push right */
+      margin-left:auto;
     }
     .star{
       font-size:14px;
@@ -306,7 +306,7 @@
       text-overflow:ellipsis;
     }
 
-    /* Game status line (now shows original) */
+    /* Game status line */
     .statusLine{
       display:flex;
       align-items:flex-start;
@@ -372,6 +372,11 @@
     }
     .miniBtn:active{ transform: translateY(1px); }
     .miniBtn.book{ border-color: rgba(214,178,94,.35); }
+    .miniBtn.primary{
+      border-color: rgba(214,178,94,.35);
+      background: linear-gradient(180deg, rgba(214,178,94,.18), rgba(27,36,29,.74));
+    }
+    .miniBtn[disabled]{ opacity:.45; }
 
     .miniBtn.book.pulseStrong{
       box-shadow: var(--glowStrong);
@@ -460,8 +465,10 @@
       flex-wrap:wrap;
       gap:8px;
       max-height: 230px;
-      overflow:hidden;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
       align-content:flex-start;
+      padding-bottom: 2px;
     }
     .token{
       min-height: 44px;
@@ -484,7 +491,18 @@
     .token.hintMid{ box-shadow: var(--glowMid); }
     .token.hintWeak{ box-shadow: var(--glowWeak); }
 
-    /* Flash hint (3~4 times strong->weak) */
+    /* ✅穩定呼吸燈：一直有、一直在 */
+    .token.breath{
+      box-shadow: var(--glowWeak);
+      animation: breathe 1.65s ease-in-out infinite;
+    }
+    @keyframes breathe{
+      0%{ filter: brightness(1.00); transform: translateY(0); }
+      50%{ filter: brightness(1.10); transform: translateY(-1px); }
+      100%{ filter: brightness(1.00); transform: translateY(0); }
+    }
+
+    /* Flash hint */
     .token.hintFlash{
       animation: hintFlash 1.9s ease-in-out 1;
     }
@@ -647,24 +665,12 @@
     .range{ width: 180px; }
 
     /* Free font scaling */
-    :root{
-      --fontScale: 1;
-    }
-    body{
-      font-size: calc(16px * var(--fontScale));
-    }
-    .token{
-      font-size: calc(16px * var(--fontScale));
-    }
-    .npcText{
-      font-size: calc(13px * var(--fontScale));
-    }
-    .quote{
-      font-size: calc(16px * var(--fontScale));
-    }
-    .plain{
-      font-size: calc(13px * var(--fontScale));
-    }
+    :root{ --fontScale: 1; }
+    body{ font-size: calc(16px * var(--fontScale)); }
+    .token{ font-size: calc(16px * var(--fontScale)); }
+    .npcText{ font-size: calc(13px * var(--fontScale)); }
+    .quote{ font-size: calc(16px * var(--fontScale)); }
+    .plain{ font-size: calc(13px * var(--fontScale)); }
 
     @media (max-height: 740px){
       .tokens{ max-height: 205px; }
@@ -740,6 +746,8 @@
               <button class="miniBtn" id="btnSegRead">朗讀</button>
               <button class="miniBtn" id="btnReset">重整</button>
               <button class="miniBtn book" id="btnBook">兵書</button>
+              <!-- ✅段落內就能按下一關 -->
+              <button class="miniBtn primary" id="btnNext" disabled>下一關</button>
             </div>
           </div>
 
@@ -836,9 +844,8 @@
 <script>
 (() => {
   /***********************
-   * DATA（第一篇：依芳提供版本，六段）
-   * 顯示：完整原文
-   * 操作：詞組令牌（不改原文）
+   * DATA（第一篇：拆成「好吞」的段落）
+   * ✅重點：原文不缺字、但是長段拆段避免令牌爆炸
    ***********************/
   const CHAPTERS = [
     { id: 1, name: "第一篇 始計篇", segments: [
@@ -847,20 +854,32 @@
         tokens: ["孫子曰", "兵者", "國之大事", "死生之地", "存亡之道", "不可不察也"],
         plain: "戰爭是國家大事，關係生死與存亡，必須審慎考察。"
       },
+
+      /* ✅原本超長第二段 → 拆成 3 段（更適合背誦） */
       {
-        quote: "故經之以五事，校之以計，而索其情：一曰道，二曰天，三曰地，四曰將，五曰法。道者，令民與上同意也，故可以與之死，可以與之生，而不畏危。天者，陰陽、寒暑、時制也。地者，遠近、險易、廣狹、死生也。將者、智、信、仁、勇、嚴也。法者，曲制、官道、主用也。凡此五者，將莫不聞，知之者勝，不知之者不勝。",
-        tokens: [
-          "故經之以五事", "校之以計", "而索其情",
-          "一曰道", "二曰天", "三曰地", "四曰將", "五曰法",
-          "道者", "令民與上同意也", "故可以與之死", "可以與之生", "而不畏危",
-          "天者", "陰陽、寒暑、時制也",
-          "地者", "遠近、險易、廣狹、死生也",
-          "將者", "智、信、仁、勇、嚴也",
-          "法者", "曲制、官道、主用也",
-          "凡此五者", "將莫不聞", "知之者勝", "不知之者不勝"
-        ],
-        plain: "用五項要點（道、天、地、將、法）來衡量、比較，才能看出情勢。懂得的人較可能勝，不懂的人較可能敗。"
+        quote: "故經之以五事，校之以計，而索其情：一曰道，二曰天，三曰地，四曰將，五曰法。",
+        tokens: ["故經之以五事", "校之以計", "而索其情", "一曰道", "二曰天", "三曰地", "四曰將", "五曰法"],
+        plain: "先用五項要點作為評估框架：道、天、地、將、法。"
       },
+      {
+        quote: "道者，令民與上同意也，故可以與之死，可以與之生，而不畏危。天者，陰陽、寒暑、時制也。地者，遠近、險易、廣狹、死生也。",
+        tokens: [
+          "道者","令民與上同意也","故可以與之死","可以與之生","而不畏危",
+          "天者","陰陽、寒暑、時制也",
+          "地者","遠近、險易、廣狹、死生也"
+        ],
+        plain: "道：民心同向；天：節奏與時令；地：地理條件與生死形勢。"
+      },
+      {
+        quote: "將者、智、信、仁、勇、嚴也。法者，曲制、官道、主用也。凡此五者，將莫不聞，知之者勝，不知之者不勝。",
+        tokens: [
+          "將者","智、信、仁、勇、嚴也",
+          "法者","曲制、官道、主用也",
+          "凡此五者","將莫不聞","知之者勝","不知之者不勝"
+        ],
+        plain: "將：能力品格；法：制度與執行；懂得五者者勝，反之不勝。"
+      },
+
       {
         quote: "故校之以計，而索其情，曰：主孰有道？將孰有能？天地孰得？法令執行？兵眾孰強？士卒孰練？賞罰孰明？吾以此知勝負矣。",
         tokens: [
@@ -869,7 +888,7 @@
           "法令執行", "兵眾孰強", "士卒孰練",
           "賞罰孰明", "吾以此知勝負矣"
         ],
-        plain: "把雙方逐項比較：主帥是否得民心？將領是否有能力？天時地利如何？法令是否能執行？兵力、訓練、賞罰是否到位？由此可判勝負。"
+        plain: "逐項比較：民心、將能、天地、制度、兵力、訓練、賞罰，即可判勝負。"
       },
       {
         quote: "將聽吾計，用之必勝，留之；將不聽吾計，用之必敗，去之。計利以聽，乃為之勢，以佐其外。勢者，因利而制權也。",
@@ -879,7 +898,7 @@
           "計利以聽", "乃為之勢", "以佐其外",
           "勢者", "因利而制權也"
         ],
-        plain: "願意採納正確計畫者較可能勝；不採納者較可能敗。並要創造「勢」，把有利條件轉成掌控力。"
+        plain: "能採納良策者勝；不採納者敗。並要造勢，把有利條件變成掌控力。"
       },
       {
         quote: "兵者，詭道也。故能而示之不能，用而示之不用，近而示之遠，遠而示之近。利而誘之，亂而取之，實而備之，強而避之，怒而撓之，卑而驕之，佚而勞之，親而離之。攻其無備，出其不意。此兵家之勝，不可先傳也。",
@@ -894,7 +913,7 @@
           "攻其無備", "出其不意",
           "此兵家之勝", "不可先傳也"
         ],
-        plain: "用詭道迷惑對手，善用誘導、牽制與出其不意，這些是勝利的方法，但不能先把招數講死。"
+        plain: "詭道迷惑對手，善用誘導牽制與出其不意，勝法不能講死。"
       },
       {
         quote: "夫未戰而廟算勝者，得算多也；未戰而廟算不勝者，得算少也。多算勝，少算不勝，而況於無算乎？吾以此觀之，勝負見矣。",
@@ -905,7 +924,7 @@
           "而況於無算乎",
           "吾以此觀之", "勝負見矣"
         ],
-        plain: "戰前推演周密、把握多者較可能勝；把握少者較可能敗。由此可見勝負端倪。"
+        plain: "戰前推演周密、把握多者勝；把握少者敗。"
       }
     ]},
     { id: 2, name: "第二篇 作戰篇", segments: [] },
@@ -978,6 +997,7 @@
   const btnSegRead = document.getElementById("btnSegRead");
   const btnReset = document.getElementById("btnReset");
   const btnBook = document.getElementById("btnBook");
+  const btnNext = document.getElementById("btnNext");
 
   const slots = document.getElementById("slots");
   const tokensEl = document.getElementById("tokens");
@@ -1005,7 +1025,7 @@
    * NAV STATE（設定返回原位）
    ***********************/
   let nav = {
-    lastNonSettingsView: "overview", // overview | home | game
+    lastNonSettingsView: "overview",
     chapterId: 1,
     segIndex: 0,
     mode: "learn",
@@ -1056,7 +1076,6 @@
       return;
     }
     if(target==="game"){
-      // 回到遊戲原段落（不自動重置）
       startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
       return;
     }
@@ -1074,11 +1093,9 @@
   btnBackOrSettings.onclick = () => {
     const inSettings = viewSettings.classList.contains("active");
     if(inSettings){
-      showView(viewSettings); // ensure active
       restoreNonSettingsView();
       return;
     }
-    // open settings
     rememberNonSettingsView();
     topTitle.textContent = "設定";
     topSub.textContent = "調整你的學習手感";
@@ -1213,28 +1230,17 @@
   }
 
   /***********************
-   * TTS（暫停 / 續播 / 停止）
+   * TTS
    ***********************/
-  let ttsState = {
-    playing: false,
-    paused: false,
-    queue: [],
-    idx: 0,
-    kind: "none" // chapter | segment
-  };
+  let ttsState = { playing:false, paused:false, queue:[], idx:0, kind:"none" };
 
   function canTTS(){
     return PROG.ttsOn && ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
   }
 
   function stopReading(){
-    try{
-      if("speechSynthesis" in window){
-        window.speechSynthesis.cancel();
-      }
-    }catch(e){}
+    try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
     ttsState = { playing:false, paused:false, queue:[], idx:0, kind:"none" };
-    // reset labels
     btnHomeRead.textContent = "朗讀";
     btnSegRead.textContent = "朗讀";
   }
@@ -1278,7 +1284,6 @@
   function playNextUtterance(){
     if(!canTTS()) return;
     if(ttsState.idx >= ttsState.queue.length){
-      // done
       stopReading();
       return;
     }
@@ -1302,27 +1307,18 @@
 
   btnHomeRead.onclick = () => {
     if(!canTTS()) return;
-    // if already playing chapter -> pause/resume
-    if(ttsState.playing && ttsState.kind==="chapter"){
-      pauseOrResume();
-      return;
-    }
+    if(ttsState.playing && ttsState.kind==="chapter"){ pauseOrResume(); return; }
     const ch = CHAPTERS.find(x => x.id===currentChapterId);
     if(!ch) return;
     const q = ch.segments.map(s => s.quote);
     speakQueue(q, "chapter");
   };
-
   btnHomeStop.onclick = () => stopReading();
 
   btnSegRead.onclick = () => {
     if(!canTTS()) return;
-    if(ttsState.playing && ttsState.kind==="segment"){
-      pauseOrResume();
-      return;
-    }
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    const seg = ch.segments[currentSegIndex];
+    if(ttsState.playing && ttsState.kind==="segment"){ pauseOrResume(); return; }
+    const seg = currentSeg();
     speakQueue([seg.quote], "segment");
   };
 
@@ -1359,15 +1355,25 @@
     openModal("原文", `<div class="quote">${escapeHtml(line)}</div>`);
   }
 
+  function currentChapter(){
+    return CHAPTERS.find(x => x.id===currentChapterId);
+  }
+
+  function currentSeg(){
+    const ch = currentChapter();
+    return (mode==="test") ? ch.segments[testCursor] : ch.segments[currentSegIndex];
+  }
+
   function startLearnSegment(segIndex, opts={}) {
     stopReading();
     mode = "learn";
+    btnNext.disabled = true;
     testBar.classList.remove("show");
 
     btnBook.classList.remove("pulseStrong");
     btnBook.disabled = true;
 
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    const ch = currentChapter();
     const seg = ch.segments[segIndex];
 
     if(!opts.preserve){
@@ -1388,29 +1394,23 @@
     setNpcOriginal(seg.quote);
     renderBoard();
 
-    if(PROG.hintOn){
-      // 第一次進來：閃 3 次（強->弱）
-      flashHintTimes(3);
-    }
+    renderTestBar(); // ✅每次進入都更新（避免你覺得「沒看到測驗」）
+    if(PROG.hintOn) flashHintTimes(2);
   }
 
   btnReset.onclick = () => {
     stopReading();
     beep("tap");
     restartCurrent();
-    if(PROG.hintOn){
-      // 重整後：再閃一次（弱化感）
-      flashHintTimes(1);
-    }
+    if(PROG.hintOn) flashHintTimes(1);
   };
 
   function restartCurrent(){
+    btnNext.disabled = true;
     btnBook.classList.remove("pulseStrong");
     btnBook.disabled = true;
 
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    const seg = (mode==="test") ? ch.segments[testCursor] : ch.segments[currentSegIndex];
-
+    const seg = currentSeg();
     selection = [];
     pool = shuffle(seg.tokens);
     renderBoard();
@@ -1425,6 +1425,7 @@
 
   function renderBoard(){
     slots.innerHTML = "";
+
     if(selection.length===0){
       const hint = document.createElement("div");
       hint.className = "slotHint";
@@ -1435,6 +1436,7 @@
         const el = makeToken(t);
         el.onclick = () => {
           beep("tap");
+          // ✅避免「越點越多」：嚴格一進一出，不允許重複塞回
           selection.splice(idx,1);
           pool.push(t);
           renderBoard();
@@ -1445,10 +1447,16 @@
     }
 
     tokensEl.innerHTML = "";
+
+    // ✅避免「同文字重複」導致你感覺亂：同一段內如果 tokens 有重複，給每顆 token 唯一 key
     pool.forEach((t, idx) => {
       const el = makeToken(t);
+      el.dataset.idx = String(idx);
       el.onclick = () => {
         beep("tap");
+        // ✅防連點：先停用，避免極端情況造成「點了兩次但只移走一次」的錯覺
+        el.style.pointerEvents = "none";
+
         selection.push(t);
         pool.splice(idx,1);
         renderBoard();
@@ -1460,14 +1468,9 @@
     applyHint();
   }
 
-  function currentSeg(){
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    return (mode==="test") ? ch.segments[testCursor] : ch.segments[currentSegIndex];
-  }
-
   function applyHint(){
     const all = tokensEl.querySelectorAll(".token");
-    all.forEach(t => t.classList.remove("hintStrong","hintMid","hintWeak","hintFlash"));
+    all.forEach(t => t.classList.remove("hintStrong","hintMid","hintWeak","hintFlash","breath"));
 
     if(!PROG.hintOn) return;
     const seg = currentSeg();
@@ -1476,14 +1479,14 @@
 
     for(const el of all){
       if(el.textContent === next){
-        el.classList.add("hintWeak");
+        // ✅穩定呼吸燈（一直存在）
+        el.classList.add("breath");
         break;
       }
     }
   }
 
-  function flashHintTimes(times=3){
-    // 只把「下一個正確令牌」做明顯閃爍（強→弱）
+  function flashHintTimes(times=2){
     if(!PROG.hintOn) return;
     const seg = currentSeg();
     const next = seg.tokens[selection.length];
@@ -1497,11 +1500,10 @@
     const tick = () => {
       if(n >= times) return;
       target.classList.remove("hintFlash");
-      // force reflow
       void target.offsetWidth;
       target.classList.add("hintFlash");
       n++;
-      setTimeout(tick, 820);
+      setTimeout(tick, 760);
     };
     tick();
   }
@@ -1516,76 +1518,22 @@
       onSegmentPassed();
     }else{
       beep("bad");
-      // 不彈窗、不兇：學員自己修正（把令牌點回去）
     }
   }
 
-  // ✅✅✅ 新增：下一關控制（芳不用再找小螞蟻）
-  function goNextLearnSegment(){
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    if(!ch) return;
-
-    const nextIndex = currentSegIndex + 1;
-
-    // 還有下一段 → 進下一關
-    if(nextIndex < ch.segments.length){
-      currentSegIndex = nextIndex;
-      startLearnSegment(currentSegIndex, { firstEntry:false, preserve:false });
-      return;
-    }
-
-    // 已是最後一段 → 本篇完成
-    openModal("本篇完成", `
-      <div class="plain">你已完成：${escapeHtml(ch.name)} 🎉</div>
-      <div class="plain">要回篇章首頁看整篇，或回總覽挑下一篇？</div>
-    `, `
-      <button class="btn" id="btnDoneHome">回到篇章首頁</button>
-      <button class="btn primary" id="btnDoneOverview">回到總覽</button>
-    `);
-
-    setTimeout(() => {
-      const a = document.getElementById("btnDoneHome");
-      const b = document.getElementById("btnDoneOverview");
-      if(a) a.onclick = () => { modalClose.click(); openChapterHome(); };
-      if(b) b.onclick = () => { modalClose.click(); btnOverview.click(); };
-    }, 0);
-  }
-
-  // ✅✅✅ 替換：過關後彈出「下一關」
   function onSegmentPassed(){
+    // ✅段落內立刻可按下一關
+    btnNext.disabled = false;
+
     btnBook.disabled = false;
     btnBook.classList.add("pulseStrong");
 
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    const ch = currentChapter();
     const p = getChapterProg(currentChapterId);
     p.stars = Math.max(p.stars || 0, currentSegIndex + 1);
     saveProgress();
 
     renderTestBar();
-
-    const isLast = (currentSegIndex >= ch.segments.length - 1);
-    openModal("過關", `
-      <div class="plain">這段拿下了 ✅</div>
-      <div class="plain">${isLast ? "你已完成本篇最後一段。" : "要直接進下一關，還是先看兵書？"}</div>
-    `, `
-      <button class="btn" id="btnAfterReadBook">看兵書</button>
-      <button class="btn primary" id="btnAfterNext">${isLast ? "本篇完成" : "下一關"}</button>
-    `);
-
-    setTimeout(() => {
-      const a = document.getElementById("btnAfterReadBook");
-      const b = document.getElementById("btnAfterNext");
-
-      if(a) a.onclick = () => {
-        modalClose.click();
-        btnBook.click();
-      };
-
-      if(b) b.onclick = () => {
-        modalClose.click();
-        goNextLearnSegment();
-      };
-    }, 0);
   }
 
   function checkTestWin(){
@@ -1597,7 +1545,7 @@
       beep("ok");
       if(testCursor < testRange.end){
         testCursor++;
-        setNpcOriginal(CHAPTERS.find(x=>x.id===currentChapterId).segments[testCursor].quote);
+        setNpcOriginal(currentChapter().segments[testCursor].quote);
         restartCurrent();
         if(PROG.hintOn) flashHintTimes(1);
       }else{
@@ -1634,15 +1582,39 @@
     else checkTestWin();
   }
 
+  // ✅下一關：段落內可點（不用等彈窗）
+  btnNext.onclick = () => {
+    if(btnNext.disabled) return;
+
+    const ch = currentChapter();
+    if(mode==="test"){
+      // 測驗模式不走下一關，避免混亂
+      return;
+    }
+
+    if(currentSegIndex < ch.segments.length - 1){
+      currentSegIndex += 1;
+      startLearnSegment(currentSegIndex, { firstEntry:false });
+    }else{
+      openModal("本篇完成", `<div class="plain">你已完成：${escapeHtml(ch.name)}。</div>`, `
+        <button class="btn" id="btnBackHome2">回到篇章首頁</button>
+        <button class="btn primary" id="btnBackOverview2">回到總覽</button>
+      `);
+      setTimeout(() => {
+        const a = document.getElementById("btnBackHome2");
+        const b = document.getElementById("btnBackOverview2");
+        if(a) a.onclick = () => { modalClose.click(); openChapterHome(); };
+        if(b) b.onclick = () => { modalClose.click(); btnOverview.click(); };
+      }, 0);
+    }
+  };
+
   /***********************
    * BOOK（原文 + 白話）
    ***********************/
-  // ✅✅✅ 修正：未來若允許測驗也能看兵書，不會抓錯段
   btnBook.onclick = () => {
     if(btnBook.disabled) return;
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    const idx = (mode==="test") ? testCursor : currentSegIndex;
-    const seg = ch.segments[idx];
+    const seg = currentSeg(); // ✅修正：測驗模式也能對應當前段
 
     openModal("兵書", `
       <div class="quote">${escapeHtml(seg.quote)}</div>
@@ -1675,10 +1647,11 @@
    * TEST BAR
    ***********************/
   function renderTestBar(){
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    const ch = currentChapter();
     const p = getChapterProg(currentChapterId);
     const passed = Math.min(p.stars, ch.segments.length);
 
+    // ✅通過至少 2 段才出現測驗
     if(passed < 2){
       testBar.classList.remove("show");
       return;
@@ -1723,10 +1696,11 @@
     testRange = { start:s, end:e };
     testCursor = s;
 
+    btnNext.disabled = true;
     btnBook.classList.remove("pulseStrong");
     btnBook.disabled = true;
 
-    setNpcOriginal(CHAPTERS.find(x=>x.id===currentChapterId).segments[testCursor].quote);
+    setNpcOriginal(currentChapter().segments[testCursor].quote);
     restartCurrent();
     if(PROG.hintOn) flashHintTimes(1);
   }
@@ -1823,6 +1797,7 @@
     renderHintSwitch();
 
     btnBook.disabled = true;
+    btnNext.disabled = true;
 
     renderOverview();
     topTitle.textContent = "孫子兵法";
