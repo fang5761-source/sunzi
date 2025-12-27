@@ -15,6 +15,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>孫子兵法｜佈令背誦 v1（母版・修正版）</title>
   <style>
+
+/* --- Mobile fixes (2025-12-28) --- */
+.navMini{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  justify-content:flex-end;
+  margin-left:4px;
+}
+.navMini .miniBtn.mini{
+  padding:.5rem .65rem;
+  min-width:0;
+}
+.navMini .navText{
+  font-weight:800;
+  letter-spacing:.02em;
+  opacity:.95;
+  padding:.4rem .6rem;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:rgba(0,0,0,.18);
+  font-size:12px;
+  line-height:1;
+  user-select:none;
+}
+/* iOS scroll safety for token board */
+#slots{
+  overflow:auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+/* Make top action row less likely to wrap on mobile */
+@media (max-width: 520px){
+  .statusLine > div:last-child{
+    gap:6px !important;
+    align-items:center !important;
+  }
+}
+
     :root{
       --bg:#0f1410;
       --panel:#151b16;
@@ -822,8 +861,11 @@
               <button class="miniBtn" id="btnSegRead">朗讀</button>
               <button class="miniBtn" id="btnReset">重整</button>
               <button class="miniBtn book" id="btnBook">兵書</button>
-              <button class="miniBtn" id="btnPrev">上一關</button>
-              <button class="miniBtn primary" id="btnNext" disabled>下一關</button>
+              <div class="navMini" aria-label="關卡導航">
+                <button class="miniBtn mini" id="btnPrev" type="button">◀</button>
+                <div class="navText" id="navText">1/1</div>
+                <button class="miniBtn mini primary" id="btnNext" type="button" disabled>▶</button>
+              </div>
             </div>
           </div>
 
@@ -1042,8 +1084,18 @@
           plain: "這五項，將領沒有不聽過的；懂得並能用的就會勝，不懂的就不會勝。"
         },
         {
-          quote: "故校之以計，而索其情，曰：主孰有道？將孰有能？天地孰得？法令孰行？兵眾孰強？士卒孰練？賞罰孰明？吾以此知勝負矣。",
-          tokens: ["故校之以計","而索其情","曰","主孰有道","將孰有能","天地孰得","法令孰行","兵眾孰強","士卒孰練","賞罰孰明","吾以此知勝負矣"],
+          quote: "故校之以計，而索其情，曰：",
+          tokens: ["故校之以計","而索其情","曰"],
+          plain: ""
+        },
+        {
+          quote: "主孰有道？將孰有能？天地孰得？法令孰行？",
+          tokens: ["主孰有道","將孰有能","天地孰得","法令孰行"],
+          plain: ""
+        },
+        {
+          quote: "兵眾孰強？士卒孰練？賞罰孰明？吾以此知勝負矣。",
+          tokens: ["兵眾孰強","士卒孰練","賞罰孰明","吾以此知勝負矣"],
           plain: "因此要用各種比較與計算來查清真相：哪一方君主更得人心？哪一方將領更有才能？哪一方更得天時地利？哪一方法令更能落實？哪一方兵力更強？哪一方士卒更精訓？哪一方賞罰更分明？據此即可判斷勝負。"
         },
         {
@@ -1583,6 +1635,8 @@
     const total = ch?.segments?.length || 0;
     const idx = (mode==="test") ? (testCursor + 1) : (currentSegIndex + 1);
     boardMeta.textContent = `第${idx}/${total}段`;
+    const navText = document.getElementById("navText");
+    if(navText) navText.textContent = `${idx}/${total}`;
   }
 
   function startLearnSegment(segIndex, opts={}) {
