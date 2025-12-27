@@ -1,3 +1,13 @@
+<!--
+孫子兵法｜佈令背誦
+版本：完美母版5.2（封存版）
+狀態：功能穩定，下一關/上一關/測驗流程正常
+用途：對照、回溯、保險版本
+⚠️ 此檔請勿直接修改，請複製後再改
+-->
+
+
+
 <!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
@@ -730,6 +740,16 @@
         flex-wrap:wrap;
       }
     }
+/* 測驗視窗文字放大（只影響測驗 modal） */
+.modal .plain{
+  font-size: 1rem;
+}
+/* ✅測驗視窗：下拉選單字體也一起放大 */
+.modal select, .modal option{
+  font-size: calc(14px * var(--fontScale));
+  font-weight: 900;
+}
+
   </style>
 </head>
 
@@ -802,6 +822,7 @@
               <button class="miniBtn" id="btnSegRead">朗讀</button>
               <button class="miniBtn" id="btnReset">重整</button>
               <button class="miniBtn book" id="btnBook">兵書</button>
+              <button class="miniBtn" id="btnPrev">上一關</button>
               <button class="miniBtn primary" id="btnNext" disabled>下一關</button>
             </div>
           </div>
@@ -1143,7 +1164,9 @@
   const btnSegRead = document.getElementById("btnSegRead");
   const btnReset = document.getElementById("btnReset");
   const btnBook = document.getElementById("btnBook");
+  const btnPrev = document.getElementById("btnPrev");
   const btnNext = document.getElementById("btnNext");
+
 
   const boardMeta = document.getElementById("boardMeta");
 
@@ -1565,13 +1588,22 @@
   function startLearnSegment(segIndex, opts={}) {
     stopReading();
     mode = "learn";
-    btnNext.disabled = true;
+    btnPrev.disabled = (segIndex <= 0);
 
     btnBook.classList.remove("pulseStrong");
     btnBook.disabled = true;
 
     const ch = currentChapter();
     const seg = ch.segments[segIndex];
+    // ✅若此段已通過，就不要再把「下一關」鎖灰
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
+    const unlocked = passed >= (segIndex + 1);
+
+    btnNext.disabled = !unlocked;
+    btnBook.disabled = !unlocked;
+    btnBook.classList.toggle("pulseStrong", unlocked);
+
 
     if(!opts.preserve){
       selection = [];
@@ -1592,6 +1624,8 @@
     updateBoardMeta();
     renderBoard();
     refreshFloatTestButton();
+    syncLearnUnlock();
+
 
     if(PROG.hintOn) flashHintTimes(2);
   }
@@ -1724,6 +1758,22 @@
 
     refreshFloatTestButton();
   }
+  // ✅把「下一關 / 兵書」按鈕狀態同步回學習模式
+  function syncLearnUnlock(){
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
+
+    const unlocked = passed >= (currentSegIndex + 1);
+
+    // 下一關：已通過當前段就應該可按
+    btnNext.disabled = !unlocked;
+
+    // 兵書：同樣規則（你通過了才給你“打開兵書”爽一下）
+    btnBook.disabled = !unlocked;
+    btnBook.classList.toggle("pulseStrong", unlocked);
+  }
+
 
   function checkTestWin(){
     const seg = currentSeg();
@@ -1734,9 +1784,16 @@
       beep("ok");
       if(testCursor < testRange.end){
         testCursor++;
+btnPrev.disabled = (testCursor <= testRange.start);
+btnNext.disabled = true; // 測驗不走「下一關」，保持鎖住是對的
+
         setNpcOriginal(currentChapter().segments[testCursor].quote);
         updateBoardMeta();
         restartCurrent();
+btnPrev.disabled = (testCursor <= testRange.start);
+
+
+
         if(PROG.hintOn) flashHintTimes(1);
       }else{
         openModal("測驗通過", `<div class="plain">完成範圍：第${testRange.start+1}段～第${testRange.end+1}段</div>`, `
@@ -1772,28 +1829,31 @@
     else checkTestWin();
   }
 
-  btnNext.onclick = () => {
-    if(btnNext.disabled) return;
+  btnPrev.onclick = () => {
+  stopReading();
+  beep("tap");
 
-    const ch = currentChapter();
-    if(mode==="test") return;
+  const ch = currentChapter();
 
-    if(currentSegIndex < ch.segments.length - 1){
-      currentSegIndex += 1;
-      startLearnSegment(currentSegIndex, { firstEntry:false });
-    }else{
-      openModal("本篇完成", `<div class="plain">你已完成：${escapeHtml(ch.name)}。</div>`, `
-        <button class="btn" id="btnBackHome2">回到篇章首頁</button>
-        <button class="btn primary" id="btnBackOverview2">回到總覽</button>
-      `);
-      setTimeout(() => {
-        const a = document.getElementById("btnBackHome2");
-        const b = document.getElementById("btnBackOverview2");
-        if(a) a.onclick = () => { modalClose.click(); openChapterHome(); };
-        if(b) b.onclick = () => { modalClose.click(); btnOverview.click(); };
-      }, 0);
+  // 測驗模式：回到測驗範圍的上一段
+  if(mode === "test"){
+    if(testCursor > testRange.start){
+      testCursor -= 1;
+      setNpcOriginal(ch.segments[testCursor].quote);
+      updateBoardMeta();
+      restartCurrent();
+      if(PROG.hintOn) flashHintTimes(1);
     }
-  };
+    return;
+  }
+
+  // 佈令模式：回到上一關複習
+  if(currentSegIndex > 0){
+    currentSegIndex -= 1;
+    startLearnSegment(currentSegIndex, { firstEntry:false });
+  }
+};
+
 
   /***********************
    * BOOK（原文＋白話）
@@ -1821,11 +1881,26 @@
     modal.classList.add("show");
   }
 
-  modalClose.onclick = () => {
+    modalClose.onclick = () => {
     modal.classList.remove("show");
+// ✅保險：如果剛剛在測驗中關閉視窗，確保仍可繼續佈令
+if(viewGame.classList.contains("active") && mode === "test"){
+  mode = "learn";
+  startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
+}
+
+
     modalActions.style.display = "none";
     modalActions.innerHTML = "";
+
+    // ✅如果剛剛在「測驗模式」，關掉視窗就回到「學習模式」
+    if(mode === "test"){
+      mode = "learn";
+      startLearnSegment(currentSegIndex, { firstEntry:false }); // 回到當前段佈令
+      syncLearnUnlock(); // 恢復「下一關 / 兵書」狀態
+    }
   };
+
   modal.onclick = (e) => { if(e.target === modal) modalClose.click(); };
 
   /***********************
@@ -1836,7 +1911,7 @@
     const p = getChapterProg(currentChapterId);
     const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
 
-    if(viewGame.classList.contains("active") && mode==="learn" && passed >= 2){
+    if(viewGame.classList.contains("active") && mode==="learn" && passed >= 1){
       floatTestBtn.classList.add("show");
     }else{
       floatTestBtn.classList.remove("show");
@@ -1848,6 +1923,8 @@
     mode = "test";
     testRange = { start:s, end:e };
     testCursor = s;
+    btnPrev.disabled = (testCursor <= testRange.start);
+
 
     btnNext.disabled = true;
     btnBook.classList.remove("pulseStrong");
@@ -1867,7 +1944,7 @@
 
     const options = Array.from({length: passed}, (_,i)=> `<option value="${i}">第${i+1}段</option>`).join("");
     openModal("測驗", `
-      <div class="plain">選擇範圍（不佔佈令空間）：</div>
+      <div class="plain">選擇範圍：</div>
       <div class="plain">
         <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
           <span style="font-weight:1000;">從</span>
@@ -1995,7 +2072,62 @@
   /***********************
    * INIT
    ***********************/
-  function init(){
+ /***********************
+ * ✅上一關 / 下一關（固定補丁版）
+ * 放在 function init(){ 之前
+ ***********************/
+if (typeof btnPrev !== "undefined" && btnPrev) {
+  btnPrev.disabled = true; // 第1段先鎖住上一關
+  btnPrev.onclick = () => {
+    stopReading();
+    beep("tap");
+
+    // 若剛在測驗模式，先拉回學習模式
+    if (mode === "test") mode = "learn";
+
+    const ch = currentChapter();
+    if (!ch || !ch.segments || !ch.segments.length) return;
+
+    if (currentSegIndex > 0) {
+      currentSegIndex -= 1;
+      startLearnSegment(currentSegIndex, { firstEntry:false });
+    }
+  };
+}
+
+if (typeof btnNext !== "undefined" && btnNext) {
+  btnNext.onclick = () => {
+    if (btnNext.disabled) return;
+
+    stopReading();
+    beep("tap");
+
+    // 防止 mode 卡在 test 造成「亮了但按不動」
+    if (mode === "test") mode = "learn";
+
+    const ch = currentChapter();
+    if (!ch || !ch.segments || !ch.segments.length) return;
+
+    if (currentSegIndex < ch.segments.length - 1) {
+      currentSegIndex += 1;
+      startLearnSegment(currentSegIndex, { firstEntry:false });
+    } else {
+      openModal("本篇完成", `<div class="plain">你已完成：${escapeHtml(ch.name)}。</div>`, `
+        <button class="btn" id="btnBackHome2">回到篇章首頁</button>
+        <button class="btn primary" id="btnBackOverview2">回到總覽</button>
+      `);
+      setTimeout(() => {
+        const a = document.getElementById("btnBackHome2");
+        const b = document.getElementById("btnBackOverview2");
+        if (a) a.onclick = () => { modalClose.click(); openChapterHome(); };
+        if (b) b.onclick = () => { modalClose.click(); btnOverview.click(); };
+      }, 0);
+    }
+  };
+}
+
+
+ function init(){
     PROG.hintOn = !!PROG.hintDefault;
     saveProgress();
     renderHintSwitch();
