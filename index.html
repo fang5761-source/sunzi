@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>孫子兵法｜佈令背誦 v1（母版）</title>
+  <title>孫子兵法｜佈令背誦 v1（母版・修正版）</title>
   <style>
     :root{
       --bg:#0f1410;
@@ -26,7 +26,6 @@
       --tap: 46px;
       --radius: 14px;
 
-      /* ✅總覽基準字級：以你第二張圖那個舒服大小當預設 */
       --overviewBaseTitle: 18px;
       --overviewBaseBtn: 14px;
       --overviewBaseHint: 13px;
@@ -144,12 +143,15 @@
       display:none;
       height:100%;
       overflow:hidden;
+      min-height:0;
     }
     .view.active{ display:flex; flex-direction:column; gap:10px; }
 
     .scroll{
       overflow:auto;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain; /* ✅防止 iOS 捲動把整個頁面「鎖死」 */
+      min-height:0;
     }
 
     /* Overview list */
@@ -176,35 +178,31 @@
       flex-direction:column;
       gap:6px;
     }
-    /* ✅總覽篇章字體：以標準預設(18px)為基準縮放 */
     .chapterName{
       font-weight:900;
       font-size: calc(var(--overviewBaseTitle) * var(--fontScale));
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
-    }
-    .starsLine{
       display:flex;
-      align-items:center;
-      justify-content:space-between;
+      align-items:baseline;
       gap:10px;
+      min-width:0;
     }
-    .stars{
-      display:flex;
-      gap:4px;
-      flex-wrap:nowrap;
-      line-height:1;
-      justify-content:flex-end;
-      margin-left:auto;
+    .chapterProg{
+      font-size: calc(13px * var(--fontScale));
+      color: rgba(170,182,170,.92);
+      font-weight:900;
+      flex-shrink:0;
+      white-space:nowrap;
     }
-    .star{
-      font-size: calc(14px * var(--fontScale));
-      color: rgba(214,178,94,.22);
-    }
-    .star.on{
-      color: var(--gold);
-      text-shadow: 0 0 10px rgba(214,178,94,.28);
+    .chapterHint{
+      color: rgba(170,182,170,.88);
+      font-weight:900;
+      font-size: calc(var(--overviewBaseHint) * var(--fontScale));
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .chapterGo{
       flex-shrink:0;
@@ -226,6 +224,7 @@
       flex-direction:column;
       gap:10px;
       overflow:hidden;
+      min-height:0;
     }
     .homeTop{
       display:flex;
@@ -238,17 +237,14 @@
       font-size:16px;
       letter-spacing:.04em;
     }
-    .homeStars{
-      display:flex;
-      gap:4px;
-      flex-wrap:nowrap;
-      justify-content:flex-end;
+    .homeMeta{
+      color: rgba(170,182,170,.92);
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
       margin-left:auto;
     }
-    .homeActions{
-      display:flex;
-      gap:8px;
-    }
+
     .btn{
       height:44px;
       border-radius:12px;
@@ -277,8 +273,10 @@
       line-height:1.75;
       overflow:auto;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       max-height: 42vh;
       white-space: pre-wrap;
+      min-height:0;
     }
 
     .homeReadRow{
@@ -321,9 +319,7 @@
       padding:10px 12px;
       border-top:1px solid rgba(255,255,255,.06);
       background: rgba(15,20,16,.22);
-
-      /* ✅關鍵：小螢幕時不要擠壓內容到變直排 */
-      flex-wrap:wrap;
+      flex-wrap:wrap; /* ✅小螢幕不擠成直排 */
     }
     .npc{
       min-width:0;
@@ -354,8 +350,6 @@
       display:-webkit-box;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 3;
-
-      /* ✅保命：避免一字一行 / 直排 */
       writing-mode: horizontal-tb;
       word-break: normal;
       overflow-wrap: anywhere;
@@ -416,6 +410,8 @@
       border-radius:10px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(27,36,29,.50);
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
     }
     .switch{
       width:38px;
@@ -441,7 +437,7 @@
     .switch.on .knob{ left:18px; }
 
     /* Board */
-    .gameWrap{ display:flex; flex-direction:column; gap:10px; overflow:hidden; }
+    .gameWrap{ display:flex; flex-direction:column; gap:10px; overflow:hidden; min-height:0; }
     .board{ padding:10px; border-bottom:1px solid rgba(255,255,255,.06); }
     .boardHead{
       display:flex;
@@ -457,7 +453,6 @@
       gap:8px;
       min-width:0;
     }
-    /* ✅佈令板上方空間利用：段落進度 */
     .boardMeta{
       color: rgba(170,182,170,.92);
       font-weight:900;
@@ -488,7 +483,7 @@
     }
 
     /* Token zone */
-    .tokensPanel{ padding:10px; overflow:hidden; }
+    .tokensPanel{ padding:10px; overflow:hidden; min-height:0; }
     .tokens{
       display:flex;
       flex-wrap:wrap;
@@ -496,11 +491,11 @@
       max-height: 230px;
       overflow:auto;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       align-content:flex-start;
       padding-bottom: 2px;
-
-      /* ✅避免 flex 擠壓造成奇怪換行 */
       min-width: 0;
+      min-height:0;
     }
     .token{
       min-height: 44px;
@@ -516,11 +511,10 @@
       -webkit-tap-highlight-color: transparent;
       text-rendering: geometricPrecision;
       -webkit-font-smoothing: antialiased;
-
-      /* ✅避免一字一行 */
       word-break: normal;
       overflow-wrap: anywhere;
       writing-mode: horizontal-tb;
+      max-width: 100%;
     }
     .token:active{ transform: translateY(1px) scale(.99); }
 
@@ -528,7 +522,6 @@
     .token.hintMid{ box-shadow: var(--glowMid); }
     .token.hintWeak{ box-shadow: var(--glowWeak); }
 
-    /* ✅穩定呼吸燈：一直有、一直在 */
     .token.breath{
       box-shadow: var(--glowWeak);
       animation: breathe 1.65s ease-in-out infinite;
@@ -539,7 +532,6 @@
       100%{ filter: brightness(1.00); transform: translateY(0); }
     }
 
-    /* Flash hint */
     .token.hintFlash{
       animation: hintFlash 1.9s ease-in-out 1;
     }
@@ -554,10 +546,8 @@
       100% { box-shadow: var(--glowWeak);   filter: brightness(1.00); }
     }
 
-    /* Test bar（保留但預設不佔空間：改成浮動開啟） */
     .testBar{ display:none !important; }
 
-    /* ✅浮動測驗鈕：不佔佈令空間 */
     .floatTestBtn{
       position: fixed;
       right: 14px;
@@ -573,6 +563,8 @@
       font-weight:1000;
       font-size: 14px;
       box-shadow: 0 12px 28px rgba(0,0,0,.28);
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
     }
     .floatTestBtn.show{ display:inline-flex; align-items:center; gap:8px; }
     .floatTestBtn:active{ transform: translateY(1px); }
@@ -632,6 +624,7 @@
       max-height: 72vh;
       overflow:auto;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
     .quote{
       padding:10px 12px;
@@ -659,6 +652,20 @@
       border-top:1px solid rgba(255,255,255,.06);
     }
     .modalActions .btn{ height:42px; }
+
+    /* ✅select 樣式（避免某些瀏覽器套用奇怪字體/顏色） */
+    .select{
+      height:40px;
+      padding:0 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(15,20,16,.55);
+      color: var(--ink);
+      font-weight:900;
+      font-size:14px;
+      outline:none;
+      appearance:none;
+    }
 
     /* Settings */
     .settings{
@@ -701,7 +708,6 @@
     }
     .range{ width: 180px; }
 
-    /* Free font scaling */
     :root{ --fontScale: 1; }
     body{ font-size: calc(16px * var(--fontScale)); }
     .token{ font-size: calc(16px * var(--fontScale)); }
@@ -715,7 +721,6 @@
       .homeText{ max-height: 36vh; }
     }
 
-    /* ✅超小螢幕：狀態列按鈕自動換到下一列，避免內容被擠成一字一行 */
     @media (max-width: 390px){
       .statusLine > div:last-child{
         width:100%;
@@ -731,7 +736,6 @@
 <body style="--fontScale:1;">
   <div class="app safeTop safeBottom">
 
-    <!-- TOPBAR -->
     <div class="topbar">
       <div class="toprow">
         <div class="titleWrap">
@@ -745,21 +749,18 @@
       </div>
     </div>
 
-    <!-- MAIN -->
     <div class="main">
-      <!-- OVERVIEW VIEW -->
       <div class="view active panel scroll" id="viewOverview">
         <div class="list" id="overviewList"></div>
       </div>
 
-      <!-- CHAPTER HOME VIEW -->
       <div class="view panel" id="viewChapterHome">
         <div class="homeCard">
           <div class="homeTop">
             <div style="min-width:0">
               <div class="homeTitle" id="homeTitle">第一篇 始計篇</div>
             </div>
-            <div class="homeStars" id="homeStars"></div>
+            <div class="homeMeta" id="homeMeta">0/0</div>
           </div>
 
           <div class="homeText" id="homeFullText"></div>
@@ -775,14 +776,21 @@
             </div>
           </div>
 
-          <div class="homeActions">
+          <div class="homeReadRow">
+            <div class="homeReadLeft">
+              <div class="homeReadTitle">顯示白話</div>
+              <div class="homeReadDesc">在首頁內顯示原文＋白話</div>
+            </div>
+            <div class="switch on" id="showPlainSwitch"><div class="knob"></div></div>
+          </div>
+
+          <div class="homeActions" style="display:flex; gap:8px;">
             <button class="btn primary" id="btnStart">開始佈令</button>
             <button class="btn" id="btnFromStart">從頭重練</button>
           </div>
         </div>
       </div>
 
-      <!-- GAME VIEW -->
       <div class="view panel" id="viewGame">
         <div class="gameWrap">
           <div class="statusLine">
@@ -824,7 +832,6 @@
         </div>
       </div>
 
-      <!-- SETTINGS VIEW -->
       <div class="view panel scroll" id="viewSettings">
         <div class="settings">
           <div class="row">
@@ -861,8 +868,16 @@
 
           <div class="row">
             <div class="rowLeft">
+              <div class="rowTitle">首頁顯示白話</div>
+              <div class="rowDesc">原文＋白話一起顯示</div>
+            </div>
+            <div class="switch on" id="showPlainDefaultSwitch"><div class="knob"></div></div>
+          </div>
+
+          <div class="row">
+            <div class="rowLeft">
               <div class="rowTitle">清空足跡紀錄</div>
-              <div class="rowDesc">星星、測驗、進度全部歸零</div>
+              <div class="rowDesc">進度全部歸零</div>
             </div>
             <button class="pillBtn danger" id="btnClear">清空</button>
           </div>
@@ -870,10 +885,8 @@
       </div>
     </div>
 
-    <!-- ✅浮動測驗鈕 -->
     <button class="floatTestBtn" id="floatTestBtn">測驗</button>
 
-    <!-- MODAL -->
     <div class="modal" id="modal">
       <div class="modalCard">
         <div class="modalHead">
@@ -891,8 +904,6 @@
 (() => {
   /***********************
    * ✅自動拆段規則（完全自動）
-   * - tokens 超過 MAX_TOKENS 或 quote 太長就拆
-   * - 優先在「中間附近、含標點」的位置切
    ***********************/
   const AUTO_SPLIT = {
     enabled: true,
@@ -914,7 +925,6 @@
         if(d < bestDist){ best = i; bestDist = d; }
       }
     }
-    // 盡量切在 best 後面
     return Math.max(1, Math.min(n-2, best+1));
   }
 
@@ -946,8 +956,8 @@
     for(const seg of ch.segments){
       const tokens = seg.tokens || [];
       const quote = seg.quote || "";
-
       const needSplit = (tokens.length > AUTO_SPLIT.MAX_TOKENS) || (quote.length > AUTO_SPLIT.MAX_QUOTE_CHARS);
+
       if(!needSplit){
         out.push(seg);
         continue;
@@ -956,23 +966,14 @@
       const cut = splitIndexSmart(tokens);
       const [q1, q2] = splitQuoteSmart(quote);
 
-      out.push({
-        ...seg,
-        quote: q1 || quote,
-        tokens: tokens.slice(0, cut)
-      });
-      out.push({
-        ...seg,
-        quote: q2 || quote,
-        tokens: tokens.slice(cut)
-      });
+      out.push({ ...seg, quote: q1 || quote, tokens: tokens.slice(0, cut) });
+      out.push({ ...seg, quote: q2 || quote, tokens: tokens.slice(cut) });
     }
-
     ch.segments = out;
   }
 
   /***********************
-   * DATA
+   * DATA（原文＋白話）
    ***********************/
   const CHAPTERS = [
     {
@@ -982,87 +983,87 @@
         {
           quote: "孫子曰：兵者，國之大事，死生之地，存亡之道，不可不察也。",
           tokens: ["孫子曰","兵者","國之大事","死生之地","存亡之道","不可不察也"],
-          plain: ""
+          plain: "孫子說：打仗是國家最重大的事；它關係到生死存亡的關口與道路，不能不慎重考察。"
         },
         {
           quote: "故經之以五事，校之以計，而索其情：一曰道，二曰天，三曰地，四曰將，五曰法。",
           tokens: ["故經之以五事","校之以計","而索其情","一曰道","二曰天","三曰地","四曰將","五曰法"],
-          plain: ""
+          plain: "所以要用「五件大事」來衡量，再用各種計算去比對，查明真實情況：第一是道，第二是天，第三是地，第四是將，第五是法。"
         },
         {
           quote: "道者，令民與上同意也，故可以與之死，可以與之生，而不畏危。",
           tokens: ["道者","令民與上同意也","故可以與之死","可以與之生","而不畏危"],
-          plain: ""
+          plain: "所謂「道」，是讓百姓與統治者同心同德；因此可以同生共死，也不畏懼危險。"
         },
         {
           quote: "天者，陰陽、寒暑、時制也。",
           tokens: ["天者","陰陽","寒暑","時制也"],
-          plain: ""
+          plain: "所謂「天」，指陰陽變化、寒暑更迭與時令節奏。"
         },
         {
           quote: "地者，遠近、險易、廣狹、死生也。",
           tokens: ["地者","遠近","險易","廣狹","死生也"],
-          plain: ""
+          plain: "所謂「地」，指距離遠近、道路險易、地勢廣狹，以及利於生存或可能致命的條件。"
         },
         {
           quote: "將者，智、信、仁、勇、嚴也。",
           tokens: ["將者","智","信","仁","勇","嚴也"],
-          plain: ""
+          plain: "所謂「將」，就是統帥應具備：智慧、信用、仁愛、勇敢與嚴明。"
         },
         {
           quote: "法者，曲制、官道、主用也。",
           tokens: ["法者","曲制","官道","主用也"],
-          plain: ""
+          plain: "所謂「法」，是軍制編制、官員職責、後勤供給與資源運用等制度。"
         },
         {
           quote: "凡此五者，將莫不聞，知之者勝，不知之者不勝。",
           tokens: ["凡此五者","將莫不聞","知之者勝","不知之者不勝"],
-          plain: ""
+          plain: "這五項，將領沒有不聽過的；懂得並能用的就會勝，不懂的就不會勝。"
         },
         {
           quote: "故校之以計，而索其情，曰：主孰有道？將孰有能？天地孰得？法令孰行？兵眾孰強？士卒孰練？賞罰孰明？吾以此知勝負矣。",
           tokens: ["故校之以計","而索其情","曰","主孰有道","將孰有能","天地孰得","法令孰行","兵眾孰強","士卒孰練","賞罰孰明","吾以此知勝負矣"],
-          plain: ""
+          plain: "因此要用各種比較與計算來查清真相：哪一方君主更得人心？哪一方將領更有才能？哪一方更得天時地利？哪一方法令更能落實？哪一方兵力更強？哪一方士卒更精訓？哪一方賞罰更分明？據此即可判斷勝負。"
         },
         {
           quote: "將聽吾計，用之必勝，留之；將不聽吾計，用之必敗，去之。",
           tokens: ["將聽吾計","用之必勝","留之","將不聽吾計","用之必敗","去之"],
-          plain: ""
+          plain: "若將領願意採納我的計策，照做必勝，就留用；若不採納，照做必敗，就不要用。"
         },
         {
           quote: "計利以聽，乃為之勢，以佐其外。勢者，因利而制權也。",
           tokens: ["計利以聽","乃為之勢","以佐其外","勢者","因利而制權也"],
-          plain: ""
+          plain: "評估計策可行有利後，就要創造形勢來支援外在行動；所謂「勢」，就是順著利益去掌握權變。"
         },
         {
           quote: "兵者，詭道也。故能而示之不能，用而示之不用，近而示之遠，遠而示之近。",
           tokens: ["兵者","詭道也","故能而示之不能","用而示之不用","近而示之遠","遠而示之近"],
-          plain: ""
+          plain: "用兵本質在於詭變：有能力卻示弱，準備用卻示不用；要打近處卻示遠處，要打遠處卻示近處。"
         },
         {
           quote: "利而誘之，亂而取之，實而備之，強而避之。",
           tokens: ["利而誘之","亂而取之","實而備之","強而避之"],
-          plain: ""
+          plain: "用利引誘敵人；敵亂則乘機奪取；敵軍充實則加以防備；敵軍強盛則先避其鋒芒。"
         },
         {
           quote: "怒而撓之，卑而驕之，佚而勞之，親而離之。",
           tokens: ["怒而撓之","卑而驕之","佚而勞之","親而離之"],
-          plain: ""
+          plain: "讓敵人動怒以擾亂他；示弱使他驕傲；敵安逸就讓他奔波疲勞；敵內部親近就設法離間。"
         },
         {
           quote: "攻其無備，出其不意。此兵家之勝，不可先傳也。",
           tokens: ["攻其無備","出其不意","此兵家之勝","不可先傳也"],
-          plain: ""
+          plain: "攻擊敵人沒有防備之處，出現在他意料之外；這是兵家致勝的要訣，無法事先固定傳授成一套死法。"
         },
         {
           quote: "夫未戰而廟算勝者，得算多也；未戰而廟算不勝者，得算少也。",
           tokens: ["夫未戰而廟算勝者","得算多也","未戰而廟算不勝者","得算少也"],
-          plain: ""
+          plain: "還沒開戰，在廟堂推算就判定能勝的，是因為勝算因素多；推算不勝的，是因為勝算因素少。"
         },
         {
           quote: "多算勝，少算不勝，而況於無算乎？吾以此觀之，勝負見矣。",
           tokens: ["多算勝","少算不勝","而況於無算乎","吾以此觀之","勝負見矣"],
-          plain: ""
+          plain: "勝算多就能勝，勝算少就不能勝；更何況完全不計算？我用這個道理來看，勝負就清楚了。"
         }
       ]
     },
@@ -1080,7 +1081,6 @@
     { id: 13, name: "第十三篇 用間篇", segments: [] }
   ];
 
-  /* ✅載入後自動拆段：完全自動、一次處理完 */
   for(const ch of CHAPTERS){
     if(ch.segments && ch.segments.length) autoSplitChapterSegments(ch);
   }
@@ -1088,13 +1088,14 @@
   /***********************
    * STORAGE
    ***********************/
-  const LS_KEY = "sunzi_v1_master";
+  const LS_KEY = "sunzi_v1_master_fixed";
   const defaultProgress = () => ({
     fontScale: 1.00,
     hintDefault: true,
     hintOn: true,
     soundOn: true,
     ttsOn: true,
+    showPlainDefault: true,
     chapters: {}
   });
 
@@ -1130,12 +1131,13 @@
   const overviewList = document.getElementById("overviewList");
 
   const homeTitle = document.getElementById("homeTitle");
-  const homeStars = document.getElementById("homeStars");
+  const homeMeta = document.getElementById("homeMeta");
   const homeFullText = document.getElementById("homeFullText");
   const btnStart = document.getElementById("btnStart");
   const btnFromStart = document.getElementById("btnFromStart");
   const btnHomeRead = document.getElementById("btnHomeRead");
   const btnHomeStop = document.getElementById("btnHomeStop");
+  const showPlainSwitch = document.getElementById("showPlainSwitch");
 
   const npcLine = document.getElementById("npcLine");
   const btnSegRead = document.getElementById("btnSegRead");
@@ -1162,6 +1164,7 @@
   const soundSwitch = document.getElementById("soundSwitch");
   const ttsSwitch = document.getElementById("ttsSwitch");
   const hintDefaultSwitch = document.getElementById("hintDefaultSwitch");
+  const showPlainDefaultSwitch = document.getElementById("showPlainDefaultSwitch");
   const btnClear = document.getElementById("btnClear");
 
   /***********************
@@ -1180,6 +1183,7 @@
     [viewOverview, viewChapterHome, viewGame, viewSettings].forEach(v => v.classList.remove("active"));
     which.classList.add("active");
     updateTopActionsLabel();
+    refreshFloatTestButton();
   }
 
   function updateTopActionsLabel(){
@@ -1247,21 +1251,11 @@
   };
 
   /***********************
-   * OVERVIEW
+   * OVERVIEW（改成 2/9 進度顯示）
    ***********************/
   function getChapterProg(id){
     if(!PROG.chapters[id]) PROG.chapters[id] = { stars:0 };
     return PROG.chapters[id];
-  }
-
-  function renderStars(container, total, on){
-    container.innerHTML = "";
-    for(let i=0;i<total;i++){
-      const s = document.createElement("span");
-      s.className = "star" + (i<on ? " on":"");
-      s.textContent = "★";
-      container.appendChild(s);
-    }
   }
 
   function renderOverview(){
@@ -1269,7 +1263,7 @@
     CHAPTERS.forEach(ch => {
       const total = (ch.segments && ch.segments.length) ? ch.segments.length : 0;
       const p = getChapterProg(ch.id);
-      const starsOn = Math.min(p.stars, total);
+      const done = Math.min(p.stars || 0, total);
 
       const row = document.createElement("div");
       row.className = "chapterRow";
@@ -1279,25 +1273,29 @@
 
       const name = document.createElement("div");
       name.className = "chapterName";
-      name.textContent = ch.name;
 
-      const starsLine = document.createElement("div");
-      starsLine.className = "starsLine";
+      const title = document.createElement("span");
+      title.style.minWidth = "0";
+      title.style.overflow = "hidden";
+      title.style.textOverflow = "ellipsis";
+      title.style.whiteSpace = "nowrap";
+      title.textContent = ch.name;
 
-      const spacer = document.createElement("div");
-      spacer.style.width = "1px";
-      spacer.style.height = "1px";
-      spacer.style.opacity = "0";
+      const prog = document.createElement("span");
+      prog.className = "chapterProg";
+      prog.textContent = total>0 ? `${done}/${total}` : "—/—";
 
-      const stars = document.createElement("div");
-      stars.className = "stars";
-      if(total>0) renderStars(stars, total, starsOn);
+      name.appendChild(title);
+      name.appendChild(prog);
 
-      starsLine.appendChild(spacer);
-      starsLine.appendChild(stars);
+      const hint = document.createElement("div");
+      hint.className = "chapterHint";
+      hint.textContent = (total>0)
+        ? (done>=total ? "已完成，可複習/測驗" : "可進入練習")
+        : "內容待補";
 
       left.appendChild(name);
-      left.appendChild(starsLine);
+      left.appendChild(hint);
 
       const go = document.createElement("button");
       go.className = "chapterGo";
@@ -1325,13 +1323,24 @@
 
     const p = getChapterProg(currentChapterId);
     const total = ch.segments.length;
-    const starsOn = Math.min(p.stars, total);
+    const done = Math.min(p.stars || 0, total);
 
     homeTitle.textContent = ch.name;
-    renderStars(homeStars, total, starsOn);
+    homeMeta.textContent = `${done}/${total}`;
 
-    const full = ch.segments.map((s, i) => `（${i+1}）${s.quote}`).join("\n\n");
+    const showPlain = !!PROG.showPlainDefault;
+    const full = ch.segments.map((s, i) => {
+      const n = `（${i+1}）`;
+      if(!showPlain) return `${n}${s.quote}`;
+      const pl = (s.plain || "").trim();
+      return pl
+        ? `${n}${s.quote}\n【白話】${pl}`
+        : `${n}${s.quote}\n【白話】（待補）`;
+    }).join("\n\n");
+
     homeFullText.textContent = full;
+
+    showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
 
     topTitle.textContent = ch.name;
     topSub.textContent = "篇章首頁";
@@ -1341,13 +1350,20 @@
   btnStart.onclick = () => {
     const ch = CHAPTERS.find(x => x.id===currentChapterId);
     const p = getChapterProg(currentChapterId);
-    currentSegIndex = Math.min(p.stars, ch.segments.length-1);
+    currentSegIndex = Math.min(p.stars || 0, ch.segments.length-1);
     startLearnSegment(currentSegIndex, { firstEntry:true });
   };
 
   btnFromStart.onclick = () => {
     currentSegIndex = 0;
     startLearnSegment(currentSegIndex, { firstEntry:true, fromStart:true });
+  };
+
+  showPlainSwitch.onclick = () => {
+    PROG.showPlainDefault = !PROG.showPlainDefault;
+    saveProgress();
+    showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
+    openChapterHome();
   };
 
   /***********************
@@ -1411,7 +1427,6 @@
       ttsState.paused = false;
 
       u.onboundary = (ev) => {
-        // 有些瀏覽器 ev.charIndex 可能不存在，做防呆
         if(typeof ev.charIndex === "number") ttsState.boundaryChar = ev.charIndex;
       };
 
@@ -1457,7 +1472,6 @@
   function pauseOrResume(){
     if(!canTTS()) return;
 
-    // ✅暫停：用 cancel 停掉，並保留 boundaryChar
     if(ttsState.playing && !ttsState.paused){
       try{ window.speechSynthesis.cancel(); }catch(e){}
       ttsState.paused = true;
@@ -1467,7 +1481,6 @@
       return;
     }
 
-    // ✅續播：從 boundaryChar 後面繼續念同一段
     if(ttsState.playing && ttsState.paused){
       const remain = (ttsState.currentText || "").slice(Math.max(0, ttsState.boundaryChar));
       ttsState.paused = false;
@@ -1475,14 +1488,12 @@
       if(ttsState.kind==="chapter") btnHomeRead.textContent = "暫停";
       if(ttsState.kind==="segment") btnSegRead.textContent = "暫停";
 
-      // 若 remain 太短，直接進下一段
       if(remain.trim().length < 2){
         ttsState.idx += 1;
         playNextUtterance();
         return;
       }
 
-      // 續念剩下的，念完再 onend -> 下一段
       speakFrom(remain, ttsState.kind);
       return;
     }
@@ -1635,10 +1646,8 @@
     tokensEl.innerHTML = "";
     pool.forEach((t, idx) => {
       const el = makeToken(t);
-      el.dataset.idx = String(idx);
       el.onclick = () => {
         beep("tap");
-        el.style.pointerEvents = "none";
         selection.push(t);
         pool.splice(idx,1);
         renderBoard();
@@ -1744,7 +1753,7 @@
     }else{
       beep("bad");
       openModal("測驗未過", `
-        <div class="plain">沒關係。你自己按下「重來」的那一刻，就已經贏一半了。</div>
+        <div class="plain">沒關係。你按下「重來」那一刻，腦子其實正在重編碼。</div>
       `, `
         <button class="btn" id="btnRetryTest">重來</button>
         <button class="btn primary" id="btnPauseLater">先放下</button>
@@ -1787,14 +1796,14 @@
   };
 
   /***********************
-   * BOOK
+   * BOOK（原文＋白話）
    ***********************/
   btnBook.onclick = () => {
     if(btnBook.disabled) return;
     const seg = currentSeg();
     openModal("兵書", `
       <div class="quote">${escapeHtml(seg.quote)}</div>
-      <div class="plain"><strong>白話：</strong>${escapeHtml(seg.plain || "")}</div>
+      <div class="plain"><strong>白話：</strong>${escapeHtml((seg.plain || "（待補）").trim() || "（待補）")}</div>
     `);
   };
 
@@ -1825,9 +1834,8 @@
   function refreshFloatTestButton(){
     const ch = currentChapter();
     const p = getChapterProg(currentChapterId);
-    const passed = Math.min(p.stars, ch?.segments?.length || 0);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
 
-    // 至少通過 2 段才顯示
     if(viewGame.classList.contains("active") && mode==="learn" && passed >= 2){
       floatTestBtn.classList.add("show");
     }else{
@@ -1855,9 +1863,8 @@
   floatTestBtn.onclick = () => {
     const ch = currentChapter();
     const p = getChapterProg(currentChapterId);
-    const passed = Math.min(p.stars, ch.segments.length);
+    const passed = Math.min(p.stars || 0, ch.segments.length);
 
-    // 產生選單
     const options = Array.from({length: passed}, (_,i)=> `<option value="${i}">第${i+1}段</option>`).join("");
     openModal("測驗", `
       <div class="plain">選擇範圍（不佔佈令空間）：</div>
@@ -1916,6 +1923,7 @@
     soundSwitch.classList.toggle("on", !!PROG.soundOn);
     ttsSwitch.classList.toggle("on", !!PROG.ttsOn);
     hintDefaultSwitch.classList.toggle("on", !!PROG.hintDefault);
+    showPlainDefaultSwitch.classList.toggle("on", !!PROG.showPlainDefault);
   }
 
   fontRange.oninput = () => {
@@ -1939,9 +1947,15 @@
     saveProgress();
   };
 
+  showPlainDefaultSwitch.onclick = () => {
+    PROG.showPlainDefault = !PROG.showPlainDefault;
+    showPlainDefaultSwitch.classList.toggle("on", !!PROG.showPlainDefault);
+    saveProgress();
+  };
+
   btnClear.onclick = () => {
     openModal("清空足跡", `
-      <div class="plain">這會把所有篇章的星星、進度、測驗紀錄全部歸零。</div>
+      <div class="plain">這會把所有篇章的進度全部歸零。</div>
       <div class="plain">確定要清空嗎？</div>
     `, `
       <button class="btn" id="btnCancelClear">取消</button>
