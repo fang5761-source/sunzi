@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>孫子兵法｜佈令背誦 v1（母版）</title>
+  <title>孫子兵法｜佈令背誦 v1（母版 5.2）</title>
   <style>
     :root{
       --bg:#0f1410;
@@ -19,23 +19,22 @@
       --token:#212b23;
       --token2:#1a221b;
 
-      --glowStrong: 0 0 1.15rem rgba(255,225,140,.95), 0 0 2.1rem rgba(255,225,140,.65);
-      --glowMid:    0 0 0.85rem rgba(255,225,140,.75), 0 0 1.45rem rgba(255,225,140,.45);
-      --glowWeak:   0 0 0.55rem rgba(255,225,140,.55), 0 0 0.95rem rgba(255,225,140,.30);
+      --glowStrong: 0 0 1.15rem rgba(255,225,140,.95), 0 0 2.2rem rgba(255,225,140,.45);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --radius2: 22px;
 
-      --tap: 46px;
-      --radius: 14px;
+      --fontScale: 1;
     }
 
     *{ box-sizing:border-box; }
-    html,body{ height:100%; }
     body{
       margin:0;
-      font-family: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Serif CJK TC", serif;
-      background: radial-gradient(1200px 800px at 20% -10%, rgba(214,178,94,.18), transparent 55%),
-                  radial-gradient(900px 700px at 110% 30%, rgba(46,125,50,.18), transparent 55%),
-                  linear-gradient(180deg, #0c120e, #0f1410);
-      color: var(--ink);
+      background: radial-gradient(1200px 700px at 20% -20%, rgba(214,178,94,.16), transparent 55%),
+                  radial-gradient(1000px 600px at 120% 0%, rgba(46,125,50,.12), transparent 60%),
+                  var(--bg);
+      color:var(--ink);
+      font-family: system-ui, -apple-system, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
       overflow:hidden;
     }
 
@@ -43,183 +42,135 @@
     .safeBottom{ padding-bottom: env(safe-area-inset-bottom); }
 
     .app{
-      height:100%;
+      height: 100dvh;
       display:flex;
       flex-direction:column;
     }
 
     .topbar{
-      position:sticky;
-      top:0;
-      z-index:10;
-      background: linear-gradient(180deg, rgba(21,27,22,.96), rgba(21,27,22,.86));
-      border-bottom:1px solid rgba(255,255,255,.06);
-      padding: 10px 12px 10px;
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(21,27,22,.95), rgba(21,27,22,.55));
+      backdrop-filter: blur(10px);
     }
     .toprow{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:10px;
     }
-    .titleWrap{
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-    }
+    .titleWrap{ min-width:0; }
     .title{
-      font-weight:800;
-      letter-spacing:.08em;
-      font-size:15px;
-      line-height:1.1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      font-size: calc(18px * var(--fontScale));
+      font-weight: 760;
+      letter-spacing:.02em;
     }
     .subtitle{
+      margin-top:4px;
+      font-size: calc(12px * var(--fontScale));
       color: var(--muted);
-      font-size:12px;
-      line-height:1.1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
     }
     .topActions{
       display:flex;
       gap:8px;
-      align-items:center;
       flex-shrink:0;
     }
+
     .pillBtn{
-      height:34px;
-      padding:0 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(27,36,29,.78);
+      border:1px solid var(--line);
+      background: rgba(27,36,29,.7);
       color: var(--ink);
-      font-weight:800;
-      font-size:13px;
-      letter-spacing:.02em;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: calc(12px * var(--fontScale));
+      cursor:pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,.25);
     }
-    .pillBtn:active{ transform: translateY(1px); }
     .pillBtn.primary{
-      border-color: rgba(214,178,94,.35);
-      box-shadow: 0 0 0 1px rgba(214,178,94,.10) inset;
+      border-color: rgba(214,178,94,.45);
+      background: rgba(214,178,94,.14);
+      color: var(--ink);
     }
     .pillBtn.danger{
-      border-color: rgba(178,58,47,.35);
-      box-shadow: 0 0 0 1px rgba(178,58,47,.10) inset;
+      border-color: rgba(178,58,47,.55);
+      background: rgba(178,58,47,.14);
     }
 
     .main{
       flex:1;
-      display:flex;
-      flex-direction:column;
+      min-height:0;
+      padding: 14px;
       overflow:hidden;
-      padding: 10px 12px;
-      gap:10px;
     }
 
     .panel{
-      background: linear-gradient(180deg, rgba(21,27,22,.88), rgba(21,27,22,.72));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius: var(--radius);
-      box-shadow: 0 12px 30px rgba(0,0,0,.28);
+      height: 100%;
+      background: linear-gradient(180deg, rgba(27,36,29,.75), rgba(21,27,22,.65));
+      border: 1px solid var(--line);
+      border-radius: var(--radius2);
+      box-shadow: var(--shadow);
       overflow:hidden;
     }
-
     .view{
-      display:none;
       height:100%;
-      overflow:hidden;
+      display:none;
     }
-    .view.active{ display:flex; flex-direction:column; gap:10px; }
+    .view.active{ display:block; }
 
     .scroll{
       overflow:auto;
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Overview list */
+    /* OVERVIEW */
     .list{
+      padding: 14px;
       display:flex;
       flex-direction:column;
       gap:10px;
-      padding:10px;
     }
-    .chapterRow{
+    .row{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:12px;
-      border-radius:12px;
-      background: rgba(27,36,29,.72);
-      border:1px solid rgba(255,255,255,.08);
+      padding: 14px 14px;
+      border:1px solid rgba(43,58,47,.9);
+      border-radius: 16px;
+      background: rgba(21,27,22,.55);
+      cursor:pointer;
     }
-    .chapterLeft{
-      min-width:0;
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .chapterName{
-      font-weight:900;
-      font-size:14px;
+    .rowLeft{ min-width:0; }
+    .rowTitle{
+      font-size: calc(15px * var(--fontScale));
+      font-weight: 720;
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .starsLine{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
+    .rowDesc{
+      margin-top:4px;
+      font-size: calc(12px * var(--fontScale));
+      color: var(--muted);
     }
-    .stars{
-      display:flex;
-      gap:4px;
-      flex-wrap:nowrap;
-      line-height:1;
-      justify-content:flex-end;
-      margin-left:auto;
-    }
-    .star{
-      font-size:14px;
-      color: rgba(214,178,94,.22);
-    }
-    .star.on{
-      color: var(--gold);
-      text-shadow: 0 0 10px rgba(214,178,94,.28);
-    }
-    .chapterGo{
+    .badgeProgress{
       flex-shrink:0;
-      height:36px;
-      padding:0 12px;
-      border-radius:10px;
-      background: rgba(15,20,16,.65);
-      border:1px solid rgba(255,255,255,.10);
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(214,178,94,.35);
+      background: rgba(214,178,94,.12);
       color: var(--ink);
-      font-weight:900;
-      font-size:13px;
+      font-weight: 760;
+      font-size: calc(12px * var(--fontScale));
     }
-    .chapterGo[disabled]{ opacity:.45; }
 
-    /* Chapter home */
+    /* HOME */
     .homeCard{
-      padding:12px;
+      height:100%;
       display:flex;
       flex-direction:column;
-      gap:10px;
-      overflow:hidden;
+      padding:14px;
+      gap:12px;
     }
     .homeTop{
       display:flex;
@@ -228,452 +179,324 @@
       gap:10px;
     }
     .homeTitle{
-      font-weight:1000;
-      font-size:16px;
-      letter-spacing:.04em;
+      font-size: calc(18px * var(--fontScale));
+      font-weight: 800;
     }
-    .homeStars{
+    .homeProgress{
       display:flex;
-      gap:4px;
-      flex-wrap:nowrap;
-      justify-content:flex-end;
-      margin-left:auto;
-    }
-    .homeActions{
-      display:flex;
+      align-items:center;
       gap:8px;
+      flex-shrink:0;
     }
-    .btn{
-      height:44px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(27,36,29,.80);
-      color: var(--ink);
-      font-weight:1000;
-      font-size:14px;
-      letter-spacing:.02em;
-      flex:1;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
-    }
-    .btn.primary{
-      background: linear-gradient(180deg, rgba(214,178,94,.20), rgba(27,36,29,.80));
-      border-color: rgba(214,178,94,.35);
-    }
-    .btn:active{ transform: translateY(1px); }
-
     .homeText{
-      padding:10px 12px;
-      border-radius:12px;
-      background: rgba(15,20,16,.35);
-      border:1px solid rgba(255,255,255,.08);
-      color: rgba(233,239,233,.96);
-      line-height:1.75;
+      flex:1;
+      min-height:0;
       overflow:auto;
       -webkit-overflow-scrolling: touch;
-      max-height: 42vh;
+      padding: 12px;
+      border:1px solid rgba(43,58,47,.9);
+      border-radius: 16px;
+      background: rgba(21,27,22,.52);
+      font-size: calc(14px * var(--fontScale));
+      line-height: 1.75;
+      color: rgba(233,239,233,.92);
       white-space: pre-wrap;
     }
 
     .homeReadRow{
       display:flex;
-      gap:8px;
       align-items:center;
       justify-content:space-between;
-      padding:10px 10px;
-      border-radius:12px;
-      background: rgba(27,36,29,.55);
-      border:1px solid rgba(255,255,255,.08);
+      gap:10px;
+      padding: 12px;
+      border:1px solid rgba(43,58,47,.9);
+      border-radius: 16px;
+      background: rgba(21,27,22,.52);
     }
-    .homeReadLeft{
-      min-width:0;
+    .homeReadTitle{ font-weight: 800; font-size: calc(14px * var(--fontScale)); }
+    .homeReadDesc{ margin-top:4px; color:var(--muted); font-size: calc(12px * var(--fontScale)); }
+
+    .homeActions{
       display:flex;
-      flex-direction:column;
-      gap:2px;
+      gap:10px;
     }
-    .homeReadTitle{
-      font-weight:1000;
-      font-size:13px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .btn{
+      flex:1;
+      border: 1px solid var(--line);
+      background: rgba(27,36,29,.75);
+      color: var(--ink);
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: calc(14px * var(--fontScale));
+      font-weight: 760;
+      cursor:pointer;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
     }
-    .homeReadDesc{
-      color: var(--muted);
-      font-size:12px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .btn.primary{
+      border-color: rgba(214,178,94,.45);
+      background: rgba(214,178,94,.16);
     }
 
-    /* Game status line */
+    /* GAME */
+    .gameWrap{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      padding: 14px;
+      gap: 10px;
+      min-height:0;
+    }
+
     .statusLine{
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap:10px;
-      padding:10px 12px;
-      border-top:1px solid rgba(255,255,255,.06);
-      background: rgba(15,20,16,.22);
     }
     .npc{
-      min-width:0;
       display:flex;
       gap:10px;
       align-items:flex-start;
-      flex:1;
+      min-width:0;
     }
     .npcBadge{
-      width:34px;
-      height:34px;
-      border-radius:10px;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
       display:flex;
       align-items:center;
       justify-content:center;
-      background: rgba(214,178,94,.14);
-      border:1px solid rgba(214,178,94,.22);
-      font-weight:1000;
-      color: var(--gold);
+      font-weight: 900;
+      background: rgba(214,178,94,.18);
+      border: 1px solid rgba(214,178,94,.45);
       flex-shrink:0;
     }
     .npcText{
+      font-size: calc(13px * var(--fontScale));
+      color: rgba(233,239,233,.9);
+      line-height:1.5;
+      padding-top: 4px;
       min-width:0;
-      font-size:13px;
-      line-height:1.35;
-      color: var(--ink);
-      overflow:hidden;
-      display:-webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-    }
-    .npcMore{
-      color: rgba(214,178,94,.98);
-      font-weight:1000;
-      margin-left:6px;
-      white-space:nowrap;
-      cursor:pointer;
+      word-break: break-word;
     }
 
     .miniBtn{
-      height:34px;
-      padding:0 10px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(27,36,29,.74);
+      border:1px solid rgba(43,58,47,.95);
+      background: rgba(21,27,22,.55);
       color: var(--ink);
-      font-weight:1000;
-      font-size:13px;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      -webkit-tap-highlight-color: transparent;
-      user-select:none;
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-size: calc(12px * var(--fontScale));
+      cursor:pointer;
+      box-shadow: 0 8px 16px rgba(0,0,0,.25);
       white-space:nowrap;
     }
-    .miniBtn:active{ transform: translateY(1px); }
-    .miniBtn.book{ border-color: rgba(214,178,94,.35); }
     .miniBtn.primary{
-      border-color: rgba(214,178,94,.35);
-      background: linear-gradient(180deg, rgba(214,178,94,.18), rgba(27,36,29,.74));
+      border-color: rgba(214,178,94,.45);
+      background: rgba(214,178,94,.15);
+      font-weight: 800;
     }
-    .miniBtn[disabled]{ opacity:.45; }
-
-    .miniBtn.book.pulseStrong{
-      box-shadow: var(--glowStrong);
-      animation: bookPulse 2.2s ease-in-out infinite;
+    .miniBtn.book{
+      border-color: rgba(214,178,94,.22);
     }
-    @keyframes bookPulse{
-      0%{ transform: translateY(0); filter: brightness(1); }
-      50%{ transform: translateY(-1px); filter: brightness(1.08); }
-      100%{ transform: translateY(0); filter: brightness(1); }
+    .miniBtn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
     }
 
-    /* Hint toggle */
-    .toggle{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      color: var(--muted);
-      font-weight:900;
-      font-size:12px;
-      padding:0 8px;
-      height:34px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(27,36,29,.50);
-    }
-    .switch{
-      width:38px;
-      height:22px;
-      border-radius:999px;
-      background: rgba(255,255,255,.12);
-      position:relative;
-      border:1px solid rgba(255,255,255,.10);
-      flex-shrink:0;
-    }
-    .knob{
-      width:18px; height:18px;
-      border-radius:50%;
-      background: rgba(233,239,233,.92);
-      position:absolute; top:1px; left:1px;
-      transition: .18s ease;
-      box-shadow: 0 6px 14px rgba(0,0,0,.35);
-    }
-    .switch.on{
-      background: rgba(214,178,94,.28);
-      border-color: rgba(214,178,94,.30);
-    }
-    .switch.on .knob{ left:18px; }
-
-    /* Board */
-    .gameWrap{ display:flex; flex-direction:column; gap:10px; overflow:hidden; }
-    .board{ padding:10px; border-bottom:1px solid rgba(255,255,255,.06); }
-    .boardHead{
+    /* ✅ 2 → 3：上方固定，下面是可滾動工作區 */
+    .workArea{
+      flex:1;
+      min-height:0;
       display:flex;
-      align-items:center;
-      justify-content:space-between;
+      flex-direction:column;
       gap:10px;
-      margin-bottom:8px;
+      overflow:hidden;
     }
-    .boardTitle{ font-weight:1000; font-size:14px; color: rgba(233,239,233,.95); }
-    .boardRight{ display:flex; gap:8px; align-items:center; flex-shrink:0; }
 
     .slots{
+      border: 1px solid rgba(43,58,47,.9);
+      background: rgba(21,27,22,.52);
+      border-radius: 16px;
+      padding: 12px;
+      min-height: 110px;
       display:flex;
-      flex-wrap:wrap;
+      flex-wrap: wrap;
       gap:8px;
-      min-height: 106px;
-      padding:10px;
-      border-radius: 12px;
-      background: rgba(15,20,16,.40);
-      border:1px solid rgba(255,255,255,.08);
-    }
-    .slotHint{
-      color: rgba(170,182,170,.88);
-      font-weight:900;
-      font-size:12px;
-      padding:8px 10px;
-      border:1px dashed rgba(255,255,255,.12);
-      border-radius:999px;
-      background: rgba(27,36,29,.30);
+      align-content:flex-start;
     }
 
-    /* Token zone */
-    .tokensPanel{ padding:10px; overflow:hidden; }
+    /* ✅ 令牌板做成「可滾動」：長段不再把畫面撐爆 */
+    .tokensWrap{
+      flex:1;
+      min-height:0;
+      border: 1px solid rgba(43,58,47,.9);
+      background: rgba(21,27,22,.52);
+      border-radius: 16px;
+      padding: 10px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
     .tokens{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
-      max-height: 230px;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
       align-content:flex-start;
-      padding-bottom: 2px;
     }
+
     .token{
-      min-height: 44px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(33,43,35,.92), rgba(26,34,27,.86));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 12px 22px rgba(0,0,0,.25);
+      background: linear-gradient(180deg, rgba(33,43,35,.92), rgba(26,34,27,.78));
+      border:1px solid rgba(43,58,47,.95);
       color: var(--ink);
-      font-weight: 1000;
-      letter-spacing:.02em;
+      padding: 9px 10px;
+      border-radius: 999px;
+      font-size: calc(13px * var(--fontScale));
+      font-weight: 760;
+      cursor:pointer;
       user-select:none;
-      -webkit-tap-highlight-color: transparent;
-      text-rendering: geometricPrecision;
-      -webkit-font-smoothing: antialiased;
-    }
-    .token:active{ transform: translateY(1px) scale(.99); }
-
-    .token.hintStrong{ box-shadow: var(--glowStrong); }
-    .token.hintMid{ box-shadow: var(--glowMid); }
-    .token.hintWeak{ box-shadow: var(--glowWeak); }
-
-    /* ✅穩定呼吸燈：一直有、一直在 */
-    .token.breath{
-      box-shadow: var(--glowWeak);
-      animation: breathe 1.65s ease-in-out infinite;
-    }
-    @keyframes breathe{
-      0%{ filter: brightness(1.00); transform: translateY(0); }
-      50%{ filter: brightness(1.10); transform: translateY(-1px); }
-      100%{ filter: brightness(1.00); transform: translateY(0); }
-    }
-
-    /* Flash hint */
-    .token.hintFlash{
-      animation: hintFlash 1.9s ease-in-out 1;
-    }
-    @keyframes hintFlash{
-      0%   { box-shadow: var(--glowStrong); filter: brightness(1.10); }
-      14%  { box-shadow: var(--glowStrong); filter: brightness(1.14); }
-      28%  { box-shadow: var(--glowMid);    filter: brightness(1.08); }
-      42%  { box-shadow: var(--glowStrong); filter: brightness(1.12); }
-      56%  { box-shadow: var(--glowMid);    filter: brightness(1.06); }
-      70%  { box-shadow: var(--glowWeak);   filter: brightness(1.03); }
-      85%  { box-shadow: var(--glowWeak);   filter: brightness(1.01); }
-      100% { box-shadow: var(--glowWeak);   filter: brightness(1.00); }
-    }
-
-    /* Test bar */
-    .testBar{
-      display:none;
-      padding:10px;
-      border-top:1px solid rgba(255,255,255,.06);
-      background: rgba(15,20,16,.18);
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-    .testBar.show{ display:flex; }
-    .select{
-      height:38px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(27,36,29,.65);
-      color: var(--ink);
-      font-weight:1000;
-      padding:0 10px;
-      font-size:13px;
-      outline:none;
-    }
-
-    /* Modal */
-    .modal{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.74);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding: 18px 12px;
-      z-index:99;
-    }
-    .modal.show{ display:flex; }
-    .modalCard{
-      width:min(560px, 100%);
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(21,27,22,.98), rgba(21,27,22,.92));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 24px 60px rgba(0,0,0,.55);
-      overflow:hidden;
-    }
-    .modalHead{
-      padding:12px 12px 10px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-    .modalTitle{
-      font-weight: 1000;
-      letter-spacing:.06em;
-      font-size: 14px;
-      color: rgba(233,239,233,.95);
       white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
     }
-    .modalClose{
-      height:34px;
-      padding:0 10px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(27,36,29,.60);
-      color: var(--ink);
-      font-weight:1000;
-      font-size:13px;
+    .token:hover{ transform: translateY(-1px); }
+    .slotToken{
+      background: rgba(214,178,94,.12);
+      border-color: rgba(214,178,94,.35);
     }
-    .modalBody{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      max-height: 72vh;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .quote{
-      padding:10px 12px;
-      border-radius:12px;
-      background: rgba(15,20,16,.35);
-      border:1px solid rgba(255,255,255,.08);
-      font-weight: 1000;
-      line-height: 1.7;
-      white-space: pre-wrap;
-    }
-    .plain{
-      padding:10px 12px;
-      border-radius:12px;
-      background: rgba(27,36,29,.60);
-      border:1px solid rgba(255,255,255,.08);
-      color: rgba(233,239,233,.95);
-      font-size: 13px;
-      line-height: 1.75;
-      white-space: pre-wrap;
-    }
-    .modalActions{
-      display:flex;
-      gap:8px;
-      padding:12px;
-      border-top:1px solid rgba(255,255,255,.06);
-    }
-    .modalActions .btn{ height:42px; }
 
-    /* Settings */
+    .hintRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(43,58,47,.9);
+      background: rgba(21,27,22,.52);
+      border-radius: 16px;
+    }
+    .hintLeft{ min-width:0; }
+    .hintTitle{ font-weight: 820; font-size: calc(13px * var(--fontScale)); }
+    .hintDesc{ margin-top:4px; color:var(--muted); font-size: calc(12px * var(--fontScale)); }
+
+    .switch{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-shrink:0;
+    }
+    .switch input{ transform: scale(1.1); }
+
+    /* SETTINGS */
     .settings{
-      padding:12px;
+      padding: 14px;
       display:flex;
       flex-direction:column;
       gap:12px;
     }
-    .row{
+    .setCard{
+      border:1px solid rgba(43,58,47,.9);
+      background: rgba(21,27,22,.52);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .setRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(43,58,47,.55);
+    }
+    .setRow:first-child{ border-top:none; padding-top:0; }
+    .setLeft{ min-width:0; }
+    .setTitle{ font-weight: 820; font-size: calc(14px * var(--fontScale)); }
+    .setDesc{ margin-top:4px; color:var(--muted); font-size: calc(12px * var(--fontScale)); }
+    .range{
+      width: 160px;
+    }
+
+    /* MODAL */
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      background: rgba(0,0,0,.55);
+      z-index: 40;
+    }
+    .modal.show{ display:flex; }
+    .modalCard{
+      width: min(720px, 100%);
+      max-height: min(78vh, 720px);
+      background: linear-gradient(180deg, rgba(27,36,29,.95), rgba(21,27,22,.92));
+      border: 1px solid rgba(43,58,47,.95);
+      border-radius: 18px;
+      box-shadow: 0 22px 48px rgba(0,0,0,.45);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .modalHead{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      padding:10px 10px;
-      border-radius:12px;
-      background: rgba(27,36,29,.55);
-      border:1px solid rgba(255,255,255,.08);
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(43,58,47,.7);
     }
-    .rowLeft{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width:0;
-    }
-    .rowTitle{
-      font-weight: 1000;
-      font-size: 13px;
+    .modalTitle{
+      font-weight: 900;
+      font-size: calc(14px * var(--fontScale));
       letter-spacing:.02em;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
     }
-    .rowDesc{
-      color: var(--muted);
-      font-size: 12px;
-      line-height:1.25;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .modalClose{
+      border:1px solid rgba(43,58,47,.95);
+      background: rgba(21,27,22,.55);
+      color:var(--ink);
+      padding: 7px 10px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-size: calc(12px * var(--fontScale));
     }
-    .range{ width: 180px; }
+    .modalBody{
+      padding: 14px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .modalActions{
+      display:flex;
+      gap:10px;
+      padding: 12px 14px;
+      border-top: 1px solid rgba(43,58,47,.7);
+      background: rgba(21,27,22,.35);
+    }
 
-    /* Free font scaling */
-    :root{ --fontScale: 1; }
-    body{ font-size: calc(16px * var(--fontScale)); }
-    .token{ font-size: calc(16px * var(--fontScale)); }
-    .npcText{ font-size: calc(13px * var(--fontScale)); }
-    .quote{ font-size: calc(16px * var(--fontScale)); }
-    .plain{ font-size: calc(13px * var(--fontScale)); }
+    .quote{ font-size: calc(16px * var(--fontScale)); line-height:1.75; font-weight: 820; }
+    .plain{ margin-top:10px; font-size: calc(13px * var(--fontScale)); line-height:1.75; color: rgba(233,239,233,.92); }
+    .muted{ color: var(--muted); }
 
+    /* ✅ 浮動測驗鈕 */
+    .fab{
+      position: fixed;
+      right: 16px;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      z-index: 30;
+      border-radius: 999px;
+      padding: 12px 14px;
+      border: 1px solid rgba(214,178,94,.45);
+      background: rgba(214,178,94,.16);
+      color: var(--ink);
+      font-weight: 900;
+      font-size: calc(13px * var(--fontScale));
+      box-shadow: 0 18px 36px rgba(0,0,0,.35);
+      cursor:pointer;
+      display:none;
+    }
+    .fab.show{ display:inline-flex; align-items:center; gap:8px; }
+    .fab small{ font-weight: 800; opacity:.9; }
+
+    /* 小螢幕修正 */
     @media (max-height: 740px){
-      .tokens{ max-height: 205px; }
       .slots{ min-height: 96px; }
       .homeText{ max-height: 36vh; }
     }
@@ -699,19 +522,22 @@
 
     <!-- MAIN -->
     <div class="main">
-      <!-- OVERVIEW VIEW -->
+      <!-- OVERVIEW -->
       <div class="view active panel scroll" id="viewOverview">
         <div class="list" id="overviewList"></div>
       </div>
 
-      <!-- CHAPTER HOME VIEW -->
+      <!-- CHAPTER HOME -->
       <div class="view panel" id="viewChapterHome">
         <div class="homeCard">
           <div class="homeTop">
             <div style="min-width:0">
               <div class="homeTitle" id="homeTitle">第一篇 始計篇</div>
+              <div class="subtitle muted" id="homeSub">（點「開始佈令」進入）</div>
             </div>
-            <div class="homeStars" id="homeStars"></div>
+            <div class="homeProgress">
+              <span class="badgeProgress" id="homeProgressBadge">0/0</span>
+            </div>
           </div>
 
           <div class="homeText" id="homeFullText"></div>
@@ -734,7 +560,7 @@
         </div>
       </div>
 
-      <!-- GAME VIEW -->
+      <!-- GAME -->
       <div class="view panel" id="viewGame">
         <div class="gameWrap">
           <div class="statusLine">
@@ -745,87 +571,93 @@
             <div style="display:flex; gap:8px; align-items:flex-start; flex-shrink:0;">
               <button class="miniBtn" id="btnSegRead">朗讀</button>
               <button class="miniBtn" id="btnReset">重整</button>
-              <button class="miniBtn book" id="btnBook">兵書</button>
-              <!-- ✅段落內就能按下一關 -->
+              <button class="miniBtn book" id="btnBook" disabled>兵書</button>
               <button class="miniBtn primary" id="btnNext" disabled>下一關</button>
             </div>
           </div>
 
-          <div class="board">
-            <div class="boardHead">
-              <div class="boardTitle" id="boardTitle">佈令板</div>
-              <div class="boardRight">
-                <div class="toggle" id="hintToggleWrap">
-                  <span>學習提示</span>
-                  <div class="switch on" id="hintSwitch"><div class="knob"></div></div>
-                </div>
-              </div>
-            </div>
-            <div class="slots" id="slots">
-              <div class="slotHint" id="slotHint">點下方令牌，依順序放進佈令板</div>
+          <!-- ✅ 先 2 再 3：上方佈令板固定，下面令牌板可滾 -->
+          <div class="workArea">
+            <div class="slots" id="slots"></div>
+            <div class="tokensWrap" id="tokensWrap">
+              <div class="tokens" id="tokens"></div>
             </div>
           </div>
 
-          <div class="tokensPanel">
-            <div class="tokens" id="tokens"></div>
+          <div class="hintRow">
+            <div class="hintLeft">
+              <div class="hintTitle">提示模式</div>
+              <div class="hintDesc">會短暫閃亮下一個正確令牌</div>
+            </div>
+            <div class="switch" id="hintToggleWrap">
+              <span class="muted" style="font-size:12px;">關/開</span>
+              <input type="checkbox" id="hintSwitch" />
+            </div>
           </div>
 
-          <div class="testBar" id="testBar">
-            <strong style="font-size:13px; letter-spacing:.04em;">測驗</strong>
-            <span style="color:var(--muted); font-weight:1000; font-size:12px;">範圍</span>
-            <select class="select" id="testStart"></select>
-            <span style="color:var(--muted); font-weight:1000; font-size:12px;">到</span>
-            <select class="select" id="testEnd"></select>
-            <button class="miniBtn" id="btnStartTest">開始</button>
-          </div>
         </div>
       </div>
 
-      <!-- SETTINGS VIEW -->
+      <!-- SETTINGS -->
       <div class="view panel scroll" id="viewSettings">
         <div class="settings">
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">字體大小</div>
-              <div class="rowDesc">自由調整</div>
+          <div class="setCard">
+            <div class="setRow">
+              <div class="setLeft">
+                <div class="setTitle">字體大小</div>
+                <div class="setDesc">全站同步放大縮小（包含總覽與篇章）</div>
+              </div>
+              <input class="range" id="fontScale" type="range" min="0.88" max="1.22" step="0.01" />
             </div>
-            <input class="range" id="fontRange" type="range" min="0.85" max="1.25" step="0.01" />
+
+            <div class="setRow">
+              <div class="setLeft">
+                <div class="setTitle">音效</div>
+                <div class="setDesc">正確/錯誤提示音</div>
+              </div>
+              <input id="soundOn" type="checkbox" />
+            </div>
+
+            <div class="setRow">
+              <div class="setLeft">
+                <div class="setTitle">朗讀（TTS）</div>
+                <div class="setDesc">使用裝置語音朗讀原文</div>
+              </div>
+              <input id="ttsOn" type="checkbox" />
+            </div>
+
+            <div class="setRow">
+              <div class="setLeft">
+                <div class="setTitle">提示預設為開</div>
+                <div class="setDesc">每次進段落預設提示狀態</div>
+              </div>
+              <input id="hintDefault" type="checkbox" />
+            </div>
+
+            <div class="setRow">
+              <div class="setLeft">
+                <div class="setTitle">清空足跡紀錄</div>
+                <div class="setDesc">進度、測驗、設定全部歸零</div>
+              </div>
+              <button class="pillBtn danger" id="btnClear">清空</button>
+            </div>
           </div>
 
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">音效</div>
-              <div class="rowDesc">點擊、成功提示</div>
+          <div class="setCard">
+            <div class="setTitle">小提醒</div>
+            <div class="setDesc" style="margin-top:8px; line-height:1.65;">
+              (1) 令牌太多會心煩是正常的：我們已把令牌板做成可滾動，不會再卡死。<br/>
+              (2) 測驗用「浮動測驗鈕」開啟，不會佔你的佈令空間。<br/>
+              (3) 長段落若仍覺得壓力大，下一步可以做「自動再切細」：超過 N 個令牌就拆成兩段（我也能幫你加）。
             </div>
-            <div class="switch on" id="soundSwitch"><div class="knob"></div></div>
-          </div>
-
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">朗讀</div>
-              <div class="rowDesc">使用系統語音</div>
-            </div>
-            <div class="switch on" id="ttsSwitch"><div class="knob"></div></div>
-          </div>
-
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">學習提示預設</div>
-              <div class="rowDesc">進入佈令時預設開啟</div>
-            </div>
-            <div class="switch on" id="hintDefaultSwitch"><div class="knob"></div></div>
-          </div>
-
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">清空足跡紀錄</div>
-              <div class="rowDesc">星星、測驗、進度全部歸零</div>
-            </div>
-            <button class="pillBtn danger" id="btnClear">清空</button>
           </div>
         </div>
       </div>
+
     </div>
+
+    <!-- ✅ 浮動測驗鈕 -->
+    <button class="fab" id="fabTest">測驗 <small id="fabHint">0/0</small></button>
 
     <!-- MODAL -->
     <div class="modal" id="modal">
@@ -844,101 +676,97 @@
 <script>
 (() => {
   /***********************
-   * DATA（第一篇：拆成「好吞」的段落）
-   * ✅重點：原文不缺字、但是長段拆段避免令牌爆炸
+   * DATA（完美母版5(定稿2) 的拆段風格）
+   * ✅ 白話：補回來（兵書會顯示）
    ***********************/
-    const CHAPTERS = [
-    {
-      id: 1,
-      name: "第一篇 始計篇",
-      segments: [
-        {
-          quote: "孫子曰：兵者，國之大事，死生之地，存亡之道，不可不察也。",
-          tokens: ["孫子曰","兵者","國之大事","死生之地","存亡之道","不可不察也"],
-          plain: ""
-        },
-        {
-          quote: "故經之以五事，校之以計，而索其情：一曰道，二曰天，三曰地，四曰將，五曰法。",
-          tokens: ["故經之以五事","校之以計","而索其情","一曰道","二曰天","三曰地","四曰將","五曰法"],
-          plain: ""
-        },
-        {
-          quote: "道者，令民與上同意也，故可以與之死，可以與之生，而不畏危。",
-          tokens: ["道者","令民與上同意也","故可以與之死","可以與之生","而不畏危"],
-          plain: ""
-        },
-        {
-          quote: "天者，陰陽、寒暑、時制也。",
-          tokens: ["天者","陰陽","寒暑","時制也"],
-          plain: ""
-        },
-        {
-          quote: "地者，遠近、險易、廣狹、死生也。",
-          tokens: ["地者","遠近","險易","廣狹","死生也"],
-          plain: ""
-        },
-        {
-          quote: "將者，智、信、仁、勇、嚴也。",
-          tokens: ["將者","智","信","仁","勇","嚴也"],
-          plain: ""
-        },
-        {
-          quote: "法者，曲制、官道、主用也。",
-          tokens: ["法者","曲制","官道","主用也"],
-          plain: ""
-        },
-        {
-          quote: "凡此五者，將莫不聞，知之者勝，不知之者不勝。",
-          tokens: ["凡此五者","將莫不聞","知之者勝","不知之者不勝"],
-          plain: ""
-        },
-        {
-          quote: "故校之以計，而索其情，曰：主孰有道？將孰有能？天地孰得？法令孰行？兵眾孰強？士卒孰練？賞罰孰明？吾以此知勝負矣。",
-          tokens: ["故校之以計","而索其情","曰","主孰有道","將孰有能","天地孰得","法令孰行","兵眾孰強","士卒孰練","賞罰孰明","吾以此知勝負矣"],
-          plain: ""
-        },
-        {
-          quote: "將聽吾計，用之必勝，留之；將不聽吾計，用之必敗，去之。",
-          tokens: ["將聽吾計","用之必勝","留之","將不聽吾計","用之必敗","去之"],
-          plain: ""
-        },
-        {
-          quote: "計利以聽，乃為之勢，以佐其外。勢者，因利而制權也。",
-          tokens: ["計利以聽","乃為之勢","以佐其外","勢者","因利而制權也"],
-          plain: ""
-        },
-        {
-          quote: "兵者，詭道也。故能而示之不能，用而示之不用，近而示之遠，遠而示之近。",
-          tokens: ["兵者","詭道也","故能而示之不能","用而示之不用","近而示之遠","遠而示之近"],
-          plain: ""
-        },
-        {
-          quote: "利而誘之，亂而取之，實而備之，強而避之。",
-          tokens: ["利而誘之","亂而取之","實而備之","強而避之"],
-          plain: ""
-        },
-        {
-          quote: "怒而撓之，卑而驕之，佚而勞之，親而離之。",
-          tokens: ["怒而撓之","卑而驕之","佚而勞之","親而離之"],
-          plain: ""
-        },
-        {
-          quote: "攻其無備，出其不意。此兵家之勝，不可先傳也。",
-          tokens: ["攻其無備","出其不意","此兵家之勝","不可先傳也"],
-          plain: ""
-        },
-        {
-          quote: "夫未戰而廟算勝者，得算多也；未戰而廟算不勝者，得算少也。",
-          tokens: ["夫未戰而廟算勝者","得算多也","未戰而廟算不勝者","得算少也"],
-          plain: ""
-        },
-        {
-          quote: "多算勝，少算不勝，而況於無算乎？吾以此觀之，勝負見矣。",
-          tokens: ["多算勝","少算不勝","而況於無算乎","吾以此觀之","勝負見矣"],
-          plain: ""
-        }
-      ]
-    },
+  const CHAPTERS = [
+    { id: 1, name: "第一篇 始計篇", segments: [
+      {
+        quote: "孫子曰：兵者，國之大事，死生之地，存亡之道，不可不察也。",
+        tokens: ["孫子曰","兵者","國之大事","死生之地","存亡之道","不可不察也"],
+        plain: "戰爭是國家大事，關係生死與存亡，必須審慎考察。"
+      },
+      {
+        quote: "故經之以五事，校之以計，而索其情：一曰道，二曰天，三曰地，四曰將，五曰法。",
+        tokens: ["故經之以五事","校之以計","而索其情","一曰道","二曰天","三曰地","四曰將","五曰法"],
+        plain: "用五個面向做框架來評估局勢：道、天、地、將、法。"
+      },
+      {
+        quote: "道者，令民與上同意也，故可以與之死，可以與之生，而不畏危。",
+        tokens: ["道者","令民與上同意也","故可以與之死","可以與之生","而不畏危"],
+        plain: "「道」是讓百姓與領導同心同德，能同生共死而不怕危險。"
+      },
+      {
+        quote: "天者，陰陽、寒暑、時制也。",
+        tokens: ["天者","陰陽","寒暑","時制也"],
+        plain: "「天」是時令與節奏：陰陽消長、寒暑變化、時間規律。"
+      },
+      {
+        quote: "地者，遠近、險易、廣狹、死生也。",
+        tokens: ["地者","遠近","險易","廣狹","死生也"],
+        plain: "「地」是地理條件：遠近、險易、廣狹，以及生死要害。"
+      },
+      {
+        quote: "將者，智、信、仁、勇、嚴也。",
+        tokens: ["將者","智","信","仁","勇","嚴也"],
+        plain: "「將」看的是將領素質：智慧、信用、仁心、勇氣、紀律。"
+      },
+      {
+        quote: "法者，曲制、官道、主用也。",
+        tokens: ["法者","曲制","官道","主用也"],
+        plain: "「法」是制度與執行：編制規章、官府流程、資源調度。"
+      },
+      {
+        quote: "凡此五者，將莫不聞，知之者勝，不知之者不勝。",
+        tokens: ["凡此五者","將莫不聞","知之者勝","不知之者不勝"],
+        plain: "五者人人都聽過，但懂得活用者勝，不懂者敗。"
+      },
+      {
+        quote: "故校之以計，而索其情，曰：主孰有道？將孰有能？天地孰得？法令孰行？兵眾孰強？士卒孰練？賞罰孰明？吾以此知勝負矣。",
+        tokens: ["故校之以計","而索其情","曰","主孰有道","將孰有能","天地孰得","法令孰行","兵眾孰強","士卒孰練","賞罰孰明","吾以此知勝負矣"],
+        plain: "逐項比較：哪方更得民心？將領更有能力？時地更有利？制度更能落實？兵力更強？訓練更精？賞罰更分明？用這些就能判勝負。"
+      },
+      {
+        quote: "將聽吾計，用之必勝，留之；將不聽吾計，用之必敗，去之。",
+        tokens: ["將聽吾計","用之必勝","留之","將不聽吾計","用之必敗","去之"],
+        plain: "能採納良策者必勝就留下；不採納者必敗就離開。"
+      },
+      {
+        quote: "計利以聽，乃為之勢，以佐其外。勢者，因利而制權也。",
+        tokens: ["計利以聽","乃為之勢","以佐其外","勢者","因利而制權也"],
+        plain: "評估利害後要造「勢」，把外在有利條件轉成掌控力；勢就是因利而制衡權變。"
+      },
+      {
+        quote: "兵者，詭道也。故能而示之不能，用而示之不用，近而示之遠，遠而示之近。",
+        tokens: ["兵者","詭道也","故能而示之不能","用而示之不用","近而示之遠","遠而示之近"],
+        plain: "用兵講究迷惑：有能力卻裝沒能力，正在用卻裝沒用，近處裝遠、遠處裝近。"
+      },
+      {
+        quote: "利而誘之，亂而取之，實而備之，強而避之。",
+        tokens: ["利而誘之","亂而取之","實而備之","強而避之"],
+        plain: "見利引誘他；他亂就趁勢取勝；他實就先防備；他強就暫避鋒芒。"
+      },
+      {
+        quote: "怒而撓之，卑而驕之，佚而勞之，親而離之。",
+        tokens: ["怒而撓之","卑而驕之","佚而勞之","親而離之"],
+        plain: "他易怒就激他亂；他自卑就讓他驕；他安逸就逼他疲；他親密就設法離間。"
+      },
+      {
+        quote: "攻其無備，出其不意。此兵家之勝，不可先傳也。",
+        tokens: ["攻其無備","出其不意","此兵家之勝","不可先傳也"],
+        plain: "打他沒防備的地方、出他意料之外；兵家取勝之法不能死背成公式。"
+      },
+      {
+        quote: "夫未戰而廟算勝者，得算多也；未戰而廟算不勝者，得算少也。",
+        tokens: ["夫未戰而廟算勝者","得算多也","未戰而廟算不勝者","得算少也"],
+        plain: "戰前推演準備周密者勝（把握多）；推演不足者敗（把握少）。"
+      },
+      {
+        quote: "多算勝，少算不勝，而況於無算乎？吾以此觀之，勝負見矣。",
+        tokens: ["多算勝","少算不勝","而況於無算乎","吾以此觀之","勝負見矣"],
+        plain: "算得多就贏、算得少就輸，更何況毫無推演？所以勝負其實早就看得出來。"
+      }
+    ]},
 
     { id: 2, name: "第二篇 作戰篇", segments: [] },
     { id: 3, name: "第三篇 謀攻篇", segments: [] },
@@ -954,7 +782,6 @@
     { id: 13, name: "第十三篇 用間篇", segments: [] }
   ];
 
-
   /***********************
    * STORAGE
    ***********************/
@@ -965,7 +792,7 @@
     hintOn: true,
     soundOn: true,
     ttsOn: true,
-    chapters: {} // id -> { stars:number }
+    chapters: {} // id -> { passed:number }   （不再叫 stars 了，但兼容舊檔）
   });
 
   function loadProgress(){
@@ -973,7 +800,10 @@
       const raw = localStorage.getItem(LS_KEY);
       if(!raw) return defaultProgress();
       const obj = JSON.parse(raw);
-      return { ...defaultProgress(), ...obj, chapters: obj.chapters || {} };
+      const base = defaultProgress();
+      const merged = { ...base, ...obj };
+      merged.chapters = obj.chapters || {};
+      return merged;
     }catch(e){
       return defaultProgress();
     }
@@ -1000,7 +830,8 @@
   const overviewList = document.getElementById("overviewList");
 
   const homeTitle = document.getElementById("homeTitle");
-  const homeStars = document.getElementById("homeStars");
+  const homeSub = document.getElementById("homeSub");
+  const homeProgressBadge = document.getElementById("homeProgressBadge");
   const homeFullText = document.getElementById("homeFullText");
   const btnStart = document.getElementById("btnStart");
   const btnFromStart = document.getElementById("btnFromStart");
@@ -1015,13 +846,11 @@
 
   const slots = document.getElementById("slots");
   const tokensEl = document.getElementById("tokens");
+  const tokensWrap = document.getElementById("tokensWrap");
   const hintSwitch = document.getElementById("hintSwitch");
-  const hintToggleWrap = document.getElementById("hintToggleWrap");
 
-  const testBar = document.getElementById("testBar");
-  const testStart = document.getElementById("testStart");
-  const testEnd = document.getElementById("testEnd");
-  const btnStartTest = document.getElementById("btnStartTest");
+  const fabTest = document.getElementById("fabTest");
+  const fabHint = document.getElementById("fabHint");
 
   const modal = document.getElementById("modal");
   const modalTitle = document.getElementById("modalTitle");
@@ -1029,507 +858,305 @@
   const modalClose = document.getElementById("modalClose");
   const modalActions = document.getElementById("modalActions");
 
-  const fontRange = document.getElementById("fontRange");
-  const soundSwitch = document.getElementById("soundSwitch");
-  const ttsSwitch = document.getElementById("ttsSwitch");
-  const hintDefaultSwitch = document.getElementById("hintDefaultSwitch");
+  const fontScale = document.getElementById("fontScale");
+  const soundOn = document.getElementById("soundOn");
+  const ttsOn = document.getElementById("ttsOn");
+  const hintDefault = document.getElementById("hintDefault");
   const btnClear = document.getElementById("btnClear");
 
   /***********************
-   * NAV STATE（設定返回原位）
+   * STATE
    ***********************/
-  let nav = {
-    lastNonSettingsView: "overview",
-    chapterId: 1,
-    segIndex: 0,
-    mode: "learn",
-    testRange: {start:0,end:0},
-    testCursor: 0
-  };
-
-  function showView(which){
-    [viewOverview, viewChapterHome, viewGame, viewSettings].forEach(v => v.classList.remove("active"));
-    which.classList.add("active");
-    updateTopActionsLabel();
-  }
-
-  function updateTopActionsLabel(){
-    const inSettings = viewSettings.classList.contains("active");
-    btnBackOrSettings.textContent = inSettings ? "返回" : "設定";
-  }
-
-  function rememberNonSettingsView(){
-    if(viewSettings.classList.contains("active")) return;
-    if(viewOverview.classList.contains("active")) nav.lastNonSettingsView = "overview";
-    if(viewChapterHome.classList.contains("active")) nav.lastNonSettingsView = "home";
-    if(viewGame.classList.contains("active")) nav.lastNonSettingsView = "game";
-    nav.chapterId = currentChapterId;
-    nav.segIndex = currentSegIndex;
-    nav.mode = mode;
-    nav.testRange = {...testRange};
-    nav.testCursor = testCursor;
-  }
-
-  function restoreNonSettingsView(){
-    const target = nav.lastNonSettingsView;
-    currentChapterId = nav.chapterId;
-    currentSegIndex = nav.segIndex;
-    mode = nav.mode;
-    testRange = {...nav.testRange};
-    testCursor = nav.testCursor;
-
-    if(target==="overview"){
-      renderOverview();
-      topTitle.textContent = "孫子兵法";
-      topSub.textContent = "原書順序";
-      showView(viewOverview);
-      return;
-    }
-    if(target==="home"){
-      openChapterHome();
-      return;
-    }
-    if(target==="game"){
-      startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
-      return;
-    }
-  }
-
-  btnOverview.onclick = () => {
-    stopReading();
-    rememberNonSettingsView();
-    renderOverview();
-    topTitle.textContent = "孫子兵法";
-    topSub.textContent = "原書順序";
-    showView(viewOverview);
-  };
-
-  btnBackOrSettings.onclick = () => {
-    const inSettings = viewSettings.classList.contains("active");
-    if(inSettings){
-      restoreNonSettingsView();
-      return;
-    }
-    rememberNonSettingsView();
-    topTitle.textContent = "設定";
-    topSub.textContent = "調整你的學習手感";
-    syncSettingsUI();
-    showView(viewSettings);
-  };
+  let currentChapterId = 1;
+  let currentSegIndex = 0;
+  let selection = [];
+  let pool = [];
+  let mode = "learn"; // "learn" | "test"
+  let testRange = { start:0, end:0 };
+  let testCursor = 0;
+  let learnReturnIndex = 0; // ✅修正：測驗結束回佈令用
 
   /***********************
-   * OVERVIEW
+   * HELPERS
    ***********************/
-  function getChapterProg(id){
-    if(!PROG.chapters[id]) PROG.chapters[id] = { stars:0 };
-    return PROG.chapters[id];
+  const escapeHtml = (s) => String(s)
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+
+  function currentChapter(){ return CHAPTERS.find(x => x.id === currentChapterId); }
+  function currentSeg(){ return currentChapter().segments[currentSegIndex]; }
+
+  function getChapterProg(chId){
+    const p = PROG.chapters[chId] || {};
+    // ✅兼容舊版 stars
+    const passed = Math.max(p.passed || 0, p.stars || 0);
+    if(!PROG.chapters[chId]) PROG.chapters[chId] = { passed };
+    else PROG.chapters[chId].passed = passed;
+    return PROG.chapters[chId];
   }
 
-  function renderStars(container, total, on){
-    container.innerHTML = "";
-    for(let i=0;i<total;i++){
-      const s = document.createElement("span");
-      s.className = "star" + (i<on ? " on":"");
-      s.textContent = "★";
-      container.appendChild(s);
+  function setView(which){
+    [viewOverview, viewChapterHome, viewGame, viewSettings].forEach(v => v.classList.remove("active"));
+    which.classList.add("active");
+  }
+
+  function updateTopbar(){
+    if(viewOverview.classList.contains("active")){
+      topTitle.textContent = "孫子兵法";
+      topSub.textContent = "原書順序";
+      btnBackOrSettings.textContent = "設定";
+    }else if(viewChapterHome.classList.contains("active")){
+      topTitle.textContent = "篇章";
+      topSub.textContent = currentChapter().name;
+      btnBackOrSettings.textContent = "返回";
+    }else if(viewGame.classList.contains("active")){
+      topTitle.textContent = "佈令";
+      topSub.textContent = `${currentChapter().name}｜第${currentSegIndex+1}段`;
+      btnBackOrSettings.textContent = "返回";
+    }else{
+      topTitle.textContent = "設定";
+      topSub.textContent = "偏好與清空";
+      btnBackOrSettings.textContent = "返回";
     }
   }
 
+  function shuffle(arr){
+    const a = [...arr];
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  /***********************
+   * RENDER: OVERVIEW / HOME
+   ***********************/
   function renderOverview(){
     overviewList.innerHTML = "";
     CHAPTERS.forEach(ch => {
-      const total = (ch.segments && ch.segments.length) ? ch.segments.length : 0;
       const p = getChapterProg(ch.id);
-      const starsOn = Math.min(p.stars, total);
+      const total = ch.segments.length || 0;
+      const passed = Math.min(p.passed || 0, total);
 
       const row = document.createElement("div");
-      row.className = "chapterRow";
-
-      const left = document.createElement("div");
-      left.className = "chapterLeft";
-
-      const name = document.createElement("div");
-      name.className = "chapterName";
-      name.textContent = ch.name;
-
-      const starsLine = document.createElement("div");
-      starsLine.className = "starsLine";
-
-      const spacer = document.createElement("div");
-      spacer.style.width = "1px";
-      spacer.style.height = "1px";
-      spacer.style.opacity = "0";
-
-      const stars = document.createElement("div");
-      stars.className = "stars";
-      if(total>0) renderStars(stars, total, starsOn);
-
-      starsLine.appendChild(spacer);
-      starsLine.appendChild(stars);
-
-      left.appendChild(name);
-      left.appendChild(starsLine);
-
-      const go = document.createElement("button");
-      go.className = "chapterGo";
-      go.textContent = (total>0) ? "進入" : "待補";
-      go.disabled = (total===0);
-      go.onclick = () => { currentChapterId = ch.id; openChapterHome(); };
-
-      row.appendChild(left);
-      row.appendChild(go);
+      row.className = "row";
+      row.innerHTML = `
+        <div class="rowLeft">
+          <div class="rowTitle">${escapeHtml(ch.name)}</div>
+          <div class="rowDesc">${total ? "已完成/總段數" : "（尚未加入內容）"}</div>
+        </div>
+        <div class="badgeProgress">${total ? `${passed}/${total}` : `0/0`}</div>
+      `;
+      row.onclick = () => {
+        currentChapterId = ch.id;
+        openChapterHome();
+      };
       overviewList.appendChild(row);
     });
   }
 
-  /***********************
-   * CHAPTER HOME（先整篇原文 + 朗讀）
-   ***********************/
-  let currentChapterId = 1;
-  let currentSegIndex = 0;
-
   function openChapterHome(){
-    stopReading();
-
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    if(!ch || !ch.segments.length) return;
-
+    setView(viewChapterHome);
+    const ch = currentChapter();
     const p = getChapterProg(currentChapterId);
-    const total = ch.segments.length;
-    const starsOn = Math.min(p.stars, total);
+    const total = ch.segments.length || 0;
+    const passed = Math.min(p.passed || 0, total);
 
     homeTitle.textContent = ch.name;
-    renderStars(homeStars, total, starsOn);
+    homeSub.textContent = "（進度以「已完成/總段數」顯示）";
+    homeProgressBadge.textContent = `${passed}/${total}`;
 
-    const full = ch.segments.map((s, i) => `（${i+1}）${s.quote}`).join("\n\n");
-    homeFullText.textContent = full;
-
-    topTitle.textContent = ch.name;
-    topSub.textContent = "篇章首頁";
-    showView(viewChapterHome);
-  }
-
-  btnStart.onclick = () => {
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    const p = getChapterProg(currentChapterId);
-    currentSegIndex = Math.min(p.stars, ch.segments.length-1);
-    startLearnSegment(currentSegIndex, { firstEntry:true });
-  };
-
-  btnFromStart.onclick = () => {
-    currentSegIndex = 0;
-    startLearnSegment(currentSegIndex, { firstEntry:true, fromStart:true });
-  };
-
-  /***********************
-   * AUDIO（beep）
-   ***********************/
-  let audioCtx = null;
-  function beep(type="ok"){
-    if(!PROG.soundOn) return;
-    try{
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = "sine";
-      const now = audioCtx.currentTime;
-
-      if(type==="tap"){ o.frequency.setValueAtTime(520, now); g.gain.setValueAtTime(0.05, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.08); }
-      if(type==="ok"){  o.frequency.setValueAtTime(740, now); g.gain.setValueAtTime(0.06, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.18); }
-      if(type==="bad"){ o.frequency.setValueAtTime(220, now); g.gain.setValueAtTime(0.07, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.22); }
-
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(now); o.stop(now + 0.25);
-    }catch(e){}
-  }
-
-  /***********************
-   * TTS
-   ***********************/
-  let ttsState = { playing:false, paused:false, queue:[], idx:0, kind:"none" };
-
-  function canTTS(){
-    return PROG.ttsOn && ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
-  }
-
-  function stopReading(){
-    try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
-    ttsState = { playing:false, paused:false, queue:[], idx:0, kind:"none" };
-    btnHomeRead.textContent = "朗讀";
-    btnSegRead.textContent = "朗讀";
-  }
-
-  function pauseOrResume(){
-    if(!canTTS()) return;
-    try{
-      if(ttsState.playing && !ttsState.paused){
-        window.speechSynthesis.pause();
-        ttsState.paused = true;
-        if(ttsState.kind==="chapter") btnHomeRead.textContent = "續播";
-        if(ttsState.kind==="segment") btnSegRead.textContent = "續播";
-        return;
-      }
-      if(ttsState.playing && ttsState.paused){
-        window.speechSynthesis.resume();
-        ttsState.paused = false;
-        if(ttsState.kind==="chapter") btnHomeRead.textContent = "暫停";
-        if(ttsState.kind==="segment") btnSegRead.textContent = "暫停";
-        return;
-      }
-    }catch(e){}
-  }
-
-  function speakQueue(queue, kind){
-    if(!canTTS()) return;
-    stopReading();
-
-    ttsState.queue = queue;
-    ttsState.idx = 0;
-    ttsState.kind = kind;
-    ttsState.playing = true;
-    ttsState.paused = false;
-
-    if(kind==="chapter") btnHomeRead.textContent = "暫停";
-    if(kind==="segment") btnSegRead.textContent = "暫停";
-
-    playNextUtterance();
-  }
-
-  function playNextUtterance(){
-    if(!canTTS()) return;
-    if(ttsState.idx >= ttsState.queue.length){
-      stopReading();
-      return;
-    }
-    const text = ttsState.queue[ttsState.idx];
-
-    try{
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "zh-TW";
-      u.rate = 0.92;
-      u.pitch = 1.0;
-      u.onend = () => {
-        if(!ttsState.playing) return;
-        ttsState.idx += 1;
-        playNextUtterance();
-      };
-      window.speechSynthesis.speak(u);
-    }catch(e){
-      stopReading();
-    }
-  }
-
-  btnHomeRead.onclick = () => {
-    if(!canTTS()) return;
-    if(ttsState.playing && ttsState.kind==="chapter"){ pauseOrResume(); return; }
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
-    if(!ch) return;
-    const q = ch.segments.map(s => s.quote);
-    speakQueue(q, "chapter");
-  };
-  btnHomeStop.onclick = () => stopReading();
-
-  btnSegRead.onclick = () => {
-    if(!canTTS()) return;
-    if(ttsState.playing && ttsState.kind==="segment"){ pauseOrResume(); return; }
-    const seg = currentSeg();
-    speakQueue([seg.quote], "segment");
-  };
-
-  /***********************
-   * GAME（learn / test）
-   ***********************/
-  let pool = [];
-  let selection = [];
-
-  let mode = "learn";
-  let testRange = { start:0, end:0 };
-  let testCursor = 0;
-
-  function shuffle(a){
-    const arr = [...a];
-    for(let i=arr.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [arr[i],arr[j]]=[arr[j],arr[i]];
-    }
-    return arr;
-  }
-
-  function setNpcOriginal(line){
-    const maxLen = 64;
-    if(line.length > maxLen){
-      npcLine.innerHTML = escapeHtml(line.slice(0, maxLen)) + `<span class="npcMore" id="npcMore">…（更多）</span>`;
-      document.getElementById("npcMore").onclick = () => showNpcFull(line);
+    // full text
+    if(total){
+      homeFullText.textContent = ch.segments.map((s,i)=> `(${i+1}) ${s.quote}`).join("\n\n");
     }else{
-      npcLine.textContent = line;
+      homeFullText.textContent = "此篇尚未加入段落內容。";
     }
+
+    // ✅浮動測驗鈕：只要通過 2 段以上就顯示（不占空間）
+    updateFab();
+    updateTopbar();
   }
 
-  function showNpcFull(line){
-    openModal("原文", `<div class="quote">${escapeHtml(line)}</div>`);
-  }
-
-  function currentChapter(){
-    return CHAPTERS.find(x => x.id===currentChapterId);
-  }
-
-  function currentSeg(){
+  /***********************
+   * FAB TEST (floating)
+   ***********************/
+  function updateFab(){
     const ch = currentChapter();
-    return (mode==="test") ? ch.segments[testCursor] : ch.segments[currentSegIndex];
+    const total = ch.segments.length || 0;
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.passed || 0, total);
+
+    fabHint.textContent = `${passed}/${total}`;
+
+    // ✅條件：至少通過 2 段，且目前不是在設定頁
+    const inOverviewOrHomeOrGame = viewOverview.classList.contains("active") || viewChapterHome.classList.contains("active") || viewGame.classList.contains("active");
+    if(inOverviewOrHomeOrGame && total > 0 && passed >= 2){
+      fabTest.classList.add("show");
+    }else{
+      fabTest.classList.remove("show");
+    }
   }
 
-  function startLearnSegment(segIndex, opts={}) {
-    stopReading();
-    mode = "learn";
-    btnNext.disabled = true;
-    testBar.classList.remove("show");
-
-    btnBook.classList.remove("pulseStrong");
-    btnBook.disabled = true;
-
+  function openTestPicker(){
     const ch = currentChapter();
-    const seg = ch.segments[segIndex];
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.passed || 0, ch.segments.length);
 
-    if(!opts.preserve){
-      selection = [];
-      pool = shuffle(seg.tokens);
+    // 建一個 range picker（start/end）
+    const opts = [];
+    for(let i=1;i<=passed;i++){
+      opts.push(`<option value="${i-1}">第${i}段</option>`);
     }
 
-    topTitle.textContent = ch.name;
-    topSub.textContent = "佈令背誦";
-    showView(viewGame);
+    openModal("測驗範圍", `
+      <div class="plain">
+        <div class="muted" style="margin-bottom:10px;">已開放測驗段落：前 ${passed} 段</div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <div style="flex:1; min-width:160px;">
+            <div class="muted" style="font-size:12px; margin-bottom:6px;">起段</div>
+            <select id="tpStart" style="width:100%; padding:10px; border-radius:12px; border:1px solid rgba(43,58,47,.95); background: rgba(21,27,22,.55); color: var(--ink);">
+              ${opts.join("")}
+            </select>
+          </div>
+          <div style="flex:1; min-width:160px;">
+            <div class="muted" style="font-size:12px; margin-bottom:6px;">迄段</div>
+            <select id="tpEnd" style="width:100%; padding:10px; border-radius:12px; border:1px solid rgba(43,58,47,.95); background: rgba(21,27,22,.55); color: var(--ink);">
+              ${opts.join("")}
+            </select>
+          </div>
+        </div>
+        <div class="muted" style="font-size:12px; margin-top:10px;">小撇步：建議先選 2～3 段一組，背起來比較不會煩。</div>
+      </div>
+    `, `
+      <button class="btn" id="tpCancel">取消</button>
+      <button class="btn primary" id="tpGo">開始測驗</button>
+    `);
 
-    if(opts.firstEntry){
-      PROG.hintOn = !!PROG.hintDefault;
-      saveProgress();
-    }
-    renderHintSwitch();
+    setTimeout(() => {
+      const s = document.getElementById("tpStart");
+      const e = document.getElementById("tpEnd");
+      const cancel = document.getElementById("tpCancel");
+      const go = document.getElementById("tpGo");
 
-    setNpcOriginal(seg.quote);
-    renderBoard();
+      // 預設：最後 2 段
+      const startDefault = Math.max(0, passed - 2);
+      s.value = String(startDefault);
+      e.value = String(passed - 1);
 
-    renderTestBar(); // ✅每次進入都更新（避免你覺得「沒看到測驗」）
-    if(PROG.hintOn) flashHintTimes(2);
+      function clampEnd(){
+        const sv = Number(s.value);
+        const ev = Number(e.value);
+        if(ev < sv) e.value = String(sv);
+      }
+      s.onchange = clampEnd;
+      e.onchange = clampEnd;
+
+      cancel.onclick = () => modalClose.click();
+      go.onclick = () => {
+        const start = Number(s.value);
+        const end = Number(e.value);
+        modalClose.click();
+        startTest({ start, end });
+      };
+    }, 0);
   }
 
-  btnReset.onclick = () => {
-    stopReading();
-    beep("tap");
-    restartCurrent();
-    if(PROG.hintOn) flashHintTimes(1);
-  };
+  /***********************
+   * GAME CORE
+   ***********************/
+  function setNpcOriginal(text){
+    npcLine.textContent = text;
+  }
+
+  function renderBoard(){
+    // slots
+    slots.innerHTML = "";
+    selection.forEach((t, idx) => {
+      const b = document.createElement("div");
+      b.className = "token slotToken";
+      b.textContent = t;
+      b.onclick = () => {
+        // remove this and put back to pool
+        const removed = selection.splice(idx,1)[0];
+        pool.push(removed);
+        renderPool();
+        renderBoard();
+      };
+      slots.appendChild(b);
+    });
+
+    // pool
+    renderPool();
+  }
+
+  function renderPool(){
+    tokensEl.innerHTML = "";
+    pool.forEach((t, idx) => {
+      const b = document.createElement("div");
+      b.className = "token";
+      b.textContent = t;
+      b.onclick = () => {
+        selection.push(pool.splice(idx,1)[0]);
+        renderPool();
+        renderBoard();
+        checkWinRouter();
+        // ✅每次點選後，令牌板還是可繼續滑（避免卡住）
+        tokensWrap.scrollTop = Math.min(tokensWrap.scrollTop, tokensWrap.scrollHeight);
+      };
+      tokensEl.appendChild(b);
+    });
+  }
 
   function restartCurrent(){
-    btnNext.disabled = true;
-    btnBook.classList.remove("pulseStrong");
-    btnBook.disabled = true;
-
     const seg = currentSeg();
     selection = [];
     pool = shuffle(seg.tokens);
     renderBoard();
+
+    // ✅回到頂部，避免「長段落卡在中段」造成誤以為不能操作
+    tokensWrap.scrollTop = 0;
   }
 
-  function makeToken(text){
-    const el = document.createElement("div");
-    el.className = "token";
-    el.textContent = text;
-    return el;
-  }
+  function startLearnSegment(i, { firstEntry=false } = {}){
+    mode = "learn";
+    currentSegIndex = i;
 
-  function renderBoard(){
-    slots.innerHTML = "";
-
-    if(selection.length===0){
-      const hint = document.createElement("div");
-      hint.className = "slotHint";
-      hint.textContent = "點下方令牌，依順序放進佈令板";
-      slots.appendChild(hint);
-    }else{
-      selection.forEach((t, idx) => {
-        const el = makeToken(t);
-        el.onclick = () => {
-          beep("tap");
-          // ✅避免「越點越多」：嚴格一進一出，不允許重複塞回
-          selection.splice(idx,1);
-          pool.push(t);
-          renderBoard();
-          applyHint();
-        };
-        slots.appendChild(el);
-      });
+    // ✅提示狀態
+    if(firstEntry){
+      PROG.hintOn = !!PROG.hintDefault;
+      saveProgress();
     }
+    hintSwitch.checked = !!PROG.hintOn;
 
-    tokensEl.innerHTML = "";
+    // ✅段落進入：先把「下一關」設定好（避免你說的：測驗回來按不到）
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.passed || 0, ch.segments.length);
+    const thisPassed = (i < passed);
 
-    // ✅避免「同文字重複」導致你感覺亂：同一段內如果 tokens 有重複，給每顆 token 唯一 key
-    pool.forEach((t, idx) => {
-      const el = makeToken(t);
-      el.dataset.idx = String(idx);
-      el.onclick = () => {
-        beep("tap");
-        // ✅防連點：先停用，避免極端情況造成「點了兩次但只移走一次」的錯覺
-        el.style.pointerEvents = "none";
+    btnNext.disabled = !thisPassed;        // 已過關就可直接下一關
+    btnBook.disabled = false;              // 兵書永遠可看（你要白話）
+    btnBook.classList.remove("pulseStrong");
 
-        selection.push(t);
-        pool.splice(idx,1);
-        renderBoard();
-        checkWinRouter();
-      };
-      tokensEl.appendChild(el);
-    });
+    setView(viewGame);
+    setNpcOriginal(currentSeg().quote);
+    restartCurrent();
 
-    applyHint();
-  }
+    updateFab();
+    updateTopbar();
 
-  function applyHint(){
-    const all = tokensEl.querySelectorAll(".token");
-    all.forEach(t => t.classList.remove("hintStrong","hintMid","hintWeak","hintFlash","breath"));
-
-    if(!PROG.hintOn) return;
-    const seg = currentSeg();
-    const next = seg.tokens[selection.length];
-    if(!next) return;
-
-    for(const el of all){
-      if(el.textContent === next){
-        // ✅穩定呼吸燈（一直存在）
-        el.classList.add("breath");
-        break;
-      }
-    }
-  }
-
-  function flashHintTimes(times=2){
-    if(!PROG.hintOn) return;
-    const seg = currentSeg();
-    const next = seg.tokens[selection.length];
-    if(!next) return;
-
-    const all = [...tokensEl.querySelectorAll(".token")];
-    const target = all.find(el => el.textContent === next);
-    if(!target) return;
-
-    let n = 0;
-    const tick = () => {
-      if(n >= times) return;
-      target.classList.remove("hintFlash");
-      void target.offsetWidth;
-      target.classList.add("hintFlash");
-      n++;
-      setTimeout(tick, 760);
-    };
-    tick();
+    // ✅進佈令時，fab 不干擾操作但可用
   }
 
   function checkLearnWin(){
     const seg = currentSeg();
     if(selection.length !== seg.tokens.length) return;
-
     const ok = selection.every((v,i)=> v===seg.tokens[i]);
     if(ok){
       beep("ok");
       onSegmentPassed();
+      if(PROG.hintOn) flashHintTimes(1);
     }else{
       beep("bad");
     }
@@ -1544,10 +1171,46 @@
 
     const ch = currentChapter();
     const p = getChapterProg(currentChapterId);
-    p.stars = Math.max(p.stars || 0, currentSegIndex + 1);
+    p.passed = Math.max(p.passed || 0, currentSegIndex + 1);
     saveProgress();
 
-    renderTestBar();
+    // ✅同步更新進度顯示
+    if(viewChapterHome.classList.contains("active")) openChapterHome();
+    updateFab();
+    renderOverview();
+  }
+
+  /***********************
+   * TEST MODE
+   * ✅修正點：測驗完回佈令，下一關可按（會回到你原本佈令的位置）
+   ***********************/
+  function startTest(range){
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.passed || 0, ch.segments.length);
+
+    // 防呆
+    const start = Math.max(0, Math.min(range.start, passed-1));
+    const end = Math.max(start, Math.min(range.end, passed-1));
+
+    // ✅記住測驗前你在佈令哪一段
+    learnReturnIndex = currentSegIndex;
+
+    mode = "test";
+    testRange = { start, end };
+    testCursor = start;
+
+    setView(viewGame);
+    currentSegIndex = testCursor;
+    setNpcOriginal(ch.segments[currentSegIndex].quote);
+
+    // 測驗一律從重置開始
+    btnNext.disabled = true;   // 測驗時禁用下一關，避免混亂
+    btnBook.disabled = false;
+
+    restartCurrent();
+    updateFab();
+    updateTopbar();
   }
 
   function checkTestWin(){
@@ -1559,9 +1222,11 @@
       beep("ok");
       if(testCursor < testRange.end){
         testCursor++;
-        setNpcOriginal(currentChapter().segments[testCursor].quote);
+        currentSegIndex = testCursor;
+        setNpcOriginal(currentChapter().segments[currentSegIndex].quote);
         restartCurrent();
         if(PROG.hintOn) flashHintTimes(1);
+        updateTopbar();
       }else{
         openModal("測驗通過", `<div class="plain">完成範圍：第${testRange.start+1}段～第${testRange.end+1}段</div>`, `
           <button class="btn" id="btnBackToLearn">回到佈令</button>
@@ -1570,14 +1235,19 @@
         setTimeout(() => {
           const a = document.getElementById("btnBackToLearn");
           const b = document.getElementById("btnBackHome");
-          if(a) a.onclick = () => { modalClose.click(); mode="learn"; startLearnSegment(currentSegIndex, { firstEntry:false }); };
+          if(a) a.onclick = () => {
+            modalClose.click();
+            mode="learn";
+            // ✅回到測驗前所在段落（而且會正確恢復下一關狀態）
+            startLearnSegment(learnReturnIndex, { firstEntry:false });
+          };
           if(b) b.onclick = () => { modalClose.click(); openChapterHome(); };
         }, 0);
       }
     }else{
       beep("bad");
       openModal("測驗未過", `
-        <div class="plain">沒關係。你自己按下「重來」的那一刻，就已經贏一半了。</div>
+        <div class="plain">沒關係。你自己願意重來那一下，其實就比昨天更強了。</div>
       `, `
         <button class="btn" id="btnRetryTest">重來</button>
         <button class="btn primary" id="btnPauseLater">先放下</button>
@@ -1596,16 +1266,158 @@
     else checkTestWin();
   }
 
-  // ✅下一關：段落內可點（不用等彈窗）
-  btnNext.onclick = () => {
-    if(btnNext.disabled) return;
+  /***********************
+   * HINT FLASH
+   ***********************/
+  let flashTimer = null;
+  function flashHintTimes(times=1){
+    clearTimeout(flashTimer);
+    let count = 0;
 
-    const ch = currentChapter();
-    if(mode==="test"){
-      // 測驗模式不走下一關，避免混亂
+    const seg = currentSeg();
+    const nextIndex = selection.length;
+    if(nextIndex >= seg.tokens.length) return;
+
+    const nextToken = seg.tokens[nextIndex];
+
+    const doFlash = () => {
+      const nodes = [...tokensEl.querySelectorAll(".token")];
+      const target = nodes.find(n => n.textContent === nextToken);
+      if(!target) return;
+
+      target.style.boxShadow = "var(--glowStrong)";
+      target.style.borderColor = "rgba(214,178,94,.85)";
+      flashTimer = setTimeout(() => {
+        target.style.boxShadow = "";
+        target.style.borderColor = "";
+        count++;
+        if(count < times) setTimeout(doFlash, 260);
+      }, 520);
+    };
+    doFlash();
+  }
+
+  /***********************
+   * TTS & SOUND
+   ***********************/
+  let utter = null;
+  function speak(text){
+    if(!PROG.ttsOn) return;
+    try{
+      window.speechSynthesis.cancel();
+      utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "zh-TW";
+      utter.rate = 0.95;
+      utter.pitch = 1.0;
+      window.speechSynthesis.speak(utter);
+    }catch(e){}
+  }
+  function stopSpeak(){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+  }
+
+  const AC = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
+  function beep(type="ok"){
+    if(!PROG.soundOn) return;
+    if(!AC) return;
+    const o = AC.createOscillator();
+    const g = AC.createGain();
+    o.connect(g); g.connect(AC.destination);
+    const now = AC.currentTime;
+    o.type = "sine";
+    o.frequency.value = (type==="ok") ? 740 : 210;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.12, now+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+0.16);
+    o.start(now);
+    o.stop(now+0.18);
+  }
+
+  /***********************
+   * BOOK (原文 + 白話)
+   ***********************/
+  btnBook.onclick = () => {
+    const seg = currentSeg();
+    openModal("兵書", `
+      <div class="quote">${escapeHtml(seg.quote)}</div>
+      <div class="plain"><strong>白話：</strong>${escapeHtml(seg.plain || "（尚未補上白話）")}</div>
+    `);
+  };
+
+  /***********************
+   * MODAL
+   ***********************/
+  function openModal(title, html, actionsHtml=null){
+    modalTitle.textContent = title;
+    modalBody.innerHTML = html;
+
+    if(actionsHtml){
+      modalActions.style.display = "flex";
+      modalActions.innerHTML = actionsHtml;
+    }else{
+      modalActions.style.display = "none";
+      modalActions.innerHTML = "";
+    }
+    modal.classList.add("show");
+  }
+  modalClose.onclick = () => {
+    modal.classList.remove("show");
+    modalActions.style.display = "none";
+    modalActions.innerHTML = "";
+  };
+  modal.onclick = (e) => { if(e.target === modal) modalClose.click(); };
+
+  /***********************
+   * BUTTONS
+   ***********************/
+  btnOverview.onclick = () => {
+    setView(viewOverview);
+    renderOverview();
+    updateFab();
+    updateTopbar();
+  };
+
+  btnBackOrSettings.onclick = () => {
+    if(viewOverview.classList.contains("active")){
+      setView(viewSettings);
+    }else if(viewSettings.classList.contains("active")){
+      setView(viewOverview);
+    }else if(viewChapterHome.classList.contains("active")){
+      setView(viewOverview);
+    }else if(viewGame.classList.contains("active")){
+      // game -> chapter home
+      openChapterHome();
       return;
     }
+    updateFab();
+    updateTopbar();
+  };
 
+  btnStart.onclick = () => {
+    const p = getChapterProg(currentChapterId);
+    const startIndex = Math.min(p.passed || 0, currentChapter().segments.length-1);
+    startLearnSegment(startIndex, { firstEntry:true });
+  };
+
+  btnFromStart.onclick = () => {
+    const p = getChapterProg(currentChapterId);
+    p.passed = 0;
+    saveProgress();
+    renderOverview();
+    openChapterHome();
+  };
+
+  btnSegRead.onclick = () => speak(currentSeg().quote);
+  btnReset.onclick = () => {
+    restartCurrent();
+    if(PROG.hintOn) flashHintTimes(1);
+  };
+
+  btnNext.onclick = () => {
+    if(btnNext.disabled) return;
+    if(mode==="test") return; // 測驗不走下一關
+
+    const ch = currentChapter();
     if(currentSegIndex < ch.segments.length - 1){
       currentSegIndex += 1;
       startLearnSegment(currentSegIndex, { firstEntry:false });
@@ -1623,150 +1435,46 @@
     }
   };
 
-  /***********************
-   * BOOK（原文 + 白話）
-   ***********************/
-  btnBook.onclick = () => {
-    if(btnBook.disabled) return;
-    const seg = currentSeg(); // ✅修正：測驗模式也能對應當前段
-
-    openModal("兵書", `
-      <div class="quote">${escapeHtml(seg.quote)}</div>
-      <div class="plain"><strong>白話：</strong>${escapeHtml(seg.plain || "")}</div>
-    `);
-  };
-
-  function openModal(title, html, actionsHtml=null){
-    modalTitle.textContent = title;
-    modalBody.innerHTML = html;
-
-    if(actionsHtml){
-      modalActions.style.display = "flex";
-      modalActions.innerHTML = actionsHtml;
-    }else{
-      modalActions.style.display = "none";
-      modalActions.innerHTML = "";
-    }
-    modal.classList.add("show");
-  }
-
-  modalClose.onclick = () => {
-    modal.classList.remove("show");
-    modalActions.style.display = "none";
-    modalActions.innerHTML = "";
-  };
-  modal.onclick = (e) => { if(e.target === modal) modalClose.click(); };
-
-  /***********************
-   * TEST BAR
-   ***********************/
-  function renderTestBar(){
-    const ch = currentChapter();
-    const p = getChapterProg(currentChapterId);
-    const passed = Math.min(p.stars, ch.segments.length);
-
-    // ✅通過至少 2 段才出現測驗
-    if(passed < 2){
-      testBar.classList.remove("show");
-      return;
-    }
-    testBar.classList.add("show");
-
-    const oldStart = testStart.value;
-    const oldEnd = testEnd.value;
-
-    testStart.innerHTML = "";
-    testEnd.innerHTML = "";
-
-    for(let i=1;i<=passed;i++){
-      const o1 = document.createElement("option");
-      o1.value = String(i-1);
-      o1.textContent = `第${i}段`;
-      testStart.appendChild(o1);
-
-      const o2 = document.createElement("option");
-      o2.value = String(i-1);
-      o2.textContent = `第${i}段`;
-      testEnd.appendChild(o2);
-    }
-
-    testStart.value = (oldStart !== "") ? oldStart : "0";
-    testEnd.value = (oldEnd !== "") ? oldEnd : String(passed-1);
-    if(Number(testEnd.value) < Number(testStart.value)) testEnd.value = testStart.value;
-  }
-
-  testStart.onchange = () => { if(Number(testEnd.value) < Number(testStart.value)) testEnd.value = testStart.value; };
-  testEnd.onchange = () => { if(Number(testEnd.value) < Number(testStart.value)) testStart.value = testEnd.value; };
-
-  btnStartTest.onclick = () => {
-    const s = Number(testStart.value);
-    const e = Number(testEnd.value);
-    beginTest(s,e);
-  };
-
-  function beginTest(s,e){
-    stopReading();
-    mode = "test";
-    testRange = { start:s, end:e };
-    testCursor = s;
-
-    btnNext.disabled = true;
-    btnBook.classList.remove("pulseStrong");
-    btnBook.disabled = true;
-
-    setNpcOriginal(currentChapter().segments[testCursor].quote);
-    restartCurrent();
-    if(PROG.hintOn) flashHintTimes(1);
-  }
-
-  /***********************
-   * HINT TOGGLE
-   ***********************/
-  function renderHintSwitch(){ hintSwitch.classList.toggle("on", !!PROG.hintOn); }
-
-  hintToggleWrap.onclick = () => {
-    PROG.hintOn = !PROG.hintOn;
+  hintSwitch.onchange = () => {
+    PROG.hintOn = !!hintSwitch.checked;
     saveProgress();
-    renderHintSwitch();
-    applyHint();
-    if(PROG.hintOn) flashHintTimes(2);
+    if(PROG.hintOn) flashHintTimes(1);
   };
+
+  fabTest.onclick = () => openTestPicker();
+
+  /***********************
+   * HOME: READ
+   ***********************/
+  btnHomeRead.onclick = () => {
+    const ch = currentChapter();
+    const text = ch.segments.map(s => s.quote).join("。 ");
+    speak(text);
+  };
+  btnHomeStop.onclick = () => stopSpeak();
 
   /***********************
    * SETTINGS
    ***********************/
   function syncSettingsUI(){
-    fontRange.value = String(PROG.fontScale);
-    soundSwitch.classList.toggle("on", !!PROG.soundOn);
-    ttsSwitch.classList.toggle("on", !!PROG.ttsOn);
-    hintDefaultSwitch.classList.toggle("on", !!PROG.hintDefault);
+    fontScale.value = String(PROG.fontScale);
+    soundOn.checked = !!PROG.soundOn;
+    ttsOn.checked = !!PROG.ttsOn;
+    hintDefault.checked = !!PROG.hintDefault;
   }
 
-  fontRange.oninput = () => {
-    PROG.fontScale = Number(fontRange.value);
+  fontScale.oninput = () => {
+    PROG.fontScale = Number(fontScale.value);
     document.body.style.setProperty("--fontScale", String(PROG.fontScale));
     saveProgress();
   };
-
-  function toggleSwitch(el, key){
-    PROG[key] = !PROG[key];
-    el.classList.toggle("on", !!PROG[key]);
-    saveProgress();
-    if(key==="ttsOn" && !PROG.ttsOn) stopReading();
-  }
-  soundSwitch.onclick = () => toggleSwitch(soundSwitch, "soundOn");
-  ttsSwitch.onclick = () => toggleSwitch(ttsSwitch, "ttsOn");
-
-  hintDefaultSwitch.onclick = () => {
-    PROG.hintDefault = !PROG.hintDefault;
-    hintDefaultSwitch.classList.toggle("on", !!PROG.hintDefault);
-    saveProgress();
-  };
+  soundOn.onchange = () => { PROG.soundOn = !!soundOn.checked; saveProgress(); };
+  ttsOn.onchange = () => { PROG.ttsOn = !!ttsOn.checked; saveProgress(); };
+  hintDefault.onchange = () => { PROG.hintDefault = !!hintDefault.checked; saveProgress(); };
 
   btnClear.onclick = () => {
-    openModal("清空足跡", `
-      <div class="plain">這會把所有篇章的星星、進度、測驗紀錄全部歸零。</div>
-      <div class="plain">確定要清空嗎？</div>
+    openModal("清空確認", `
+      <div class="plain">會清空：進度、設定、測驗範圍。確定要歸零嗎？</div>
     `, `
       <button class="btn" id="btnCancelClear">取消</button>
       <button class="btn primary" id="btnConfirmClear">確定清空</button>
@@ -1776,50 +1484,31 @@
       const y = document.getElementById("btnConfirmClear");
       if(c) c.onclick = () => modalClose.click();
       if(y) y.onclick = () => {
-        modalClose.click();
-        stopReading();
-        PROG = defaultProgress();
-        saveProgress();
+        localStorage.removeItem(LS_KEY);
+        PROG = loadProgress();
         document.body.style.setProperty("--fontScale", String(PROG.fontScale));
-        currentChapterId = 1;
-        currentSegIndex = 0;
+        modalClose.click();
+        syncSettingsUI();
         renderOverview();
-        topTitle.textContent = "孫子兵法";
-        topSub.textContent = "原書順序";
-        showView(viewOverview);
+        setView(viewOverview);
+        updateFab();
+        updateTopbar();
       };
     }, 0);
   };
 
   /***********************
-   * ESCAPE
-   ***********************/
-  function escapeHtml(str){
-    return (str||"").replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  /***********************
    * INIT
    ***********************/
   function init(){
-    PROG.hintOn = !!PROG.hintDefault;
-    saveProgress();
-    renderHintSwitch();
-
-    btnBook.disabled = true;
-    btnNext.disabled = true;
-
+    syncSettingsUI();
     renderOverview();
-    topTitle.textContent = "孫子兵法";
-    topSub.textContent = "原書順序";
-    showView(viewOverview);
+    setView(viewOverview);
+    updateFab();
+    updateTopbar();
   }
-
   init();
+
 })();
 </script>
 </body>
