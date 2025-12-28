@@ -14,7 +14,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>孫子兵法｜佈令背誦 v1（母版・修正版）</title>
+  <meta name="apple-mobile-web-app-title" content="孫子兵法" />
+  <meta name="application-name" content="孫子兵法" />
+
+  <title>孫子兵法佈令背誦</title>
   <style>
 
 /* Settings UX: pointer + no I-beam */
@@ -106,6 +109,7 @@
       --token2:#1a221b;
 
       --glowStrong: 0 0 1.15rem rgba(255,225,140,.95), 0 0 2.1rem rgba(255,225,140,.65);
+      --glowBook: 0 0 .55rem rgba(214,178,94,.40), 0 0 1.35rem rgba(214,178,94,.18);
       --glowMid:    0 0 0.85rem rgba(255,225,140,.75), 0 0 1.45rem rgba(255,225,140,.45);
       --glowWeak:   0 0 0.55rem rgba(255,225,140,.55), 0 0 0.95rem rgba(255,225,140,.30);
 
@@ -475,12 +479,12 @@
 
     .miniBtn.book.pulseStrong,
     .toolbtn.book.pulseStrong{
-      box-shadow: var(--glowStrong);
+      box-shadow: var(--glowBook);
       animation: bookPulse 2.2s ease-in-out infinite;
     }
     @keyframes bookPulse{
       0%{ transform: translateY(0); filter: brightness(1); }
-      50%{ transform: translateY(-1px); filter: brightness(1.08); }
+      50%{ transform: translateY(-1px); filter: brightness(1.04); }
       100%{ transform: translateY(0); filter: brightness(1); }
     }
 
@@ -864,6 +868,21 @@
       font-weight:900;
       color: var(--ink);
       list-style:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .helpFold summary::after{
+      content:"▾";
+      opacity:.75;
+      transform: rotate(0deg);
+      transition: transform .18s ease, opacity .18s ease;
+      font-weight:1000;
+    }
+    .helpFold[open] summary::after{
+      transform: rotate(180deg);
+      opacity:.95;
     }
     .helpFold summary::-webkit-details-marker{ display:none; }
     .helpFold .helpBody{
@@ -1040,7 +1059,7 @@
   
 
     <details class="helpFold">
-      <summary>ⓘ 使用說明（先放簡單版）</summary>
+      <summary>ⓘ 使用說明</summary>
       <div class="helpBody">
         <div class="helpLine">• 佈令時：點令牌依正確順序排入空格。</div>
         <div class="helpLine">• 放錯也會提示：紅框閃一下 + 下方會出現「請再想一想」。</div>
