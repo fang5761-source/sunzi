@@ -1,6 +1,7 @@
+
 <!--
 孫子兵法｜佈令背誦
-版本：完美母版5.2（封存版）
+版本：v5.8
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -832,7 +833,7 @@
       font-size:12px;
       font-weight:900;
       letter-spacing:.02em;
-      color: rgba(178,58,47,.95);
+      color: rgba(214,178,94,.92);
       opacity:0;
       transition: opacity .18s ease;
       user-select:none;
@@ -872,6 +873,7 @@
       line-height: 1.55;
     }
     .helpFold .helpLine{ margin-top:6px; }
+    .helpLine.version{ font-size:11px; opacity:.85; }
 
   </style>
 </head>
@@ -977,15 +979,14 @@
 
           <div class="tokensPanel">
             <div class="tokens" id="tokens"></div>
-            <div class="orderError" id="orderError" aria-live="polite">順序有誤</div>
+            <div class="orderError" id="orderError" aria-live="polite">請再想一想</div>
           </div>
 
           <div class="testBar" id="testBar"></div>
         </div>
       </div>
 
-      <div class="view panel scroll" 
-<div class="view" id="viewSettings">
+      <div class="view panel scroll" id="viewSettings">
   <div class="settings">
     <div class="row">
       <div class="rowLeft">
@@ -1018,16 +1019,7 @@
       </div>
       <div class="switch on" id="hintDefaultSwitch"><div class="knob"></div></div>
     </div>
-
-    <div class="row">
-      <div class="rowLeft">
-        <div class="rowTitle">令牌以明文顯示</div>
-        <div class="rowDesc">新進篇章時令牌直接顯示文字</div>
-      </div>
-      <div class="switch on" id="showPlainDefaultSwitch"><div class="knob"></div></div>
-    </div>
-
-    <div class="row">
+<div class="row">
       <div class="rowLeft">
         <div class="rowTitle">自由瀏覽下一關</div>
         <div class="rowDesc">開啟後可直接前往下一段，不受完成度限制</div>
@@ -1052,7 +1044,7 @@
       <summary>ⓘ 使用說明（先放簡單版）</summary>
       <div class="helpBody">
         <div class="helpLine">• 佈令時：點令牌依正確順序排入空格。</div>
-        <div class="helpLine">• 放錯也會提示：紅框閃一下 + 下方會出現「再仔細想一想」。</div>
+        <div class="helpLine">• 放錯也會提示：紅框閃一下 + 下方會出現「請再想一想」。</div>
         <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈，點進去看原文＋白話。</div>
         <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
       </div>
@@ -1061,8 +1053,18 @@
     <details class="helpFold">
       <summary>關於本系統</summary>
       <div class="helpBody">
-        <div class="helpLine">• 這是一個用「佈令」來背誦《孫子兵法》的練習工具。</div>
+                <div class="helpLine">• 這是一個用「佈令」來背誦《孫子兵法》的練習工具。</div>
         <div class="helpLine">• 目標：讓你用最少摩擦，反覆進入記憶節奏。</div>
+        <div class="helpLine version">• 版本：v5.8</div>
+</div>
+    </details>
+
+
+    <details class="helpFold">
+      <summary>設計者</summary>
+      <div class="helpBody">
+        <div class="helpLine">設計／企劃：散木團隊(朵朵)</div>
+        <div class="helpLine">協作：ChatGPT</div>
       </div>
     </details>
 
@@ -1290,7 +1292,7 @@
     soundOn: true,
     ttsOn: true,
     showPlainDefault: true,
-    freeNav: false,
+freeNav: false,
     chapters: {}
   });
 
@@ -1362,8 +1364,7 @@
   const soundSwitch = document.getElementById("soundSwitch");
   const ttsSwitch = document.getElementById("ttsSwitch");
   const hintDefaultSwitch = document.getElementById("hintDefaultSwitch");
-  const showPlainDefaultSwitch = document.getElementById("showPlainDefaultSwitch");
-  const btnClear = document.getElementById("btnClear");
+const btnClear = document.getElementById("btnClear");
   const btnResetChapter = document.getElementById("btnResetChapter");
 
   /***********************
@@ -1859,19 +1860,18 @@
     selection = [];
     pool = shuffle(seg.tokens);
     renderBoard();
+    try{ setOrderError(false); }catch(_e){}
   }
 
   
   // ✅放錯令牌：立即回饋（不受「學習提示」開關影響）
   const orderErrorEl = document.getElementById("orderError");
-  let __orderErrTimer = null;
-  function showOrderErrorOnce(){
+  function setOrderError(on){
     if(!orderErrorEl) return;
-    orderErrorEl.classList.add("show");
-    clearTimeout(__orderErrTimer);
-    __orderErrTimer = setTimeout(()=> orderErrorEl.classList.remove("show"), 1100);
+    orderErrorEl.classList.toggle("show", !!on);
   }
-  function vibrateSoft(){
+
+function vibrateSoft(){
     try{
       if(navigator && navigator.vibrate) navigator.vibrate(20);
     }catch(_e){}
@@ -1913,19 +1913,28 @@ function makeToken(text){
         beep("tap");
         selection.push(t);
         pool.splice(idx,1);
-        renderBoard();
 
         // ✅立即判斷「目前已放的前綴」是否正確（學習模式才做）
+        let prefixOk = true;
         if(mode==="learn"){
           const segNow = currentSeg();
-          const prefixOk = selection.every((v,i)=> v===segNow.tokens[i]);
-          if(!prefixOk){
-            // 紅框閃 + 輕震 + 淡字提示
-            el.classList.add("wrongFlash");
-            setTimeout(()=> el.classList.remove("wrongFlash"), 520);
-            vibrateSoft();
-            showOrderErrorOnce();
+          prefixOk = selection.every((v,i)=> v===segNow.tokens[i]);
+        }
+
+        renderBoard();
+
+        // ✅ 放錯：紅框閃 + 輕震 + 淡字提示（不受「學習提示」開關影響）
+        if(!prefixOk){
+          const placed = slots.querySelectorAll(".token");
+          const last = placed[placed.length-1];
+          if(last){
+            last.classList.add("wrongFlash");
+            setTimeout(()=> last.classList.remove("wrongFlash"), 520);
           }
+          vibrateSoft();
+          setOrderError(true);
+        }else{
+          setOrderError(false);
         }
 
         checkWinRouter();
@@ -2263,8 +2272,7 @@ if(viewGame.classList.contains("active") && mode === "test"){
     soundSwitch.classList.toggle("on", !!PROG.soundOn);
     ttsSwitch.classList.toggle("on", !!PROG.ttsOn);
     hintDefaultSwitch.classList.toggle("on", !!PROG.hintDefault);
-    showPlainDefaultSwitch.classList.toggle("on", !!PROG.showPlainDefault);
-  }
+}
 
   fontRange.oninput = () => {
     PROG.fontScale = Number(fontRange.value);
@@ -2286,14 +2294,7 @@ if(viewGame.classList.contains("active") && mode === "test"){
     hintDefaultSwitch.classList.toggle("on", !!PROG.hintDefault);
     saveProgress();
   };
-
-  showPlainDefaultSwitch.onclick = () => {
-    PROG.showPlainDefault = !PROG.showPlainDefault;
-    showPlainDefaultSwitch.classList.toggle("on", !!PROG.showPlainDefault);
-    saveProgress();
-  };
-
-  btnClear.onclick = () => {
+btnClear.onclick = () => {
     openModal("清空足跡", `
       <div class="plain">這會把所有篇章的進度全部歸零。</div>
       <div class="plain">確定要清空嗎？</div>
