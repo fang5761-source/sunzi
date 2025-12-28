@@ -1,3 +1,4 @@
+
 <!--
 孫子兵法｜佈令背誦
 版本：完美母版5.2（封存版）
@@ -16,43 +17,79 @@
   <title>孫子兵法｜佈令背誦 v1（母版・修正版）</title>
   <style>
 
-/* --- Mobile fixes (2025-12-28) --- */
-.navMini{
-  display:flex;
-  align-items:center;
-  gap:.5rem;
-  justify-content:flex-end;
-  margin-left:4px;
-}
-.navMini .miniBtn.mini{
-  padding:.5rem .65rem;
-  min-width:0;
-}
-.navMini .navText{
-  font-weight:800;
-  letter-spacing:.02em;
-  opacity:.95;
-  padding:.4rem .6rem;
+/* Settings UX: pointer + no I-beam */
+.settings .row,
+.settings .switch,
+.settings .pillBtn,
+.toolbtn,
+.moreItem{ cursor:pointer; }
+.settings .rowTitle,
+.settings .rowDesc{ cursor:default; user-select:none; }
+.settings input.range{ cursor:pointer; }
+
+
+/* iOS scroll safety */
+#slots{ overflow:auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+
+
+/* ===== v5.4 toolbar + sheet ===== */
+.toolbarWrap{display:flex; flex-direction:column; gap:.45rem; align-items:flex-end;}
+.toolbar{display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
+.toolbtn{
+  display:flex; align-items:center; gap:.25rem;
+  padding:.45rem .65rem;
+  border-radius:1rem;
   border:1px solid var(--line);
-  border-radius:999px;
   background:rgba(0,0,0,.18);
-  font-size:12px;
-  line-height:1;
-  user-select:none;
+  color:rgba(233,239,233,.95);
+  font-weight:900;
+  font-size:13px;
 }
-/* iOS scroll safety for token board */
-#slots{
-  overflow:auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+.toolbtn .icon{font-size:15px; line-height:1;}
+.toolbtn.mini{padding:.45rem .6rem; min-width:44px; justify-content:center;}
+.navMini{display:flex; align-items:center; gap:.5rem; justify-content:flex-end;}
+.navText{
+  font-weight:1000;
+  letter-spacing:.02em;
+  padding:.42rem .6rem;
+  border:1px solid var(--line);
+  border-radius:1rem;
+  background:rgba(0,0,0,.18);
+  color:rgba(233,239,233,.9);
 }
-/* Make top action row less likely to wrap on mobile */
-@media (max-width: 520px){
-  .statusLine > div:last-child{
-    gap:6px !important;
-    align-items:center !important;
-  }
+/* Bottom sheet */
+#moreSheetBack{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.55);
+  opacity:0; pointer-events:none;
+  transition:.2s ease;
+  z-index:98;
 }
+#moreSheetBack.open{opacity:1; pointer-events:auto;}
+#moreSheet{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  transform:translateY(110%);
+  transition:.25s ease;
+  background:var(--panel);
+  border-top-left-radius:1.25rem;
+  border-top-right-radius:1.25rem;
+  padding:1rem;
+  z-index:99;
+  box-shadow: 0 -12px 40px rgba(0,0,0,.35);
+}
+#moreSheet.open{transform:translateY(0);}
+.moreItem{
+  display:flex; align-items:center; gap:.5rem;
+  padding:.8rem .9rem;
+  border-radius:1rem;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.18);
+  font-weight:900;
+  margin-bottom:.6rem;
+}
+.moreItem .miIcon{font-size:18px; width:22px; text-align:center;}
+.moreTitle{font-weight:1000; font-size:14px;}
 
     :root{
       --bg:#0f1410;
@@ -857,16 +894,21 @@
               <div class="npcBadge">孫</div>
               <div class="npcText" id="npcLine"></div>
             </div>
-            <div style="display:flex; gap:8px; align-items:flex-start; flex-shrink:0;">
-              <button class="miniBtn" id="btnSegRead">朗讀</button>
-              <button class="miniBtn" id="btnReset">重整</button>
-              <button class="miniBtn book" id="btnBook">兵書</button>
-              <div class="navMini" aria-label="關卡導航">
-                <button class="miniBtn mini" id="btnPrev" type="button">◀</button>
+            
+            <div class="toolbarWrap">
+              <div class="toolbar">
+                <button class="toolbtn" id="btnSegRead"><span class="icon">🔊</span><span>朗讀</span></button>
+                <button class="toolbtn" id="btnReset"><span class="icon">♻</span><span>重整</span></button>
+                <button class="toolbtn book" id="btnBook"><span class="icon">📜</span><span>兵書</span></button>
+                <button class="toolbtn" id="btnMore"><span class="icon">⋯</span><span>更多</span></button>
+              </div>
+              <div class="navMini">
+                <button class="toolbtn mini" id="btnPrev">◀</button>
                 <div class="navText" id="navText">1/1</div>
-                <button class="miniBtn mini primary" id="btnNext" type="button" disabled>▶</button>
+                <button class="toolbtn mini primary" id="btnNext" disabled>▶</button>
               </div>
             </div>
+
           </div>
 
           <div class="board">
@@ -895,60 +937,72 @@
         </div>
       </div>
 
-      <div class="view panel scroll" id="viewSettings">
-        <div class="settings">
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">字體大小</div>
-              <div class="rowDesc">自由調整</div>
-            </div>
-            <input class="range" id="fontRange" type="range" min="0.85" max="1.25" step="0.01" />
-          </div>
-
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">音效</div>
-              <div class="rowDesc">點擊、成功提示</div>
-            </div>
-            <div class="switch on" id="soundSwitch"><div class="knob"></div></div>
-          </div>
-
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">朗讀</div>
-              <div class="rowDesc">使用系統語音</div>
-            </div>
-            <div class="switch on" id="ttsSwitch"><div class="knob"></div></div>
-          </div>
-
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">學習提示預設</div>
-              <div class="rowDesc">進入佈令時預設開啟</div>
-            </div>
-            <div class="switch on" id="hintDefaultSwitch"><div class="knob"></div></div>
-          </div>
-
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">首頁顯示白話</div>
-              <div class="rowDesc">原文＋白話一起顯示</div>
-            </div>
-            <div class="switch on" id="showPlainDefaultSwitch"><div class="knob"></div></div>
-          </div>
-
-          <div class="row">
-            <div class="rowLeft">
-              <div class="rowTitle">清空足跡紀錄</div>
-              <div class="rowDesc">進度全部歸零</div>
-            </div>
-            <button class="pillBtn danger" id="btnClear">清空</button>
-          </div>
-        </div>
+      <div class="view panel scroll" 
+<div class="view" id="viewSettings">
+  <div class="settings">
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">字體大小</div>
+        <div class="rowDesc">自由調整</div>
       </div>
+      <input class="range" id="fontRange" type="range" min="0.85" max="1.25" step="0.01" />
     </div>
 
-    <button class="floatTestBtn" id="floatTestBtn">測驗</button>
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">音效</div>
+        <div class="rowDesc">點擊、成功提示</div>
+      </div>
+      <div class="switch on" id="soundSwitch"><div class="knob"></div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">語音</div>
+        <div class="rowDesc">朗讀提示音</div>
+      </div>
+      <div class="switch on" id="ttsSwitch"><div class="knob"></div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">學習提示預設開啟</div>
+        <div class="rowDesc">新進篇章時自動開啟提示</div>
+      </div>
+      <div class="switch on" id="hintDefaultSwitch"><div class="knob"></div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">令牌以明文顯示</div>
+        <div class="rowDesc">新進篇章時令牌直接顯示文字</div>
+      </div>
+      <div class="switch on" id="showPlainDefaultSwitch"><div class="knob"></div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">自由瀏覽下一關</div>
+        <div class="rowDesc">開啟後可直接前往下一段，不受完成度限制</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="freeNavSwitch" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="row dangerRow">
+      <div class="rowLeft">
+        <div class="rowTitle">清空足跡紀錄</div>
+        <div class="rowDesc">所有篇章進度全部歸零</div>
+      </div>
+      <button class="pillBtn danger" id="btnClear">清空</button>
+    </div>
+  </div>
+</div>
+
+
+<button class="floatTestBtn" id="floatTestBtn">測驗</button>
 
     <div class="modal" id="modal">
       <div class="modalCard">
@@ -1086,17 +1140,17 @@
         {
           quote: "故校之以計，而索其情，曰：",
           tokens: ["故校之以計","而索其情","曰"],
-          plain: ""
+          plain: "因此要用各種比較與計算來查清真相："
         },
         {
           quote: "主孰有道？將孰有能？天地孰得？法令孰行？",
           tokens: ["主孰有道","將孰有能","天地孰得","法令孰行"],
-          plain: ""
+          plain: "哪一方君主更得人心？哪一方將領更有才能？哪一方更得天時地利？哪一方法令更能落實？"
         },
         {
           quote: "兵眾孰強？士卒孰練？賞罰孰明？吾以此知勝負矣。",
           tokens: ["兵眾孰強","士卒孰練","賞罰孰明","吾以此知勝負矣"],
-          plain: "因此要用各種比較與計算來查清真相：哪一方君主更得人心？哪一方將領更有才能？哪一方更得天時地利？哪一方法令更能落實？哪一方兵力更強？哪一方士卒更精訓？哪一方賞罰更分明？據此即可判斷勝負。"
+          plain: "哪一方兵力更強？哪一方士卒更精訓？哪一方賞罰更分明？據此即可判斷勝負。"
         },
         {
           quote: "將聽吾計，用之必勝，留之；將不聽吾計，用之必敗，去之。",
@@ -1169,6 +1223,7 @@
     soundOn: true,
     ttsOn: true,
     showPlainDefault: true,
+    freeNav: false,
     chapters: {}
   });
 
@@ -1225,6 +1280,7 @@
   const slots = document.getElementById("slots");
   const tokensEl = document.getElementById("tokens");
   const hintSwitch = document.getElementById("hintSwitch");
+  const freeNavSwitch = document.getElementById("freeNavSwitch");
   const hintToggleWrap = document.getElementById("hintToggleWrap");
 
   const floatTestBtn = document.getElementById("floatTestBtn");
@@ -1241,6 +1297,7 @@
   const hintDefaultSwitch = document.getElementById("hintDefaultSwitch");
   const showPlainDefaultSwitch = document.getElementById("showPlainDefaultSwitch");
   const btnClear = document.getElementById("btnClear");
+  const btnResetChapter = document.getElementById("btnResetChapter");
 
   /***********************
    * NAV STATE
@@ -1437,6 +1494,8 @@
   showPlainSwitch.onclick = () => {
     PROG.showPlainDefault = !PROG.showPlainDefault;
     saveProgress();
+        try{ showToast && showToast('✅ 已重置本篇進度'); }catch(_e){ try{ alert('已重置本篇進度'); }catch(__){} }
+
     showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
     openChapterHome();
   };
@@ -1635,7 +1694,7 @@
     const total = ch?.segments?.length || 0;
     const idx = (mode==="test") ? (testCursor + 1) : (currentSegIndex + 1);
     boardMeta.textContent = `第${idx}/${total}段`;
-    const navText = document.getElementById("navText");
+    const navText = document.getElementById('navText');
     if(navText) navText.textContent = `${idx}/${total}`;
   }
 
@@ -1652,7 +1711,8 @@
     // ✅若此段已通過，就不要再把「下一關」鎖灰
     const p = getChapterProg(currentChapterId);
     const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
-    const unlocked = passed >= (segIndex + 1);
+    const freeNav = !!PROG.freeNav;
+    const unlocked = freeNav ? true : (passed >= (segIndex + 1));
 
     btnNext.disabled = !unlocked;
     btnBook.disabled = !unlocked;
@@ -1673,6 +1733,14 @@
       saveProgress();
     }
     renderHintSwitch();
+
+  if(freeNavSwitch) freeNavSwitch.onchange = () => {
+    PROG.freeNav = !!freeNavSwitch.checked;
+    saveProgress();
+    try{ showToast('已更新：自由瀏覽 ' + (PROG.freeNav ? '開啟' : '關閉')); }catch(_e){}
+    // refresh nav lock state
+    try{ renderSegment(); }catch(_e){}
+  };
 
     setNpcOriginal(seg.quote);
     updateBoardMeta();
@@ -1818,7 +1886,7 @@
     const p = getChapterProg(currentChapterId);
     const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
 
-    const unlocked = passed >= (currentSegIndex + 1);
+    const unlocked = (!!PROG.freeNav) ? true : (passed >= (currentSegIndex + 1));
 
     // 下一關：已通過當前段就應該可按
     btnNext.disabled = !unlocked;
@@ -2046,10 +2114,30 @@ if(viewGame.classList.contains("active") && mode === "test"){
     if(PROG.hintOn) flashHintTimes(2);
   };
 
+  
   /***********************
+   * CHAPTER RESET (robust)
+   ***********************/
+  function resetChapterProgress(){
+    try{
+      const chId = currentChapterId;
+      const p = getChapterProg(chId);
+      p.stars = 0;
+      saveProgress();
+      currentSegIndex = 0;
+      // If currently in game, refresh; otherwise go to chapter home
+      try{ showToast("✅ 已重置本篇進度"); }catch(_e){ try{ alert("已重置本篇進度"); }catch(__){} }
+      try{ openChapterHome(); }catch(_e){ try{ renderOverview(); showView(viewOverview); }catch(__){} }
+    }catch(err){
+      try{ alert("重置失敗，請告訴小樂：" + err); }catch(_e){}
+    }
+  }
+
+/***********************
    * SETTINGS
    ***********************/
   function syncSettingsUI(){
+    if(freeNavSwitch) freeNavSwitch.checked = !!PROG.freeNav;
     fontRange.value = String(PROG.fontScale);
     soundSwitch.classList.toggle("on", !!PROG.soundOn);
     ttsSwitch.classList.toggle("on", !!PROG.ttsOn);
@@ -2096,7 +2184,7 @@ if(viewGame.classList.contains("active") && mode === "test"){
       const c = document.getElementById("btnCancelClear");
       const y = document.getElementById("btnConfirmClear");
       if(c) c.onclick = () => modalClose.click();
-      if(y) y.onclick = () => {
+      if(y) y.onclick = (ev) => { try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
         modalClose.click();
         stopReading();
         PROG = defaultProgress();
@@ -2111,6 +2199,30 @@ if(viewGame.classList.contains("active") && mode === "test"){
       };
     }, 0);
   };
+  btnResetChapter && (btnResetChapter.onclick = (e) => { try{ e && e.stopPropagation && e.stopPropagation(); }catch(_e){}
+    openModal("本篇重置", `
+      <div class="plain">只會把「目前篇章」的完成數歸零，其他篇不受影響。</div>
+      <div class="plain">確定要重置本篇嗎？</div>
+    `, `
+      <button class="btn" id="btnCancelResetCh">取消</button>
+      <button class="btn primary" id="btnConfirmResetCh">確定重置</button>
+    `);
+    setTimeout(() => {
+      const c = document.getElementById("btnCancelResetCh");
+      const y = document.getElementById("btnConfirmResetCh");
+      if(c) c.onclick = () => modalClose.click();
+      if(y) y.onclick = () => {
+        modalClose.click();
+        stopReading();
+        PROG.chapters[currentChapterId] = { stars:0 };
+        saveProgress();
+        currentSegIndex = 0;
+        renderChapterHome(currentChapterId);
+        showView(viewChapterHome);
+      };
+    }, 0);
+  });
+
 
   /***********************
    * ESCAPE
@@ -2126,7 +2238,38 @@ if(viewGame.classList.contains("active") && mode === "test"){
   /***********************
    * INIT
    ***********************/
- /***********************
+ 
+  /***********************
+   * TOAST
+   ***********************/
+  function showToast(msg){
+    let t = document.getElementById("toast");
+    if(!t){
+      t = document.createElement("div");
+      t.id = "toast";
+      t.style.position = "fixed";
+      t.style.left = "50%";
+      t.style.bottom = "18px";
+      t.style.transform = "translateX(-50%)";
+      t.style.padding = "10px 14px";
+      t.style.borderRadius = "14px";
+      t.style.border = "1px solid var(--line)";
+      t.style.background = "rgba(0,0,0,.55)";
+      t.style.color = "rgba(233,239,233,.95)";
+      t.style.fontWeight = "900";
+      t.style.zIndex = "120";
+      t.style.backdropFilter = "blur(6px)";
+      t.style.opacity = "0";
+      t.style.transition = "opacity .18s ease";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = "1";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=>{ t.style.opacity="0"; }, 1200);
+  }
+
+/***********************
  * ✅上一關 / 下一關（固定補丁版）
  * 放在 function init(){ 之前
  ***********************/
@@ -2198,5 +2341,259 @@ if (typeof btnNext !== "undefined" && btnNext) {
   init();
 })();
 </script>
+
+<div id="moreSheetBack"></div>
+<div id="moreSheet" aria-hidden="true">
+  <div class="moreItem" id="moreGoOverview"><span class="miIcon">🧭</span><div class="moreTitle">總覽</div></div>
+  <div class="moreItem" id="moreGoSettings"><span class="miIcon">⚙️</span><div class="moreTitle">設定</div></div>
+  <div class="moreItem" id="moreReset">
+  <span class="miIcon">♻</span><div class="moreTitle" id="moreResetTitle">重置本篇</div></div></div>
+</div>
+<script>
+(function(){
+  const btnMore = document.getElementById("btnMore");
+  const back = document.getElementById("moreSheetBack");
+  const sheet = document.getElementById("moreSheet");
+  if(!btnMore || !back || !sheet) return;
+
+  function openSheet(){
+    // 更新更多抽屜標題
+    try{
+      const ch = (CHAPTERS||[]).find(x=>x.id===currentChapterId);
+      const name = ch ? (ch.title || ch.top || currentChapterId) : currentChapterId;
+      const t = document.getElementById('moreResetTitle');
+      if(t) t.textContent = `重置本篇（${name}）`;
+    }catch(_e){}
+
+    back.classList.add("open");
+    sheet.classList.add("open");
+    sheet.setAttribute("aria-hidden","false");
+  }
+  function closeSheet(){
+    back.classList.remove("open");
+    sheet.classList.remove("open");
+    sheet.setAttribute("aria-hidden","true");
+  }
+  btnMore.addEventListener("click", ()=>{
+    if(sheet.classList.contains("open")) closeSheet(); else openSheet();
+  });
+  back.addEventListener("click", closeSheet);
+
+  document.getElementById("moreReset")?.addEventListener("click", ()=>{
+    closeSheet();
+    stopReading?.();
+    try{
+      if(typeof currentChapterId!=="undefined" && typeof PROG!=="undefined"){
+        PROG.chapters[currentChapterId] = { stars:0 };
+        saveProgress?.();
+      }
+      if(typeof currentSegIndex!=="undefined") currentSegIndex = 0;
+      if(typeof startLearnSegment==="function") startLearnSegment(0, { firstEntry:true, preserve:false });
+      else if(typeof openChapterHome==="function") openChapterHome();
+    }catch(e){ console.warn(e); }
+  });
+
+  // Try to reuse existing overview/settings buttons if present
+  document.getElementById("moreGoOverview")?.addEventListener("click", ()=>{
+    closeSheet();
+    document.getElementById("btnOverview")?.click?.();
+    document.getElementById("btnBook")?.blur?.();
+  });
+  document.getElementById("moreGoSettings")?.addEventListener("click", ()=>{
+    closeSheet();
+    document.getElementById("btnBackOrSettings")?.click?.();
+  });
+})();
+</script>
+
+
+<script>
+/* v5.4.5 hotfix: make Settings -> 本篇重置 always work */
+(function(){
+  function bind(){
+    const b = document.getElementById("btnResetChapter");
+    if(!b) return;
+    b.addEventListener("click", function(e){
+      try{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }catch(_){}
+      const ok = confirm("確定要重置【本篇】進度嗎？\n（只會把本篇完成數歸零，不影響其他篇）");
+      if(!ok) return;
+      try{ stopReading && stopReading(); }catch(_){}
+      try{
+        if(typeof PROG !== "undefined" && typeof currentChapterId !== "undefined"){
+          PROG.chapters[currentChapterId] = { stars:0 };
+          saveProgress && saveProgress();
+        }
+        if(typeof currentSegIndex !== "undefined") currentSegIndex = 0;
+        // 回到本篇首頁（第1段）
+        if(typeof openChapterHome === "function") openChapterHome();
+        try{ showToast && showToast("✅ 已重置本篇進度"); }catch(_e){ alert("已重置本篇進度"); }
+      }catch(err){
+        alert("重置失敗，請告訴小樂："+err);
+      }
+    }, true); // capture = true, avoid parent click handlers
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bind);
+  else bind();
+})();
+
+  },0);
+    }
+  }, true);
+
+
+
+  // Bind reset buttons (settings + more sheet) with capture to avoid parent handlers
+  function bindResetButtons(){
+    const a = document.getElementById("btnResetChapter");
+    const b = document.getElementById("moreReset");
+    const handler = (ev)=>{
+      if(ev){ ev.preventDefault(); ev.stopPropagation(); try{ ev.stopImmediatePropagation(); }catch(_e){} }
+      // confirm to avoid mis-tap
+      const ok = confirm("確定要「本篇重置」嗎？\n只會把目前篇章的完成數歸零。");
+      if(!ok) return;
+      resetChapterProgress();
+    };
+    if(a) a.addEventListener("click", handler, true);
+    if(b) b.addEventListener("click", handler, true);
+
+    // fallback delegation
+    document.addEventListener("click", (ev)=>{
+      const t = ev.target;
+      if(!t) return;
+      if(t.id==="btnResetChapter" || t.id==="moreReset"){
+        handler(ev);
+      }
+    }, true);
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bindResetButtons);
+  else bindResetButtons();
+
+
+  /***********************
+   * CAPTURE_RESET_CHAPTER_V57
+   * - Reset should live in chapter-level "更多", not global settings.
+   * - Handle both moreReset and (if any) btnResetChapter defensively.
+   ***********************/
+  function __resetCurrentChapter(){
+    try{
+      const chId = currentChapterId;
+      const ch = (CHAPTERS || []).find(x => x.id === chId);
+      const name = ch ? (ch.title || ch.top || chId) : chId;
+      const ok = confirm(`確定要重置「${name}」本篇進度嗎？\n（只會影響本篇，不影響其他篇章）`);
+      if(!ok) return;
+      const p = getChapterProg(chId);
+      p.stars = 0;
+      saveProgress();
+      try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){ alert(`已重置：${name}`); }
+      currentSegIndex = 0;
+      openChapterHome();
+    }catch(e){
+      try{ alert("重置失敗：請將錯誤畫面截圖給小樂"); }catch(_e){}
+      console.error(e);
+    }
+  }
+
+  document.addEventListener("click", function(ev){
+    const t = ev.target;
+    if(!t) return;
+
+    // If user clicks inside the reset tile/title
+    const isMoreReset = (t.id === "moreReset" || t.id === "moreResetTitle" || (t.closest && t.closest("#moreReset")));
+    const isBtnResetChapter = (t.id === "btnResetChapter");
+
+    if(isMoreReset || isBtnResetChapter){
+      ev.preventDefault();
+      ev.stopPropagation();
+      try{ ev.stopImmediatePropagation(); }catch(_e){}
+      __resetCurrentChapter();
+    }
+  }, true);
+
+
+
+/***********************
+ * v5.8 robust actions
+ ***********************/
+function __getChapterName(){
+  try{
+    const ch = (CHAPTERS||[]).find(x=>x.id===currentChapterId);
+    return ch ? (ch.title || ch.top || currentChapterId) : currentChapterId;
+  }catch(_e){ return currentChapterId; }
+}
+
+function __resetCurrentChapterHard(){
+  const name = __getChapterName();
+  const ok = confirm(`確定要重置「${name}」本篇進度嗎？\n（只影響本篇，不影響其他篇章）`);
+  if(!ok) return;
+  const p = getChapterProg(currentChapterId);
+  p.stars = 0;
+  saveProgress();
+  try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){ alert(`已重置：${name}`); }
+  currentSegIndex = 0;
+  openChapterHome();
+}
+
+function __clearAllProgressHard(){
+  const ok = confirm("確定要清空所有篇章的足跡紀錄嗎？\n（此動作不可復原）");
+  if(!ok) return;
+  try{
+    localStorage.removeItem(STORE_KEY);
+  }catch(_e){}
+  try{
+    // reset in-memory
+    PROG = JSON.parse(JSON.stringify(defaultProgress));
+  }catch(_e){}
+  saveProgress();
+  try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){ alert("已清空全部足跡"); }
+  showOverview();
+}
+
+function __applyFreeNavOverride(){
+  try{
+    if(!PROG || !PROG.freeNav) return;
+    // Only relevant in game view
+    if(viewGame && viewGame.classList.contains("hidden")===false){
+      const isLast = (segIndex >= currentSegs.length-1);
+      if(btnNext) btnNext.disabled = isLast ? true : false;
+      if(btnBook) btnBook.disabled = false;
+    }
+  }catch(_e){}
+}
+
+document.addEventListener("click", function(ev){
+  const t = ev.target;
+  if(!t) return;
+
+  // More sheet reset
+  if(t.id==="moreReset" || t.id==="moreResetTitle" || (t.closest && t.closest("#moreReset"))){
+    ev.preventDefault(); ev.stopPropagation();
+    try{ ev.stopImmediatePropagation(); }catch(_e){}
+    __resetCurrentChapterHard();
+    return;
+  }
+
+  // Global clear
+  if(t.id==="btnClear" || (t.closest && t.closest("#btnClear"))){
+    ev.preventDefault(); ev.stopPropagation();
+    try{ ev.stopImmediatePropagation(); }catch(_e){}
+    __clearAllProgressHard();
+    return;
+  }
+}, true);
+
+// FreeNav switch wiring (ensure works even if other handlers fail)
+document.addEventListener("change", function(ev){
+  const t = ev.target;
+  if(t && t.id==="freeNavSwitch"){
+    PROG.freeNav = !!t.checked;
+    saveProgress();
+    try{ showToast && showToast("已更新：自由瀏覽 " + (PROG.freeNav ? "開啟" : "關閉")); }catch(_e){}
+    try{ renderSegment(); }catch(_e){}
+    __applyFreeNavOverride();
+  }
+}, true);
+
+</script>
+
 </body>
 </html>
