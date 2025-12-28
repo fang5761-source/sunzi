@@ -1,4 +1,3 @@
-
 <!--
 孫子兵法｜佈令背誦
 版本：完美母版5.2（封存版）
@@ -473,7 +472,8 @@
     }
     .miniBtn[disabled]{ opacity:.45; }
 
-    .miniBtn.book.pulseStrong{
+    .miniBtn.book.pulseStrong,
+    .toolbtn.book.pulseStrong{
       box-shadow: var(--glowStrong);
       animation: bookPulse 2.2s ease-in-out infinite;
     }
@@ -826,6 +826,53 @@
   font-weight: 900;
 }
 
+  
+    .orderError{
+      margin-top:8px;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.02em;
+      color: rgba(178,58,47,.95);
+      opacity:0;
+      transition: opacity .18s ease;
+      user-select:none;
+    }
+    .orderError.show{ opacity:1; }
+    .token.wrongFlash{
+      border-color: rgba(178,58,47,.85) !important;
+      box-shadow: 0 0 0 2px rgba(178,58,47,.35), 0 12px 22px rgba(0,0,0,.25) !important;
+      animation: wrongFlash .48s ease-in-out 1;
+    }
+    @keyframes wrongFlash{
+      0%{ transform: translateY(0); filter: brightness(1.0); }
+      40%{ transform: translateY(-1px); filter: brightness(1.08); }
+      100%{ transform: translateY(0); filter: brightness(1.0); }
+    }
+
+
+    .helpFold{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: rgba(255,255,255,.02);
+      overflow:hidden;
+    }
+    .helpFold summary{
+      cursor:pointer;
+      padding:12px 14px;
+      font-weight:900;
+      color: var(--ink);
+      list-style:none;
+    }
+    .helpFold summary::-webkit-details-marker{ display:none; }
+    .helpFold .helpBody{
+      padding: 0 14px 12px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .helpFold .helpLine{ margin-top:6px; }
+
   </style>
 </head>
 
@@ -900,8 +947,7 @@
                 <button class="toolbtn" id="btnSegRead"><span class="icon">🔊</span><span>朗讀</span></button>
                 <button class="toolbtn" id="btnReset"><span class="icon">♻</span><span>重整</span></button>
                 <button class="toolbtn book" id="btnBook"><span class="icon">📜</span><span>兵書</span></button>
-                <button class="toolbtn" id="btnMore"><span class="icon">⋯</span><span>更多</span></button>
-              </div>
+</div>
               <div class="navMini">
                 <button class="toolbtn mini" id="btnPrev">◀</button>
                 <div class="navText" id="navText">1/1</div>
@@ -931,6 +977,7 @@
 
           <div class="tokensPanel">
             <div class="tokens" id="tokens"></div>
+            <div class="orderError" id="orderError" aria-live="polite">順序有誤</div>
           </div>
 
           <div class="testBar" id="testBar"></div>
@@ -999,6 +1046,26 @@
       <button class="pillBtn danger" id="btnClear">清空</button>
     </div>
   </div>
+
+
+    <details class="helpFold">
+      <summary>ⓘ 使用說明（先放簡單版）</summary>
+      <div class="helpBody">
+        <div class="helpLine">• 佈令時：點令牌依正確順序排入空格。</div>
+        <div class="helpLine">• 放錯也會提示：紅框閃一下 + 下方會出現「再仔細想一想」。</div>
+        <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈，點進去看原文＋白話。</div>
+        <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
+      </div>
+    </details>
+
+    <details class="helpFold">
+      <summary>關於本系統</summary>
+      <div class="helpBody">
+        <div class="helpLine">• 這是一個用「佈令」來背誦《孫子兵法》的練習工具。</div>
+        <div class="helpLine">• 目標：讓你用最少摩擦，反覆進入記憶節奏。</div>
+      </div>
+    </details>
+
 </div>
 
 
@@ -1755,8 +1822,32 @@
   btnReset.onclick = () => {
     stopReading();
     beep("tap");
-    restartCurrent();
-    if(PROG.hintOn) flashHintTimes(1);
+
+    openModal(
+      "重整",
+      `<div class="plain">想怎麼重整？</div>`,
+      `
+        <button class="btn" id="resetSegBtn">重整本段落</button>
+        <button class="btn primary" id="resetChBtn">重整本篇章</button>
+      `
+    );
+
+    // 綁定一次性按鈕
+    setTimeout(() => {
+      const a = document.getElementById("resetSegBtn");
+      const b = document.getElementById("resetChBtn");
+      if(a) a.onclick = () => {
+        modal.classList.remove("show");
+        restartCurrent();
+        // 完成後若提示開啟，給一次提示閃爍
+        try{ if(PROG.hintOn) flashHintTimes(1); }catch(_e){}
+      };
+      if(b) b.onclick = () => {
+        modal.classList.remove("show");
+        // 走既有的「重置本篇」確認流程
+        try{ __resetCurrentChapterHard(); }catch(_e){ openChapterHome(); }
+      };
+    }, 0);
   };
 
   function restartCurrent(){
@@ -1770,7 +1861,23 @@
     renderBoard();
   }
 
-  function makeToken(text){
+  
+  // ✅放錯令牌：立即回饋（不受「學習提示」開關影響）
+  const orderErrorEl = document.getElementById("orderError");
+  let __orderErrTimer = null;
+  function showOrderErrorOnce(){
+    if(!orderErrorEl) return;
+    orderErrorEl.classList.add("show");
+    clearTimeout(__orderErrTimer);
+    __orderErrTimer = setTimeout(()=> orderErrorEl.classList.remove("show"), 1100);
+  }
+  function vibrateSoft(){
+    try{
+      if(navigator && navigator.vibrate) navigator.vibrate(20);
+    }catch(_e){}
+  }
+
+function makeToken(text){
     const el = document.createElement("div");
     el.className = "token";
     el.textContent = text;
@@ -1807,6 +1914,20 @@
         selection.push(t);
         pool.splice(idx,1);
         renderBoard();
+
+        // ✅立即判斷「目前已放的前綴」是否正確（學習模式才做）
+        if(mode==="learn"){
+          const segNow = currentSeg();
+          const prefixOk = selection.every((v,i)=> v===segNow.tokens[i]);
+          if(!prefixOk){
+            // 紅框閃 + 輕震 + 淡字提示
+            el.classList.add("wrongFlash");
+            setTimeout(()=> el.classList.remove("wrongFlash"), 520);
+            vibrateSoft();
+            showOrderErrorOnce();
+          }
+        }
+
         checkWinRouter();
       };
       tokensEl.appendChild(el);
@@ -2342,69 +2463,6 @@ if (typeof btnNext !== "undefined" && btnNext) {
 })();
 </script>
 
-<div id="moreSheetBack"></div>
-<div id="moreSheet" aria-hidden="true">
-  <div class="moreItem" id="moreGoOverview"><span class="miIcon">🧭</span><div class="moreTitle">總覽</div></div>
-  <div class="moreItem" id="moreGoSettings"><span class="miIcon">⚙️</span><div class="moreTitle">設定</div></div>
-  <div class="moreItem" id="moreReset">
-  <span class="miIcon">♻</span><div class="moreTitle" id="moreResetTitle">重置本篇</div></div></div>
-</div>
-<script>
-(function(){
-  const btnMore = document.getElementById("btnMore");
-  const back = document.getElementById("moreSheetBack");
-  const sheet = document.getElementById("moreSheet");
-  if(!btnMore || !back || !sheet) return;
-
-  function openSheet(){
-    // 更新更多抽屜標題
-    try{
-      const ch = (CHAPTERS||[]).find(x=>x.id===currentChapterId);
-      const name = ch ? (ch.title || ch.top || currentChapterId) : currentChapterId;
-      const t = document.getElementById('moreResetTitle');
-      if(t) t.textContent = `重置本篇（${name}）`;
-    }catch(_e){}
-
-    back.classList.add("open");
-    sheet.classList.add("open");
-    sheet.setAttribute("aria-hidden","false");
-  }
-  function closeSheet(){
-    back.classList.remove("open");
-    sheet.classList.remove("open");
-    sheet.setAttribute("aria-hidden","true");
-  }
-  btnMore.addEventListener("click", ()=>{
-    if(sheet.classList.contains("open")) closeSheet(); else openSheet();
-  });
-  back.addEventListener("click", closeSheet);
-
-  document.getElementById("moreReset")?.addEventListener("click", ()=>{
-    closeSheet();
-    stopReading?.();
-    try{
-      if(typeof currentChapterId!=="undefined" && typeof PROG!=="undefined"){
-        PROG.chapters[currentChapterId] = { stars:0 };
-        saveProgress?.();
-      }
-      if(typeof currentSegIndex!=="undefined") currentSegIndex = 0;
-      if(typeof startLearnSegment==="function") startLearnSegment(0, { firstEntry:true, preserve:false });
-      else if(typeof openChapterHome==="function") openChapterHome();
-    }catch(e){ console.warn(e); }
-  });
-
-  // Try to reuse existing overview/settings buttons if present
-  document.getElementById("moreGoOverview")?.addEventListener("click", ()=>{
-    closeSheet();
-    document.getElementById("btnOverview")?.click?.();
-    document.getElementById("btnBook")?.blur?.();
-  });
-  document.getElementById("moreGoSettings")?.addEventListener("click", ()=>{
-    closeSheet();
-    document.getElementById("btnBackOrSettings")?.click?.();
-  });
-})();
-</script>
 
 
 <script>
@@ -2445,7 +2503,6 @@ if (typeof btnNext !== "undefined" && btnNext) {
   // Bind reset buttons (settings + more sheet) with capture to avoid parent handlers
   function bindResetButtons(){
     const a = document.getElementById("btnResetChapter");
-    const b = document.getElementById("moreReset");
     const handler = (ev)=>{
       if(ev){ ev.preventDefault(); ev.stopPropagation(); try{ ev.stopImmediatePropagation(); }catch(_e){} }
       // confirm to avoid mis-tap
@@ -2454,13 +2511,12 @@ if (typeof btnNext !== "undefined" && btnNext) {
       resetChapterProgress();
     };
     if(a) a.addEventListener("click", handler, true);
-    if(b) b.addEventListener("click", handler, true);
 
     // fallback delegation
     document.addEventListener("click", (ev)=>{
       const t = ev.target;
       if(!t) return;
-      if(t.id==="btnResetChapter" || t.id==="moreReset"){
+      if(t.id==="btnResetChapter" ){
         handler(ev);
       }
     }, true);
@@ -2472,7 +2528,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
   /***********************
    * CAPTURE_RESET_CHAPTER_V57
    * - Reset should live in chapter-level "更多", not global settings.
-   * - Handle both moreReset and (if any) btnResetChapter defensively.
+   * - Handle btnResetChapter defensively.
    ***********************/
   function __resetCurrentChapter(){
     try{
@@ -2496,12 +2552,9 @@ if (typeof btnNext !== "undefined" && btnNext) {
   document.addEventListener("click", function(ev){
     const t = ev.target;
     if(!t) return;
-
-    // If user clicks inside the reset tile/title
-    const isMoreReset = (t.id === "moreReset" || t.id === "moreResetTitle" || (t.closest && t.closest("#moreReset")));
     const isBtnResetChapter = (t.id === "btnResetChapter");
 
-    if(isMoreReset || isBtnResetChapter){
+    if(isBtnResetChapter){
       ev.preventDefault();
       ev.stopPropagation();
       try{ ev.stopImmediatePropagation(); }catch(_e){}
@@ -2563,14 +2616,6 @@ function __applyFreeNavOverride(){
 document.addEventListener("click", function(ev){
   const t = ev.target;
   if(!t) return;
-
-  // More sheet reset
-  if(t.id==="moreReset" || t.id==="moreResetTitle" || (t.closest && t.closest("#moreReset"))){
-    ev.preventDefault(); ev.stopPropagation();
-    try{ ev.stopImmediatePropagation(); }catch(_e){}
-    __resetCurrentChapterHard();
-    return;
-  }
 
   // Global clear
   if(t.id==="btnClear" || (t.closest && t.closest("#btnClear"))){
