@@ -905,7 +905,74 @@
 </head>
 
 <body style="--fontScale:1;">
-<body style="--fontScale:1;">
+
+/* =========================
+   A2HS（加入主畫面捷徑）提示：不改 body 字級、不自動跳
+   ========================= */
+(function(){
+  const KEY = "sunzi_a2hs_dismissed_v1";
+  const overlay = document.getElementById("a2hsOverlay");
+  const btnOk = document.getElementById("btnA2HS_ok");
+  const btnLater = document.getElementById("btnA2HS_later");
+
+  if(!overlay || !btnOk || !btnLater) return;
+
+  function isStandalone(){
+    // iOS Safari（加入主畫面後）
+    if (window.navigator.standalone) return true;
+    // Android / 其他（PWA display-mode）
+    return window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
+  }
+
+  function showA2HS(){
+    overlay.style.display = "flex";
+  }
+
+  function hideA2HS(){
+    overlay.style.display = "none";
+  }
+
+  function rememberDismiss(){
+    try{ localStorage.setItem(KEY, "1"); }catch(_e){}
+  }
+
+  function alreadyDismissed(){
+    try{ return localStorage.getItem(KEY) === "1"; }catch(_e){ return false; }
+  }
+
+  // 只在「非捷徑模式」+「第一次」才顯示
+  window.addEventListener("load", () => {
+    if (isStandalone()) return;
+    if (alreadyDismissed()) return;
+
+    // 稍微延遲，避免一載入就跳出造成壓迫感
+    setTimeout(showA2HS, 500);
+  });
+
+  // 「好，我要加入捷徑」：不跳轉、不改畫面，只是讓使用者停在這裡看步驟
+  btnOk.addEventListener("click", () => {
+    rememberDismiss();
+    // 讓他自己照步驟做；做完可按「下次再說」進入
+    // 如果妳想按了就直接關掉也可以，把下面註解打開：
+    // hideA2HS();
+  });
+
+  // 「下次再說」：關掉並進入系統（不做任何縮放/字級調整）
+  btnLater.addEventListener("click", () => {
+    rememberDismiss();
+    hideA2HS();
+  });
+
+  // 點遮罩外側也視為「下次再說」
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay){
+      rememberDismiss();
+      hideA2HS();
+    }
+  });
+})();
+
+
 
   <!-- 🔽 加在這裡（第一段） -->
   <div id="addToHomeHint" class="ath-hint">
