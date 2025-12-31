@@ -1,227 +1,253 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant-TW">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>加入主畫面｜孫子兵法背誦系統</title>
-
+  <title>加入主畫面捷徑｜孫子兵法背誦系統</title>
   <meta name="theme-color" content="#0f1410" />
   <style>
     :root{
       --bg:#0f1410;
       --panel:#151b16;
-      --line:#2b3a2f;
+      --panel2:#1b241d;
       --ink:#e9efe9;
       --muted:#aab6aa;
+      --line:#2b3a2f;
       --gold:#d6b25e;
-      --ok:#9be79f;
-      --warn:#ffd27a;
+      --btn:#223127;
+      --btn2:#2a3b2f;
+      --danger:#ff6b6b;
     }
+    *{ box-sizing:border-box; }
     body{
       margin:0;
-      font-family: system-ui, -apple-system, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-      background:var(--bg);
+      background:linear-gradient(180deg,var(--bg),#0b0f0c 70%);
       color:var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      line-height:1.55;
     }
-    .wrap{ max-width:760px; margin:0 auto; padding:18px 14px 26px; }
-    h1{ font-size:20px; margin:8px 0 8px; }
-    .muted{ color:var(--muted); line-height:1.7; }
+    .wrap{
+      max-width:760px;
+      margin:0 auto;
+      padding:20px 14px 26px;
+    }
     .card{
-      background:var(--panel);
+      background:rgba(21,27,22,.92);
       border:1px solid var(--line);
       border-radius:16px;
-      padding:14px 14px;
-      margin:12px 0;
+      padding:16px 14px;
+      box-shadow:0 10px 30px rgba(0,0,0,.35);
     }
-    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .btn{
-      display:inline-block;
-      padding:12px 14px;
+    h1{
+      margin:0 0 10px;
+      font-size:20px;
+      letter-spacing:.5px;
+    }
+    .sub{
+      color:var(--muted);
+      font-size:14px;
+      margin:0 0 12px;
+    }
+    .note{
+      margin:12px 0 0;
+      padding:10px 12px;
       border-radius:12px;
-      border:1px solid var(--line);
-      background:transparent;
+      border:1px dashed rgba(214,178,94,.35);
+      background:rgba(214,178,94,.08);
       color:var(--ink);
-      font-weight:800;
+      font-size:14px;
+    }
+    .note strong{ color:var(--gold); }
+    .btnRow{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+    button, a.btn{
+      width:100%;
+      border:none;
+      border-radius:14px;
+      padding:12px 12px;
+      font-size:16px;
       cursor:pointer;
+      color:var(--ink);
+      background:var(--btn);
+      border:1px solid rgba(255,255,255,.08);
       text-decoration:none;
+      text-align:center;
     }
-    .btnPrimary{
-      border-color: rgba(214,178,94,.7);
-      box-shadow: 0 0 14px rgba(214,178,94,.22);
+    button:hover, a.btn:hover{ background:var(--btn2); }
+    .primary{
+      background:linear-gradient(180deg,#2b3a2f,#1f2b23);
+      border:1px solid rgba(214,178,94,.35);
     }
-    .tag{
-      display:inline-block;
-      padding:2px 8px;
+    .ghost{
+      background:transparent;
       border:1px solid var(--line);
+      color:var(--ink);
+    }
+    .small{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:10px;
+    }
+    .hr{
+      height:1px;
+      background:var(--line);
+      margin:14px 0;
+      opacity:.8;
+    }
+
+    .steps{
+      margin-top:14px;
+      display:none;
+    }
+    .steps.on{ display:block; }
+    .pillRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:10px 0 0;
+    }
+    .pill{
+      padding:8px 10px;
       border-radius:999px;
-      margin-left:6px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--ink);
+      font-size:14px;
+      cursor:pointer;
+    }
+    .pill.on{
+      border-color:rgba(214,178,94,.55);
+      box-shadow:0 0 0 2px rgba(214,178,94,.12) inset;
+    }
+    ol{
+      margin:10px 0 0 18px;
+      padding:0;
+    }
+    li{ margin:6px 0; }
+    .warn{
+      color:var(--danger);
+      font-size:13px;
+      margin-top:8px;
+    }
+    .footer{
+      margin-top:12px;
+      text-align:center;
       color:var(--muted);
       font-size:12px;
     }
-    .steps{ line-height:1.85; }
-    .hint{ color:var(--warn); line-height:1.7; font-weight:700; }
-    .ok{ color:var(--ok); font-weight:900; }
-    .bar{
-      height:10px;
-      background:rgba(255,255,255,.06);
-      border:1px solid var(--line);
-      border-radius:999px;
-      overflow:hidden;
-      margin-top:10px;
-    }
-    .bar > div{
-      height:100%;
-      width:0%;
-      background:rgba(214,178,94,.55);
-      transition: width .1s linear;
-    }
-    .small{ font-size:13px; }
   </style>
 </head>
-
 <body>
   <div class="wrap">
-    <h1>把兵書放到主畫面（像 App 一樣）</h1>
-    <div class="muted">
-      為了方便每日快速開啟，建議加入主畫面。此頁會在 <b>2 秒</b>後自動進入兵書；若想先完成安裝，請依下方指引操作。
-    </div>
-
     <div class="card">
-      <div class="muted">
-        自動進入倒數：<b id="countTxt">2</b> 秒 <span class="tag" id="platformTag">偵測中</span>
-      </div>
-      <div class="bar" aria-hidden="true"><div id="barFill"></div></div>
+      <h1>📘 使用方式說明</h1>
+      <p class="sub">
+        本系統可直接用瀏覽器使用，也可以將「捷徑加入主畫面」，方便日後以
+        <strong style="color:var(--gold)">全畫面模式</strong>快速開啟與背誦。
+      </p>
 
-      <div style="height:12px"></div>
-      <div class="row">
-        <a class="btn btnPrimary" href="./index.html" id="goNow">我不要安裝，直接進入</a>
-        <button class="btn" id="stopBtn">先別自動跳轉</button>
+      <div class="note">
+        <strong>加入捷徑 ≠ 安裝 App</strong><br/>
+        只是建立一個「開啟捷徑」，不會下載任何程式，也不會要求權限。
       </div>
-      <div style="height:8px"></div>
-      <div class="muted small">提醒：若您在 Line/FB 內建瀏覽器開啟，安裝功能可能不顯示，建議改用 Safari（iPhone）或 Chrome（Android）。</div>
-    </div>
 
-    <!-- Android -->
-    <div class="card" id="androidBox" style="display:none;">
-      <div class="muted">偵測到 <b>Android</b><span class="tag">可一鍵安裝</span></div>
-      <div style="height:10px"></div>
-      <div class="row">
-        <button class="btn btnPrimary" id="installBtn" disabled>安裝到主畫面</button>
-        <a class="btn" href="./index.html">稍後再說，先進入</a>
+      <div class="btnRow">
+        <button class="primary" id="btnAdd">我要加入主畫面捷徑（推薦）</button>
+        <a class="btn ghost" id="btnBrowse" href="index.html">我先看看，不加入（直接進入系統）</a>
+        <button class="ghost" id="btnHow">使用說明（iPhone / Android）</button>
       </div>
-      <div style="height:10px"></div>
-      <div class="hint small" id="androidHint">
-        若按鈕尚未可用：請用 <b>Chrome</b> 開啟，或點右上角 <b>⋮</b> 選單 →「安裝應用程式／加入主畫面」。
-      </div>
-      <div style="height:6px"></div>
-      <div class="muted small">安裝完成後：回主畫面點圖示即可快速開啟（<span class="ok">像 App 一樣</span>）。</div>
-    </div>
 
-    <!-- iOS -->
-    <div class="card" id="iosBox" style="display:none;">
-      <div class="muted">偵測到 <b>iPhone / iPad</b><span class="tag">需手動加入</span></div>
-      <div style="height:10px"></div>
-      <div class="steps">
-        (1) 請用 <b>Safari</b> 開啟本頁（很重要）<br>
-        (2) 點 <b>分享</b>（方框＋上箭頭）<br>
-        (3) 點 <b>加入主畫面</b><br>
-        (4) 完成後回主畫面點圖示開啟（<span class="ok">像 App 一樣</span>）
+      <div class="small">
+        小提醒：若您這次先不加入，之後仍可在系統內「設定」頁找到加入步驟。
       </div>
-      <div style="height:12px"></div>
-      <div class="row">
-        <a class="btn btnPrimary" href="./index.html">我已看懂，進入兵書</a>
-      </div>
-      <div style="height:8px"></div>
-      <div class="hint small">若您目前不是 Safari（例如 Line 內建瀏覽器），請改用 Safari 開啟才會看到「加入主畫面」。</div>
-    </div>
 
-    <!-- Others -->
-    <div class="card" id="otherBox" style="display:none;">
-      <div class="muted">若非 iOS/Android，請直接進入兵書：</div>
-      <div style="height:12px"></div>
-      <a class="btn btnPrimary" href="./index.html">進入兵書</a>
+      <div class="hr"></div>
+
+      <div class="steps" id="stepsBox">
+        <div class="pillRow">
+          <button class="pill" id="pillIOS" type="button">iPhone（Safari）</button>
+          <button class="pill" id="pillAndroid" type="button">Android（Chrome）</button>
+        </div>
+
+        <div id="iosSteps" style="display:none;">
+          <ol>
+            <li>請使用 <strong>Safari</strong> 開啟本頁（若用 Line/FB 內建瀏覽器，請改用 Safari）。</li>
+            <li>點擊下方「<strong>分享</strong>」圖示。</li>
+            <li>選擇「<strong>加入主畫面</strong>」。</li>
+            <li>完成後，回到主畫面點捷徑開啟，即可全畫面顯示。</li>
+          </ol>
+          <div class="warn">若看不到「加入主畫面」，通常是因為不是用 Safari 開啟。</div>
+        </div>
+
+        <div id="androidSteps" style="display:none;">
+          <ol>
+            <li>請使用 <strong>Chrome</strong> 開啟本頁。</li>
+            <li>點擊右上角「<strong>⋮</strong>」選單。</li>
+            <li>選擇「<strong>加入主畫面</strong>」或「<strong>安裝應用程式</strong>」（不同手機字樣可能不同）。</li>
+            <li>完成後，回到主畫面點捷徑開啟，即可全畫面顯示。</li>
+          </ol>
+        </div>
+
+        <div class="btnRow" style="margin-top:12px;">
+          <a class="btn" href="index.html">完成／先不做都可以 → 進入系統</a>
+        </div>
+      </div>
+
+      <div class="footer">孫子兵法背誦系統｜捷徑加入主畫面說明</div>
     </div>
   </div>
 
   <script>
-    // 平台偵測（務實版）
-    const ua = navigator.userAgent || "";
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
-    const isAndroid = /Android/i.test(ua);
+    (function(){
+      const btnAdd = document.getElementById("btnAdd");
+      const btnHow = document.getElementById("btnHow");
+      const stepsBox = document.getElementById("stepsBox");
 
-    const platformTag = document.getElementById("platformTag");
-    const iosBox = document.getElementById("iosBox");
-    const androidBox = document.getElementById("androidBox");
-    const otherBox = document.getElementById("otherBox");
+      const pillIOS = document.getElementById("pillIOS");
+      const pillAndroid = document.getElementById("pillAndroid");
+      const iosSteps = document.getElementById("iosSteps");
+      const androidSteps = document.getElementById("androidSteps");
 
-    if (isIOS) {
-      platformTag.textContent = "iPhone/iPad";
-      iosBox.style.display = "block";
-    } else if (isAndroid) {
-      platformTag.textContent = "Android";
-      androidBox.style.display = "block";
-    } else {
-      platformTag.textContent = "其他裝置";
-      otherBox.style.display = "block";
-    }
-
-    // 2 秒導流（但允許中止）
-    let seconds = 2;
-    const countTxt = document.getElementById("countTxt");
-    const barFill = document.getElementById("barFill");
-    const stopBtn = document.getElementById("stopBtn");
-
-    let stopped = false;
-    stopBtn.addEventListener("click", () => {
-      stopped = true;
-      stopBtn.textContent = "已停止自動跳轉";
-      stopBtn.disabled = true;
-    });
-
-    const totalMs = 2000;
-    const start = Date.now();
-    const timer = setInterval(() => {
-      if (stopped) { clearInterval(timer); return; }
-
-      const elapsed = Date.now() - start;
-      const progress = Math.min(100, Math.round((elapsed / totalMs) * 100));
-      barFill.style.width = progress + "%";
-
-      const remainMs = Math.max(0, totalMs - elapsed);
-      seconds = Math.ceil(remainMs / 1000);
-      countTxt.textContent = seconds;
-
-      if (elapsed >= totalMs) {
-        clearInterval(timer);
-        location.href = "./index.html";
+      function isIOS(){
+        const ua = navigator.userAgent || "";
+        return /iPhone|iPad|iPod/i.test(ua);
       }
-    }, 80);
-
-    // Android 一鍵安裝（可用則啟用按鈕）
-    let deferredPrompt = null;
-    const installBtn = document.getElementById("installBtn");
-    const androidHint = document.getElementById("androidHint");
-
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      if (installBtn) {
-        installBtn.disabled = false;
-        androidHint.textContent = "請按「安裝到主畫面」即可完成。";
+      function isAndroid(){
+        const ua = navigator.userAgent || "";
+        return /Android/i.test(ua);
       }
-    });
 
-    installBtn?.addEventListener("click", async () => {
-      if (!deferredPrompt) {
-        androidHint.textContent = "若沒有跳出安裝視窗：請用 Chrome 開啟，或點右上角⋮選單→「安裝應用程式／加入主畫面」。";
-        return;
+      function showBox(){
+        stepsBox.classList.add("on");
+        // 預設依裝置自動選一個，但不自動跳走
+        if (isIOS()) showIOS();
+        else if (isAndroid()) showAndroid();
+        else showIOS(); // 其他裝置先給 iOS，至少能看懂概念
+        // 滾到說明區
+        stepsBox.scrollIntoView({behavior:"smooth", block:"start"});
       }
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      installBtn.disabled = true;
-      androidHint.textContent = "若已安裝成功，請回到主畫面點圖示開啟。";
-    });
+
+      function showIOS(){
+        pillIOS.classList.add("on");
+        pillAndroid.classList.remove("on");
+        iosSteps.style.display = "block";
+        androidSteps.style.display = "none";
+      }
+      function showAndroid(){
+        pillAndroid.classList.add("on");
+        pillIOS.classList.remove("on");
+        androidSteps.style.display = "block";
+        iosSteps.style.display = "none";
+      }
+
+      btnAdd.addEventListener("click", showBox);
+      btnHow.addEventListener("click", showBox);
+      pillIOS.addEventListener("click", showIOS);
+      pillAndroid.addEventListener("click", showAndroid);
+    })();
   </script>
 </body>
 </html>
