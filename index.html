@@ -4258,7 +4258,9 @@ btnClear.onclick = () => {
       </div>
     `);
 
-    document.getElementById("btnClearCancel")?.addEventListener("click", closeModal);
+    document.getElementById("btnClearCancel")?.addEventListener("click", () => {
+       modalClose.click(); // 修正：直接關閉視窗
+    });
 
     document.getElementById("btnClearOK")?.addEventListener("click", () => {
       // 保留顯示設定（字級/自由瀏覽等）
@@ -4269,29 +4271,35 @@ btnClear.onclick = () => {
 
       // 2) 重新寫入「乾淨進度 + 保留 UI」
       try{
-        PROG = JSON.parse(JSON.stringify(defaultProgress));
+        PROG = JSON.parse(JSON.stringify(defaultProgress())); // 修正：確保呼叫函式
         if (keepUI) PROG.ui = keepUI;
       }catch(e){
-        PROG = { ...(defaultProgress||{}), ui: keepUI||((defaultProgress||{}).ui||{}) };
+        PROG = defaultProgress();
       }
 
-      // 強制覆寫一次，避免某些 WebView/私密模式寫入怪異
+      // 強制覆寫一次
       try { localStorage.setItem(LS_KEY, JSON.stringify(PROG)); } catch(e) {}
 
       // 立刻刷新 UI
       try {
-        renderChapterList();
-        showView(viewOverview);
+        renderOverview(); // ✅ 修正這裡：原本是 renderChapterList();
+        
+        // 更新標題並跳轉
+        topTitle.textContent = "孫子兵法";
+        topSub.textContent = "原書順序";
+        showView(viewOverview); 
+        
         showToast && showToast("✅ 已清空全部足跡");
-      } catch(e) {}
+      } catch(e) {
+        console.error(e);
+      }
 
-      closeModal();
+      modalClose.click(); // 關閉視窗
 
-      // 少數情況（LINE 內建瀏覽器/特殊快取）用 reload 才會真的刷新畫面
-      setTimeout(() => { try{ location.reload(); }catch(e){} }, 50);
+      // 少數情況用 reload 才會真的刷新畫面（保險起見）
+      // setTimeout(() => { try{ location.reload(); }catch(e){} }, 50);
     });
-  };
-  btnResetChapter && (btnResetChapter.onclick = (e) => { try{ e && e.stopPropagation && e.stopPropagation(); }catch(_e){}
+  };  btnResetChapter && (btnResetChapter.onclick = (e) => { try{ e && e.stopPropagation && e.stopPropagation(); }catch(_e){}
     openModal("本篇重置", `
       <div class="plain">只會把「目前篇章」的完成數歸零，其他篇不受影響。</div>
       <div class="plain">確定要重置本篇嗎？</div>
