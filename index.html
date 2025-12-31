@@ -4251,30 +4251,45 @@ if(viewGame.classList.contains("active") && mode === "test"){
   };
 btnClear.onclick = () => {
     openModal("清空足跡", `
-      <div class="plain">這會把所有篇章的進度全部歸零。</div>
-      <div class="plain">確定要清空嗎？</div>
-    `, `
-      <button class="btn" id="btnCancelClear">取消</button>
-      <button class="btn primary" id="btnConfirmClear">確定清空</button>
+      <div class="plain">這會把所有篇章的「進度」清空（不會重置字級/顯示設定）。</div>
+      <div class="modalActions">
+        <button class="btn ghost" id="btnClearCancel">取消</button>
+        <button class="btn danger" id="btnClearOK">確定清空</button>
+      </div>
     `);
-    setTimeout(() => {
-      const c = document.getElementById("btnCancelClear");
-      const y = document.getElementById("btnConfirmClear");
-      if(c) c.onclick = () => modalClose.click();
-      if(y) y.onclick = (ev) => { try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
-        modalClose.click();
-        stopReading();
-        PROG = defaultProgress();
-        saveProgress();
-        document.body.style.setProperty("--fontScale", String(PROG.fontScale));
-        currentChapterId = 1;
-        currentSegIndex = 0;
-        renderOverview();
-        topTitle.textContent = "孫子兵法";
-        topSub.textContent = "原書順序";
+
+    document.getElementById("btnClearCancel")?.addEventListener("click", closeModal);
+
+    document.getElementById("btnClearOK")?.addEventListener("click", () => {
+      // 保留顯示設定（字級/自由瀏覽等）
+      const keepUI = PROG && PROG.ui ? JSON.parse(JSON.stringify(PROG.ui)) : null;
+
+      // 1) 直接刪掉儲存（最乾淨）
+      try { localStorage.removeItem(LS_KEY); } catch(e) {}
+
+      // 2) 重新寫入「乾淨進度 + 保留 UI」
+      try{
+        PROG = JSON.parse(JSON.stringify(defaultProgress));
+        if (keepUI) PROG.ui = keepUI;
+      }catch(e){
+        PROG = { ...(defaultProgress||{}), ui: keepUI||((defaultProgress||{}).ui||{}) };
+      }
+
+      // 強制覆寫一次，避免某些 WebView/私密模式寫入怪異
+      try { localStorage.setItem(LS_KEY, JSON.stringify(PROG)); } catch(e) {}
+
+      // 立刻刷新 UI
+      try {
+        renderChapterList();
         showView(viewOverview);
-      };
-    }, 0);
+        showToast && showToast("✅ 已清空全部足跡");
+      } catch(e) {}
+
+      closeModal();
+
+      // 少數情況（LINE 內建瀏覽器/特殊快取）用 reload 才會真的刷新畫面
+      setTimeout(() => { try{ location.reload(); }catch(e){} }, 50);
+    });
   };
   btnResetChapter && (btnResetChapter.onclick = (e) => { try{ e && e.stopPropagation && e.stopPropagation(); }catch(_e){}
     openModal("本篇重置", `
@@ -4537,18 +4552,24 @@ function __resetCurrentChapterHard(){
 }
 
 function __clearAllProgressHard(){
-  const ok = confirm("確定要清空所有篇章的足跡紀錄嗎？\n（此動作不可復原）");
+  const ok = confirm("確定要清空所有篇章的足跡紀錄嗎？\n（不會重置字級與顯示設定）\n\n此動作不可復原。");
   if(!ok) return;
+
   try{
-    localStorage.removeItem(STORE_KEY);
-  }catch(_e){}
-  try{
-    // reset in-memory
-    PROG = JSON.parse(JSON.stringify(defaultProgress));
-  }catch(_e){}
-  saveProgress();
+    // 只清「足跡」：保留字級/顯示等設定
+    if(!PROG) loadProgress && loadProgress();
+    if(PROG && PROG.chapters) PROG.chapters = {};
+    // 也把目前頁面狀態帶回總覽
+    saveProgress();
+  }catch(_e){
+    // fallback：真的清掉整包（最後手段）
+    try{ localStorage.removeItem(LS_KEY); }catch(__e){}
+    try{ PROG = defaultProgress ? defaultProgress() : {}; }catch(__e){}
+    try{ saveProgress(); }catch(__e){}
+  }
+
   try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){ alert("已清空全部足跡"); }
-  showOverview();
+  renderOverview();
 }
 
 function __applyFreeNavOverride(){
@@ -4745,9 +4766,19 @@ document.addEventListener("change", function(ev){
 
   if(btnShowGuide){
     btnShowGuide.addEventListener('click', () => {
+      // 進入「步驟說明」模式：把上半部提示收起來，避免重複干擾
       guide.hidden = false;
+      try{
+        const card = btnShowGuide.closest('.a2hs-card');
+        const title = card && card.querySelector('.a2hs-title');
+        const text  = card && card.querySelector('.a2hs-text');
+        const topActions = btnShowGuide.closest('.a2hs-actions');
+        if (title) title.style.display = 'none';
+        if (text)  text.style.display  = 'none';
+        if (topActions) topActions.style.display = 'none';
+      }catch(_e){}
     });
-  }
+    }
 
   if(btnClose){
     btnClose.addEventListener('click', () => {
