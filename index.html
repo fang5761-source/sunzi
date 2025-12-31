@@ -905,132 +905,6 @@
 </head>
 
 <body style="--fontScale:1;">
-
-/* =========================
-   A2HS（加入主畫面捷徑）提示：不改 body 字級、不自動跳
-   ========================= */
-(function(){
-  const KEY = "sunzi_a2hs_dismissed_v1";
-  const overlay = document.getElementById("a2hsOverlay");
-  const btnOk = document.getElementById("btnA2HS_ok");
-  const btnLater = document.getElementById("btnA2HS_later");
-
-  if(!overlay || !btnOk || !btnLater) return;
-
-  function isStandalone(){
-    // iOS Safari（加入主畫面後）
-    if (window.navigator.standalone) return true;
-    // Android / 其他（PWA display-mode）
-    return window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
-  }
-
-  function showA2HS(){
-    overlay.style.display = "flex";
-  }
-
-  function hideA2HS(){
-    overlay.style.display = "none";
-  }
-
-  function rememberDismiss(){
-    try{ localStorage.setItem(KEY, "1"); }catch(_e){}
-  }
-
-  function alreadyDismissed(){
-    try{ return localStorage.getItem(KEY) === "1"; }catch(_e){ return false; }
-  }
-
-  // 只在「非捷徑模式」+「第一次」才顯示
-  window.addEventListener("load", () => {
-    if (isStandalone()) return;
-    if (alreadyDismissed()) return;
-
-    // 稍微延遲，避免一載入就跳出造成壓迫感
-    setTimeout(showA2HS, 500);
-  });
-
-  // 「好，我要加入捷徑」：不跳轉、不改畫面，只是讓使用者停在這裡看步驟
-  btnOk.addEventListener("click", () => {
-    rememberDismiss();
-    // 讓他自己照步驟做；做完可按「下次再說」進入
-    // 如果妳想按了就直接關掉也可以，把下面註解打開：
-    // hideA2HS();
-  });
-
-  // 「下次再說」：關掉並進入系統（不做任何縮放/字級調整）
-  btnLater.addEventListener("click", () => {
-    rememberDismiss();
-    hideA2HS();
-  });
-
-  // 點遮罩外側也視為「下次再說」
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay){
-      rememberDismiss();
-      hideA2HS();
-    }
-  });
-})();
-
-
-
-  <!-- 🔽 加在這裡（第一段） -->
-  <div id="addToHomeHint" class="ath-hint">
-    <div class="ath-box">
-      <h3>加入主畫面（捷徑）</h3>
-      <p>
-        將本系統加入主畫面後，可全畫面顯示，閱讀更清楚、開啟更快速。
-      </p>
-      <div class="ath-actions">
-        <button onclick="showAddGuide()">好，加入捷徑</button>
-        <button onclick="dismissHint()">下次再說</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="addGuide" class="ath-guide hidden">
-    <div class="ath-box">
-      <h3>如何加入主畫面捷徑</h3>
-      <ol>
-        <li>點擊瀏覽器下方「分享」按鈕</li>
-        <li>選擇「加入主畫面」</li>
-        <li>完成後即可像 App 一樣開啟</li>
-      </ol>
-      <button onclick="closeGuide()">我知道了</button>
-    </div>
-  </div>
-  <!-- 🔼 到這裡 -->
-
-  <!-- 你原本的系統，完全不動 -->
-  <div class="app safeTop safeBottom">
-
-<!-- 第二段：加入主畫面捷徑說明（預設隱藏） -->
-<div id="addGuide" class="ath-guide hidden">
-  <div class="ath-box">
-    <h3>加入主畫面（建立捷徑）</h3>
-
-    <p>
-      將本系統加入主畫面後，會以「全畫面」開啟，
-      沒有網址列，字體更清楚，像 App 一樣好閱讀。
-    </p>
-
-    <ol>
-      <li>點擊瀏覽器的「分享」按鈕</li>
-      <li>選擇「加入主畫面」</li>
-      <li>完成後，回到主畫面點擊圖示即可開啟</li>
-    </ol>
-
-    <p class="ath-note">
-      若現在不加入，之後可到「設定」頁查看加入步驟。
-    </p>
-
-    <div class="ath-actions">
-      <button onclick="closeGuide()">我知道了</button>
-    </div>
-  </div>
-</div>
-
-
   <div class="app safeTop safeBottom">
 
     <div class="topbar">
@@ -4715,120 +4589,196 @@ document.addEventListener("change", function(ev){
 }, true);
 
 </script>
-<script>
-(function () {
-  // === 基本判斷 ===
-  const isStandalone =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true;
 
-  // 已加入主畫面，就不要再顯示
-  if (isStandalone) return;
+<!-- ✅ 加入主畫面（捷徑）｜A2HS 引導（iOS/Android） -->
+<div id="a2hsMask" class="a2hs-mask" aria-hidden="true">
+  <div class="a2hs-card" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
+    <div class="a2hs-title" id="a2hsTitle">要把「孫子兵法背誦」加到主畫面嗎？</div>
+    <div class="a2hs-text">
+      加入後會「全畫面」開啟，字更清楚、像 App 一樣一點就進來。<br>
+      這只是建立「捷徑」，不是安裝程式，請放心。
+    </div>
 
-  // 已選擇「下次再說」，本次不再顯示
-  if (localStorage.getItem('sunzi_add_home_dismissed') === 'yes') return;
+    <div class="a2hs-actions">
+      <button class="a2hs-btn a2hs-secondary" id="a2hsSkip">先看看</button>
+      <button class="a2hs-btn a2hs-primary" id="a2hsShowGuide">查看加入方式</button>
+    </div>
 
-  // === 建立提示層 ===
-  const box = document.createElement('div');
-  box.id = 'addToHomeHint';
-  box.innerHTML = `
-    <div class="ath-card">
-      <div class="ath-title">建議加入主畫面（捷徑）</div>
-      <div class="ath-text">
-        加入主畫面後，<br>
-        ✔ 全畫面顯示<br>
-        ✔ 字體更清楚、好閱讀<br>
-        ✔ 像 App 一樣一點就開
-        <br><br>
-        這只是建立「捷徑」，<br>
-        不是安裝程式，請放心。
+    <div class="a2hs-guide" id="a2hsGuide" hidden>
+      <div class="a2hs-guideTitle">iPhone（Safari）</div>
+      <div class="a2hs-steps">
+        1. 點下方「分享」按鈕（方框上箭頭）<br>
+        2. 往下滑找「加入主畫面」<br>
+        3. 右上角按「加入」
       </div>
-      <div class="ath-actions">
-        <button id="athLater">下次再說</button>
-        <button id="athHelp">加入方式</button>
+
+      <div class="a2hs-guideTitle" style="margin-top:10px;">Android（Chrome）</div>
+      <div class="a2hs-steps">
+        1. 點右上角「⋮」<br>
+        2. 選「加入主畫面」或「安裝應用程式」<br>
+        3. 依提示按「新增／加入」
+      </div>
+
+      <div class="a2hs-note">
+        之後若想再看步驟：到「設定」→「加入主畫面（捷徑）」即可。
+      </div>
+
+      <div class="a2hs-actions" style="margin-top:12px;">
+        <button class="a2hs-btn a2hs-secondary" id="a2hsClose">我知道了</button>
       </div>
     </div>
-  `;
-  document.body.appendChild(box);
+  </div>
+</div>
 
-  // === 行為 ===
-  document.getElementById('athLater').onclick = () => {
-    localStorage.setItem('sunzi_add_home_dismissed', 'yes');
-    box.remove();
-  };
+<style>
+  .a2hs-mask{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.62);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:99999;
+    padding:14px;
+  }
+  .a2hs-card{
+    width:min(420px, 92vw);
+    background:#151b16;
+    color:#e9efe9;
+    border-radius:16px;
+    padding:16px 16px 14px;
+    box-shadow:0 0 28px rgba(0,0,0,.55);
+    border:1px solid rgba(214,178,94,.18);
+  }
+  .a2hs-title{
+    font-size:16px;
+    color:#d6b25e;
+    margin-bottom:10px;
+    line-height:1.35;
+  }
+  .a2hs-text{
+    font-size:14px;
+    line-height:1.7;
+    color:#e9efe9;
+    margin-bottom:12px;
+  }
+  .a2hs-actions{
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+    margin-top:6px;
+  }
+  .a2hs-btn{
+    border:none;
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14px;
+    cursor:pointer;
+    flex:1;
+  }
+  .a2hs-primary{ background:#d6b25e; color:#000; }
+  .a2hs-secondary{ background:#2b3a2f; color:#e9efe9; }
 
-  document.getElementById('athHelp').onclick = () => {
-    alert(
-      '📱 加入主畫面方式：\n\n' +
-      'iPhone：\n' +
-      '1. 點下方「分享」\n' +
-      '2. 選「加入主畫面」\n\n' +
-      'Android：\n' +
-      '1. 點右上角 ⋮\n' +
-      '2. 選「加入主畫面」\n\n' +
-      '之後也可在「設定」中再次查看說明。'
-    );
-  };
+  .a2hs-guide{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid rgba(233,239,233,.12);
+  }
+  .a2hs-guideTitle{
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .a2hs-steps{
+    font-size:13px;
+    line-height:1.8;
+    color:#e9efe9;
+    background:#1b241d;
+    border:1px solid rgba(233,239,233,.10);
+    padding:10px 12px;
+    border-radius:12px;
+  }
+  .a2hs-note{
+    margin-top:10px;
+    font-size:12.5px;
+    color:#aab6aa;
+    line-height:1.6;
+  }
+</style>
 
-  // === 樣式 ===
-  const style = document.createElement('style');
-  style.textContent = `
-    #addToHomeHint {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    .ath-card {
-      background: #151b16;
-      color: #e9efe9;
-      padding: 18px;
-      width: 86%;
-      max-width: 320px;
-      border-radius: 14px;
-      text-align: center;
-      box-shadow: 0 0 20px rgba(0,0,0,.5);
-      font-size: 15px;
-    }
-    .ath-title {
-      font-size: 17px;
-      margin-bottom: 10px;
-      color: #d6b25e;
-    }
-    .ath-text {
-      line-height: 1.6;
-      margin-bottom: 14px;
-    }
-    .ath-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-    .ath-actions button {
-      flex: 1;
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    #athLater {
-      background: #2b3a2f;
-      color: #e9efe9;
-    }
-    #athHelp {
-      background: #d6b25e;
-      color: #000;
-    }
-  `;
-  document.head.appendChild(style);
+<script>
+(function(){
+  const KEY = 'sunzi_a2hs_dismissed_v1';
+
+  const isStandalone =
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+    window.navigator.standalone === true;
+
+  const mask = document.getElementById('a2hsMask');
+  const guide = document.getElementById('a2hsGuide');
+  const btnSkip = document.getElementById('a2hsSkip');
+  const btnShowGuide = document.getElementById('a2hsShowGuide');
+  const btnClose = document.getElementById('a2hsClose');
+
+  function openPrompt(force=false){
+    if(!mask) return;
+    if(isStandalone) return;
+    if(!force && localStorage.getItem(KEY) === 'yes') return;
+
+    // reset
+    guide.hidden = true;
+    mask.style.display = 'flex';
+    mask.setAttribute('aria-hidden','false');
+  }
+
+  function closePrompt(){
+    if(!mask) return;
+    mask.style.display = 'none';
+    mask.setAttribute('aria-hidden','true');
+  }
+
+  if(btnSkip){
+    btnSkip.addEventListener('click', () => {
+      // 不再自動跳出，但仍可在「設定」中查看
+      localStorage.setItem(KEY,'yes');
+      closePrompt();
+    });
+  }
+
+  if(btnShowGuide){
+    btnShowGuide.addEventListener('click', () => {
+      guide.hidden = false;
+    });
+  }
+
+  if(btnClose){
+    btnClose.addEventListener('click', () => {
+      localStorage.setItem(KEY,'yes');
+      closePrompt();
+    });
+  }
+
+  // 點遮罩外側關閉（不強迫）
+  if(mask){
+    mask.addEventListener('click', (e) => {
+      if(e.target === mask){
+        localStorage.setItem(KEY,'yes');
+        closePrompt();
+      }
+    });
+  }
+
+  // 設定頁入口
+  const btnInSettings = document.getElementById('btnA2HSOpen');
+  if(btnInSettings){
+    btnInSettings.addEventListener('click', () => openPrompt(true));
+  }
+
+  // 第一次開啟才提示：不自動跳轉、也不會強迫安裝
+  window.addEventListener('load', () => {
+    setTimeout(() => openPrompt(false), 350);
+  });
+
 })();
 </script>
-
-
 
 </body>
 </html>
