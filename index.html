@@ -905,6 +905,65 @@
 </head>
 
 <body style="--fontScale:1;">
+<body style="--fontScale:1;">
+
+  <!-- 🔽 加在這裡（第一段） -->
+  <div id="addToHomeHint" class="ath-hint">
+    <div class="ath-box">
+      <h3>加入主畫面（捷徑）</h3>
+      <p>
+        將本系統加入主畫面後，可全畫面顯示，閱讀更清楚、開啟更快速。
+      </p>
+      <div class="ath-actions">
+        <button onclick="showAddGuide()">好，加入捷徑</button>
+        <button onclick="dismissHint()">下次再說</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addGuide" class="ath-guide hidden">
+    <div class="ath-box">
+      <h3>如何加入主畫面捷徑</h3>
+      <ol>
+        <li>點擊瀏覽器下方「分享」按鈕</li>
+        <li>選擇「加入主畫面」</li>
+        <li>完成後即可像 App 一樣開啟</li>
+      </ol>
+      <button onclick="closeGuide()">我知道了</button>
+    </div>
+  </div>
+  <!-- 🔼 到這裡 -->
+
+  <!-- 你原本的系統，完全不動 -->
+  <div class="app safeTop safeBottom">
+
+<!-- 第二段：加入主畫面捷徑說明（預設隱藏） -->
+<div id="addGuide" class="ath-guide hidden">
+  <div class="ath-box">
+    <h3>加入主畫面（建立捷徑）</h3>
+
+    <p>
+      將本系統加入主畫面後，會以「全畫面」開啟，
+      沒有網址列，字體更清楚，像 App 一樣好閱讀。
+    </p>
+
+    <ol>
+      <li>點擊瀏覽器的「分享」按鈕</li>
+      <li>選擇「加入主畫面」</li>
+      <li>完成後，回到主畫面點擊圖示即可開啟</li>
+    </ol>
+
+    <p class="ath-note">
+      若現在不加入，之後可到「設定」頁查看加入步驟。
+    </p>
+
+    <div class="ath-actions">
+      <button onclick="closeGuide()">我知道了</button>
+    </div>
+  </div>
+</div>
+
+
   <div class="app safeTop safeBottom">
 
     <div class="topbar">
@@ -4589,6 +4648,120 @@ document.addEventListener("change", function(ev){
 }, true);
 
 </script>
+<script>
+(function () {
+  // === 基本判斷 ===
+  const isStandalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  // 已加入主畫面，就不要再顯示
+  if (isStandalone) return;
+
+  // 已選擇「下次再說」，本次不再顯示
+  if (localStorage.getItem('sunzi_add_home_dismissed') === 'yes') return;
+
+  // === 建立提示層 ===
+  const box = document.createElement('div');
+  box.id = 'addToHomeHint';
+  box.innerHTML = `
+    <div class="ath-card">
+      <div class="ath-title">建議加入主畫面（捷徑）</div>
+      <div class="ath-text">
+        加入主畫面後，<br>
+        ✔ 全畫面顯示<br>
+        ✔ 字體更清楚、好閱讀<br>
+        ✔ 像 App 一樣一點就開
+        <br><br>
+        這只是建立「捷徑」，<br>
+        不是安裝程式，請放心。
+      </div>
+      <div class="ath-actions">
+        <button id="athLater">下次再說</button>
+        <button id="athHelp">加入方式</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(box);
+
+  // === 行為 ===
+  document.getElementById('athLater').onclick = () => {
+    localStorage.setItem('sunzi_add_home_dismissed', 'yes');
+    box.remove();
+  };
+
+  document.getElementById('athHelp').onclick = () => {
+    alert(
+      '📱 加入主畫面方式：\n\n' +
+      'iPhone：\n' +
+      '1. 點下方「分享」\n' +
+      '2. 選「加入主畫面」\n\n' +
+      'Android：\n' +
+      '1. 點右上角 ⋮\n' +
+      '2. 選「加入主畫面」\n\n' +
+      '之後也可在「設定」中再次查看說明。'
+    );
+  };
+
+  // === 樣式 ===
+  const style = document.createElement('style');
+  style.textContent = `
+    #addToHomeHint {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .ath-card {
+      background: #151b16;
+      color: #e9efe9;
+      padding: 18px;
+      width: 86%;
+      max-width: 320px;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0,0,0,.5);
+      font-size: 15px;
+    }
+    .ath-title {
+      font-size: 17px;
+      margin-bottom: 10px;
+      color: #d6b25e;
+    }
+    .ath-text {
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .ath-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .ath-actions button {
+      flex: 1;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #athLater {
+      background: #2b3a2f;
+      color: #e9efe9;
+    }
+    #athHelp {
+      background: #d6b25e;
+      color: #000;
+    }
+  `;
+  document.head.appendChild(style);
+})();
+</script>
+
+
 
 </body>
 </html>
