@@ -3385,7 +3385,7 @@ const btnClear = document.getElementById("btnClear");
 
   function restoreNonSettingsView(){
     const target = nav.lastNonSettingsView;
-    currentChapterId = nav.chapterId;
+    currentChapterId = Number(nav.chapterId)||1;
     currentSegIndex = nav.segIndex;
     mode = nav.mode;
     testRange = {...nav.testRange};
@@ -3528,9 +3528,22 @@ const btnClear = document.getElementById("btnClear");
   }
 
   btnStart.onclick = () => {
-    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    // ✅ 防呆：避免某些手機瀏覽器在「清空/返回」後，chapterId 變成字串導致找不到章節
+    let ch = CHAPTERS.find(x => x.id===currentChapterId);
+    if(!ch){
+      currentChapterId = Number(currentChapterId)||1;
+      ch = CHAPTERS.find(x => x.id===currentChapterId);
+    }
     const p = getChapterProg(currentChapterId);
-    currentSegIndex = Math.min(p.stars || 0, ch.segments.length-1);
+
+    // 找不到章節就直接從頭進（避免卡死）
+    if(!ch || !ch.segments || !ch.segments.length){
+      currentSegIndex = 0;
+      startLearnSegment(0, { firstEntry:true });
+      return;
+    }
+
+    currentSegIndex = Math.min((p.stars || 0), ch.segments.length-1);
     startLearnSegment(currentSegIndex, { firstEntry:true });
   };
 
@@ -4326,6 +4339,7 @@ btnClear.onclick = () => {
       }catch(_e){}
       try{ renderOverview(); }catch(_e){}
       try{ showView(viewOverview); }catch(_e){}
+      try{ nav.lastNonSettingsView = "overview"; nav.chapterId = 1; nav.segIndex = 0; nav.mode = "learn"; }catch(_e){}
       try{ syncSettingsUI && syncSettingsUI(); }catch(_e){}
       try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){ try{ alert("已清空全部足跡"); }catch(__){} }
 modalClose.click(); // 關閉視窗
