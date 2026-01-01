@@ -3591,8 +3591,6 @@ const btnClear = document.getElementById("btnClear");
   showPlainSwitch.onclick = () => {
     PROG.showPlainDefault = !PROG.showPlainDefault;
     saveProgress();
-        try{ showToast && showToast('✅ 已重置本篇進度'); }catch(_e){}catch(__){} }
-
     showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
     openChapterHome();
   };
@@ -4212,7 +4210,6 @@ btnPrev.disabled = (testCursor <= testRange.start);
    * ✅浮動測驗鈕（不佔空間）
    ***********************/
   function refreshFloatTestButton(){ /* 已改為上方工具列測驗鈕，避免遮到令牌 */ }
-  }
 
   function beginTest(s,e){
     stopReading();
@@ -4283,10 +4280,6 @@ btnPrev.disabled = (testCursor <= testRange.start);
 
   floatTestBtn.onclick = () => openTestPicker();
   if(btnTestTop){ btnTestTop.onclick = () => openTestPicker(); }
-
-    },0);
-  };
-
   /***********************
    * HINT TOGGLE
    ***********************/
@@ -4644,7 +4637,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
       const p = getChapterProg(chId);
       p.stars = 0;
       saveProgress();
-      try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){}`); }
+      try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){}
       currentSegIndex = 0;
       openChapterHome();
     }catch(e){
@@ -4684,7 +4677,7 @@ function __resetCurrentChapterHard(){
   const p = getChapterProg(currentChapterId);
   p.stars = 0;
   saveProgress();
-  try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){}`); }
+  try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){}
   currentSegIndex = 0;
   openChapterHome();
 }
