@@ -785,6 +785,9 @@
       border-top:1px solid rgba(255,255,255,.06);
       background: rgba(21,27,22,.88);
     }
+
+    /* ✅ A2HS 教學視窗：讓「我知道了」更小、更靠右，避免擋視線 */
+    #modal.a2hs #a2hsOk{ padding:8px 12px; min-width:0; font-size:14px; }
     .modalActions .btn{ height:42px; }
 
     /* ✅select 樣式（避免某些瀏覽器套用奇怪字體/顏色） */
@@ -3382,6 +3385,32 @@ freeNav: false,
 
   const slots = document.getElementById("slots");
   const tokensEl = document.getElementById("tokens");
+  // ✅iOS Safari（非捷徑）底部工具列會吃掉貼近底部的點擊：建立「底部安全帶」並在需要時自動把畫面往上推
+  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = !!(window.navigator.standalone) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  const DEAD_BAND = (isiOS && !isStandalone) ? 96 : 0; // 非捷徑 iOS 才需要（約等於底部工具列/手勢區）
+
+  const gameWrapEl = document.querySelector('.gameWrap');
+  const tokensPanelEl = document.querySelector('.tokensPanel');
+
+  function ensureBottomSafe(){
+    try{
+      if(!DEAD_BAND) return;
+      if(!gameWrapEl || !tokensPanelEl) return;
+
+      const rect = tokensPanelEl.getBoundingClientRect();
+      const limit = window.innerHeight - (DEAD_BAND + 10);
+
+      if(rect.bottom > limit){
+        const delta = Math.min(220, Math.max(0, rect.bottom - limit));
+        gameWrapEl.scrollTop += (delta + 6);
+      }
+    }catch(_e){}
+  }
+
+  // 初次載入與旋轉螢幕時也補一次
+  window.addEventListener('resize', ()=>{ setTimeout(ensureBottomSafe, 60); }, {passive:true});
+
   const hintSwitch = document.getElementById("hintSwitch");
   const freeNavSwitch = document.getElementById("freeNavSwitch");
   const hintToggleWrap = document.getElementById("hintToggleWrap");
@@ -3887,6 +3916,8 @@ const btnClear = document.getElementById("btnClear");
       const b = document.getElementById("resetChBtn");
       if(a) a.onclick = () => {
         modal.classList.remove("show");
+    modal.classList.remove("a2hs");
+
         restartCurrent();
         // 完成後若提示開啟，給一次提示閃爍
         try{ if(PROG.hintOn) flashHintTimes(1); }catch(_e){}
@@ -3937,6 +3968,7 @@ function bindFastTap(el, handler){
 
     let activePointerId = null;
     let lastFire = 0;
+    let lastPointerDown = 0;
 
     const fireOnce = (ev) => {
       const now = Date.now();
@@ -3945,12 +3977,14 @@ function bindFastTap(el, handler){
       try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
       try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
       handler();
+      try{ ensureBottomSafe(); }catch(_e){}
     };
 
     const onDown = (ev) => {
       // 同一次觸控，只觸發一次
       if(activePointerId !== null) return;
       activePointerId = ev && (ev.pointerId ?? 1);
+      lastPointerDown = Date.now();
       try{ el.setPointerCapture && ev && el.setPointerCapture(ev.pointerId); }catch(_e){}
       fireOnce(ev);
     };
@@ -3965,7 +3999,8 @@ function bindFastTap(el, handler){
 
     // Click 後援（桌機）
     el.addEventListener('click', (ev)=>{
-      // 若剛剛已由 pointerdown 觸發，click 會被防抖擋掉
+      // 手機上 pointerdown 後仍可能補一個 click；若剛剛有 pointerdown，就直接忽略 click
+      if(Date.now() - lastPointerDown < 900) return;
       fireOnce(ev);
     }, {passive:false});
   }
@@ -3994,6 +4029,7 @@ function bindFastTap(el, handler){
           pool.push(t);
           renderBoard();
           applyHint();
+    try{ ensureBottomSafe(); }catch(_e){}
         });
         slots.appendChild(el);
       });
@@ -4658,9 +4694,9 @@ if (typeof btnNext !== "undefined" && btnNext) {
           之後若想再看步驟：到「設定」→「加入主畫面（捷徑）」即可。
         </div>`;
       openModal("加入主畫面（捷徑）", html, `
-        <button class="btn" id="a2hsLater">先看看</button>
         <button class="btn primary" id="a2hsOk">我知道了</button>
       `);
+      try{ const m=document.getElementById("modal"); if(m) m.classList.add("a2hs"); }catch(_e){}
       setTimeout(()=>{
         const later = document.getElementById('a2hsLater');
         const ok = document.getElementById('a2hsOk');
