@@ -4127,23 +4127,21 @@ btnPrev.disabled = (testCursor <= testRange.start);
   }
 
     modalClose.onclick = () => {
+    // 關閉視窗
     modal.classList.remove("show");
-// ✅保險：如果剛剛在測驗中關閉視窗，確保仍可繼續佈令
-if(viewGame.classList.contains("active") && mode === "test"){
-  mode = "learn";
-  startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
-}
 
-
+    // 清空 actions
     modalActions.style.display = "none";
     modalActions.innerHTML = "";
 
-    // ✅如果剛剛在「測驗模式」，關掉視窗就回到「學習模式」
-    if(mode === "test"){
-      mode = "learn";
-      startLearnSegment(currentSegIndex, { firstEntry:false }); // 回到當前段佈令
-      syncLearnUnlock(); // 恢復「下一關 / 兵書」狀態
-    }
+    // ✅保險：只在「佈令畫面」且剛好在「測驗模式」時，才做復原
+    try{
+      if(viewGame.classList.contains("active") && mode === "test"){
+        mode = "learn";
+        startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
+        syncLearnUnlock(); // 恢復「下一關 / 兵書」狀態
+      }
+    }catch(_e){}
   };
 
   modal.onclick = (e) => { if(e.target === modal) modalClose.click(); };
@@ -4342,7 +4340,8 @@ btnClear.onclick = () => {
       try{ nav.lastNonSettingsView = "overview"; nav.chapterId = 1; nav.segIndex = 0; nav.mode = "learn"; }catch(_e){}
       try{ syncSettingsUI && syncSettingsUI(); }catch(_e){}
       try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){ try{ alert("已清空全部足跡"); }catch(__){} }
-modalClose.click(); // 關閉視窗
+try{ mode = "learn"; }catch(_e){}
+      modalClose.click(); // 關閉視窗
 
       // 少數情況用 reload 才會真的刷新畫面（保險起見）
       // setTimeout(() => { try{ location.reload(); }catch(e){} }, 50);
@@ -4713,13 +4712,6 @@ document.addEventListener("change", function(ev){
     const btn = document.getElementById('btnA2HSOpen');
     if(btn){
       btn.addEventListener('click', ()=> showGuide(true));
-    }
-  });
-
-  // 第一次開啟提示（非捷徑/非PWA才出現）
-  window.addEventListener('load', ()=>{
-    if(shouldPrompt()){
-      setTimeout(()=> showGuide(false), 350);
     }
   });
 })();
