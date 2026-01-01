@@ -614,6 +614,10 @@
       display:inline-flex;
       align-items:center;
       cursor:pointer;
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
       min-height: 44px;
       padding: 10px 12px;
       border-radius: 12px;
@@ -667,8 +671,9 @@
 
     .floatTestBtn{
       position: fixed;
-      right: 14px;
-      bottom: calc(14px + env(safe-area-inset-bottom));
+      left: 12px;
+      right: auto;
+      bottom: calc(env(safe-area-inset-bottom) + 14px);
       z-index: 50;
       display:none;
       height: 44px;
@@ -694,7 +699,7 @@
       display:none;
       align-items:center;
       justify-content:center;
-      padding: 18px 12px;
+      padding: calc(18px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));
       z-index:99;
     }
     .modal.show{ display:flex; }
@@ -765,7 +770,7 @@
     .modalActions{
       display:flex;
       gap:8px;
-      padding:12px;
+      padding:12px 12px calc(12px + env(safe-area-inset-bottom));
       border-top:1px solid rgba(255,255,255,.06);
     }
     .modalActions .btn{ height:42px; }
@@ -3910,30 +3915,46 @@ function vibrateSoft(){
 
 function bindFastTap(el, handler){
     if(!el) return;
-    // iOS Safari / LINE 內建瀏覽器：減少點擊遲鈍、避免需要連點
-    let last = 0;
-    const fire = (ev) => {
+
+    // ✅手機瀏覽器「連發」的根因：同時綁了 pointerdown / pointerup / touchstart / touchend
+    // 會讓同一次觸控觸發 2~4 次。
+    // 這裡改成：
+    // 1) 以 pointerdown 為主（最靈敏）
+    // 2) 同一個 pointerId 只允許觸發一次
+    // 3) click 當最後保險（桌機/少數環境）
+
+    let activePointerId = null;
+    let lastFire = 0;
+
+    const fireOnce = (ev) => {
       const now = Date.now();
-      if(now - last < 180) return; // 防止 click + pointer 連發
-      last = now;
-      try{ ev && ev.preventDefault && ev.preventDefault(); }catch(_e){}
+      if(now - lastFire < 220) return; // 防抖：避免極端情境（某些瀏覽器會再補一個 click）
+      lastFire = now;
+      try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
       try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
       handler();
     };
-    // Pointer events 優先（用 pointerdown 提升手機瀏覽器點擊成功率）
-    el.addEventListener('pointerdown', fire, {passive:false});
-    // 某些情境 pointerdown 可能被吃掉，保留 pointerup 當後援
-    el.addEventListener('pointerup', fire, {passive:false});
-    // iOS/安卓：補 touchstart/touchend
-    el.addEventListener('touchstart', fire, {passive:false});
-    el.addEventListener('touchend', fire, {passive:false});
-    // click 當後援
+
+    const onDown = (ev) => {
+      // 同一次觸控，只觸發一次
+      if(activePointerId !== null) return;
+      activePointerId = ev && (ev.pointerId ?? 1);
+      try{ el.setPointerCapture && ev && el.setPointerCapture(ev.pointerId); }catch(_e){}
+      fireOnce(ev);
+    };
+
+    const release = () => { activePointerId = null; };
+
+    // Pointer events
+    el.addEventListener('pointerdown', onDown, {passive:false});
+    el.addEventListener('pointerup', release, {passive:true});
+    el.addEventListener('pointercancel', release, {passive:true});
+    el.addEventListener('lostpointercapture', release, {passive:true});
+
+    // Click 後援（桌機）
     el.addEventListener('click', (ev)=>{
-      const now = Date.now();
-      if(now - last < 180) return;
-      last = now;
-      try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
-      handler();
+      // 若剛剛已由 pointerdown 觸發，click 會被防抖擋掉
+      fireOnce(ev);
     }, {passive:false});
   }
 
