@@ -710,6 +710,11 @@
       border:1px solid rgba(255,255,255,.10);
       box-shadow: 0 24px 60px rgba(0,0,0,.55);
       overflow:hidden;
+
+      /* ✅ 讓彈窗永遠露出「標題列＋按鈕列」，內容再去捲動 */
+      max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      display:flex;
+      flex-direction:column;
     }
     .modalHead{
       padding:12px 12px 10px;
@@ -743,7 +748,11 @@
       display:flex;
       flex-direction:column;
       gap:10px;
-      max-height: 72vh;
+
+      /* ✅ 改為由 modalCard 控制高度，body 佔滿剩餘並可捲動 */
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
       overflow:auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
@@ -768,10 +777,12 @@
       white-space: pre-wrap;
     }
     .modalActions{
+      padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
       display:flex;
       gap:8px;
-      padding:12px 12px calc(12px + env(safe-area-inset-bottom));
+      justify-content:flex-end;
       border-top:1px solid rgba(255,255,255,.06);
+      background: rgba(21,27,22,.88);
     }
     .modalActions .btn{ height:42px; }
 
@@ -932,6 +943,9 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
+
+    /* ✅ 測驗按鈕改放到上方工具列（不再浮動干擾令牌） */
+    .topActions #floatTestBtn{ position: static !important; inset:auto !important; box-shadow:none; }
 </style>
 </head>
 
@@ -945,7 +959,8 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
           <div class="subtitle" id="topSub">原書順序</div>
         </div>
         <div class="topActions">
-          <button class="pillBtn primary" id="btnOverview">總覽</button>
+                    <button class="pillBtn" id="floatTestBtn">測驗</button>
+<button class="pillBtn primary" id="btnOverview">總覽</button>
           <button class="pillBtn" id="btnBackOrSettings">設定</button>
         </div>
       </div>
@@ -1136,10 +1151,6 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 
   </div>
 </div>
-
-
-<button class="floatTestBtn" id="floatTestBtn">測驗</button>
-
     <div class="modal" id="modal">
       <div class="modalCard">
         <div class="modalHead">
