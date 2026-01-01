@@ -3664,7 +3664,25 @@ if (typeof btnNext !== "undefined" && btnNext) {
     showView(viewOverview);
   }
 
-  init();
+  // ✅ fixed20：啟動保護罩，避免任何單一 DOM/事件錯誤讓整頁只剩頂欄（俗稱「惡夢」）
+  try{
+    init();
+  }catch(err){
+    console.error("[init crash]", err);
+    try{
+      // 最低限度：至少把「總覽」顯示出來，讓使用者還能進入篇章
+      const vO = document.getElementById("viewOverview");
+      const vG = document.getElementById("viewGame");
+      const vS = document.getElementById("viewSettings");
+      if(vG) vG.style.display="none";
+      if(vS) vS.style.display="none";
+      if(vO) vO.style.display="block";
+    }catch(_e){}
+    try{
+      // 若 toast 工具可用，給一個提示（不阻斷操作）
+      if(typeof showToast==="function") showToast("已自動回復到總覽（偵測到初始化錯誤）");
+    }catch(_e){}
+  }
 })();
 </script>
 <script>
