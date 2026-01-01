@@ -60,19 +60,14 @@
   border-radius:1rem;
   background:rgba(0,0,0,.18);
   color:rgba(233,239,233,.9);
+
+/* ===== v5.8 toolbar one-line (icons) ===== */
+.toolbar.toolbarOneLine{ flex-wrap:nowrap; }
+.toolbtn.iconOnly{ gap:0; padding:.45rem .55rem; min-width:40px; justify-content:center; }
+.toolbtn.iconOnly:active{ transform: translateY(1px); }
+.toolSep{ width:1px; height:22px; background: var(--line); opacity:.75; margin:0 .1rem; border-radius:999px; }
+.navText.navInline{ min-width:60px; text-align:center; }
 }
-
-/* fixed21: 單排工具列（🔊 ♻️ 📜 ◀ 2/19 ▶） */
-.toolbarWrap{flex-direction:row; gap:0;}
-.toolbar.toolbarOneLine{display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap;}
-.toolbtn.iconOnly{padding:.55rem .7rem;}
-.toolbtn.iconOnly .icon{font-size:18px; line-height:1;}
-.toolbtn.iconOnly span:not(.icon){display:none;}
-.toolbarSpacer{flex:1 1 auto;}
-
-/* fixed21: 避開 Safari 底部工具列吃點擊區（不推畫面，只留安全緩衝空間） */
-.gameWrap{padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 120px) !important;}
-.tokensPanel{padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 120px) !important;}
 /* Bottom sheet */
 #moreSheetBack{
   position:fixed; inset:0;
@@ -122,7 +117,7 @@
       --token2:#1a221b;
 
       --glowStrong: 0 0 1.15rem rgba(255,225,140,.95), 0 0 2.1rem rgba(255,225,140,.65);
-      --glowBook: 0 0 .55rem rgba(214,178,94,.40), 0 0 1.35rem rgba(214,178,94,.18);
+      --glowBook: 0 0 .75rem rgba(214,178,94,.58), 0 0 1.85rem rgba(214,178,94,.34);
       --glowMid:    0 0 0.85rem rgba(255,225,140,.75), 0 0 1.45rem rgba(255,225,140,.45);
       --glowWeak:   0 0 0.55rem rgba(255,225,140,.55), 0 0 0.95rem rgba(255,225,140,.30);
 
@@ -491,8 +486,8 @@
     .miniBtn.book{
   border-color: rgba(214,178,94,.35);
   box-shadow:
-    0 0 14px rgba(214,178,94,.62),
-    0 0 28px rgba(214,178,94,.32);
+    0 0 16px rgba(214,178,94,.62),
+    0 0 34px rgba(214,178,94,.34);
 }
 
     .miniBtn.primary{
@@ -797,9 +792,6 @@
       border-top:1px solid rgba(255,255,255,.06);
       background: rgba(21,27,22,.88);
     }
-
-    /* ✅ A2HS 教學視窗：讓「我知道了」更小、更靠右，避免擋視線 */
-    #modal.a2hs #a2hsOk{ padding:8px 12px; min-width:0; font-size:14px; }
     .modalActions .btn{ height:42px; }
 
     /* ✅select 樣式（避免某些瀏覽器套用奇怪字體/顏色） */
@@ -1033,20 +1025,19 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
             </div>
             
             <div class="toolbarWrap">
-  <div class="toolbar toolbarOneLine">
-    <button class="toolbtn iconOnly" id="btnSegRead" aria-label="朗讀"><span class="icon">🔊</span></button>
-    <button class="toolbtn iconOnly" id="btnReset" aria-label="重整"><span class="icon">♻</span></button>
-    <button class="toolbtn iconOnly book" id="btnBook" aria-label="兵書"><span class="icon">📜</span></button>
+              <div class="toolbar toolbarOneLine" id="gameToolbar">
+                <button class="toolbtn iconOnly" id="btnSegRead" aria-label="朗讀" title="朗讀">🔊</button>
+                <button class="toolbtn iconOnly" id="btnReset" aria-label="重整" title="重整">♻️</button>
+                <button class="toolbtn iconOnly book" id="btnBook" aria-label="兵書" title="兵書">📜</button>
 
-    <div class="toolbarSpacer"></div>
+                <span class="toolSep" aria-hidden="true"></span>
 
-    <button class="toolbtn mini" id="btnPrev" aria-label="上一關">◀</button>
-    <div class="navText" id="navText" aria-label="進度">1/1</div>
-    <button class="toolbtn mini primary" id="btnNext" aria-label="下一關" disabled>▶</button>
-  </div>
-</div>
-
-          <div class="board">
+                <button class="toolbtn iconOnly mini" id="btnPrev" aria-label="上一關" title="上一關">◀</button>
+                <div class="navText navInline" id="navText">1/1</div>
+                <button class="toolbtn iconOnly mini primary" id="btnNext" aria-label="下一關" title="下一關" disabled>▶</button>
+              </div>
+            </div>
+<div class="board">
             <div class="boardHead">
               <div class="boardTitle">
                 <span id="boardTitle">佈令板</span>
@@ -3396,15 +3387,996 @@ freeNav: false,
 
   const slots = document.getElementById("slots");
   const tokensEl = document.getElementById("tokens");
-  // ✅iOS Safari（非捷徑）底部工具列會吃掉貼近底部的點擊：建立「底部安全帶」並在需要時自動把畫面往上推
-  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const isStandalone = !!(window.navigator.standalone) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-  const DEAD_BAND = (isiOS && !isStandalone) ? 96 : 0; // 非捷徑 iOS 才需要（約等於底部工具列/手勢區）
+  const hintSwitch = document.getElementById("hintSwitch");
+  const freeNavSwitch = document.getElementById("freeNavSwitch");
+  const hintToggleWrap = document.getElementById("hintToggleWrap");
 
-  const gameWrapEl = document.querySelector('.gameWrap');
-  const tokensPanelEl = document.querySelector('.tokensPanel');
+  const floatTestBtn = document.getElementById("floatTestBtn");
 
-  function ensureBottomSafe(){ /* fixed21: no-op */ }
+  const modal = document.getElementById("modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = document.getElementById("modalBody");
+  const modalClose = document.getElementById("modalClose");
+  const modalActions = document.getElementById("modalActions");
+
+  const fontRange = document.getElementById("fontRange");
+  const soundSwitch = document.getElementById("soundSwitch");
+  const ttsSwitch = document.getElementById("ttsSwitch");
+  const hintDefaultSwitch = document.getElementById("hintDefaultSwitch");
+const btnClear = document.getElementById("btnClear");
+  const btnGuide = document.getElementById("btnGuide");
+  const btnResetChapter = document.getElementById("btnResetChapter");
+
+  /***********************
+   * NAV STATE
+   ***********************/
+  let nav = {
+    lastNonSettingsView: "overview",
+    chapterId: 1,
+    segIndex: 0,
+    mode: "learn",
+    testRange: {start:0,end:0},
+    testCursor: 0
+  };
+
+  function showView(which){
+    [viewOverview, viewChapterHome, viewGame, viewSettings].forEach(v => v.classList.remove("active"));
+    which.classList.add("active");
+    updateTopActionsLabel();
+    refreshFloatTestButton();
+  }
+
+  function updateTopActionsLabel(){
+    const inSettings = viewSettings.classList.contains("active");
+    btnBackOrSettings.textContent = inSettings ? "返回" : "設定";
+  }
+
+  function rememberNonSettingsView(){
+    if(viewSettings.classList.contains("active")) return;
+    if(viewOverview.classList.contains("active")) nav.lastNonSettingsView = "overview";
+    if(viewChapterHome.classList.contains("active")) nav.lastNonSettingsView = "home";
+    if(viewGame.classList.contains("active")) nav.lastNonSettingsView = "game";
+    nav.chapterId = currentChapterId;
+    nav.segIndex = currentSegIndex;
+    nav.mode = mode;
+    nav.testRange = {...testRange};
+    nav.testCursor = testCursor;
+  }
+
+  function restoreNonSettingsView(){
+    const target = nav.lastNonSettingsView;
+    currentChapterId = Number(nav.chapterId)||1;
+    currentSegIndex = nav.segIndex;
+    mode = nav.mode;
+    testRange = {...nav.testRange};
+    testCursor = nav.testCursor;
+
+    if(target==="overview"){
+      renderOverview();
+      topTitle.textContent = "孫子兵法";
+      topSub.textContent = "原書順序";
+      showView(viewOverview);
+      return;
+    }
+    if(target==="home"){
+      openChapterHome();
+      return;
+    }
+    if(target==="game"){
+      startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
+      return;
+    }
+  }
+
+  btnOverview.onclick = () => {
+    stopReading();
+    rememberNonSettingsView();
+    renderOverview();
+    topTitle.textContent = "孫子兵法";
+    topSub.textContent = "原書順序";
+    showView(viewOverview);
+  };
+
+  btnBackOrSettings.onclick = () => {
+    const inSettings = viewSettings.classList.contains("active");
+    if(inSettings){
+      restoreNonSettingsView();
+      return;
+    }
+    rememberNonSettingsView();
+    topTitle.textContent = "設定";
+    topSub.textContent = "調整你的學習手感";
+    syncSettingsUI();
+    showView(viewSettings);
+  };
+
+  /***********************
+   * OVERVIEW（改成 2/9 進度顯示）
+   ***********************/
+  function getChapterProg(id){
+    if(!PROG.chapters[id]) PROG.chapters[id] = { stars:0 };
+    return PROG.chapters[id];
+  }
+
+  function renderOverview(){
+    overviewList.innerHTML = "";
+    CHAPTERS.forEach(ch => {
+      const total = (ch.segments && ch.segments.length) ? ch.segments.length : 0;
+      const p = getChapterProg(ch.id);
+      const done = Math.min(p.stars || 0, total);
+
+      const row = document.createElement("div");
+      row.className = "chapterRow";
+
+      const left = document.createElement("div");
+      left.className = "chapterLeft";
+
+      const name = document.createElement("div");
+      name.className = "chapterName";
+
+      const title = document.createElement("span");
+      title.style.minWidth = "0";
+      title.style.overflow = "hidden";
+      title.style.textOverflow = "ellipsis";
+      title.style.whiteSpace = "nowrap";
+      title.textContent = ch.name;
+
+      const prog = document.createElement("span");
+      prog.className = "chapterProg";
+      prog.textContent = total>0 ? `${done}/${total}` : "—/—";
+
+      name.appendChild(title);
+      name.appendChild(prog);
+
+      const hint = document.createElement("div");
+      hint.className = "chapterHint";
+      hint.textContent = (total>0)
+        ? (done>=total ? "已完成，可複習/測驗" : "可進入練習")
+        : "內容待補";
+
+      left.appendChild(name);
+      left.appendChild(hint);
+
+      const go = document.createElement("button");
+      go.className = "chapterGo";
+      go.textContent = (total>0) ? "進入" : "待補";
+      go.disabled = (total===0);
+      go.onclick = () => { currentChapterId = ch.id; openChapterHome(); };
+
+      row.appendChild(left);
+      row.appendChild(go);
+      overviewList.appendChild(row);
+    });
+  }
+
+  /***********************
+   * CHAPTER HOME
+   ***********************/
+  let currentChapterId = 1;
+  let currentSegIndex = 0;
+
+  function openChapterHome(){
+    stopReading();
+
+    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    if(!ch || !ch.segments.length) return;
+
+    const p = getChapterProg(currentChapterId);
+    const total = ch.segments.length;
+    const done = Math.min(p.stars || 0, total);
+
+    homeTitle.textContent = ch.name;
+    homeMeta.textContent = `${done}/${total}`;
+
+    const showPlain = !!PROG.showPlainDefault;
+    const full = ch.segments.map((s, i) => {
+      const n = `（${i+1}）`;
+      if(!showPlain) return `${n}${s.quote}`;
+      const pl = (s.plain || "").trim();
+      return pl
+        ? `${n}${s.quote}\n【白話】${pl}`
+        : `${n}${s.quote}\n【白話】（待補）`;
+    }).join("\n\n");
+
+    homeFullText.textContent = full;
+
+    showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
+
+    topTitle.textContent = ch.name;
+    topSub.textContent = "篇章首頁";
+    showView(viewChapterHome);
+  }
+
+  bindFastTap(btnStart, () => {
+    // ✅ 防呆：避免某些手機瀏覽器在「清空/返回」後，chapterId 變成字串導致找不到章節
+    let ch = CHAPTERS.find(x => x.id===currentChapterId);
+    if(!ch){
+      currentChapterId = Number(currentChapterId)||1;
+      ch = CHAPTERS.find(x => x.id===currentChapterId);
+    }
+    const p = getChapterProg(currentChapterId);
+
+    // 找不到章節就直接從頭進（避免卡死）
+    if(!ch || !ch.segments || !ch.segments.length){
+      currentSegIndex = 0;
+      startLearnSegment(0, { firstEntry:true });
+      return;
+    }
+
+    currentSegIndex = Math.min((p.stars || 0), ch.segments.length-1);
+    startLearnSegment(currentSegIndex, { firstEntry:true });
+  });
+
+  bindFastTap(btnFromStart, () => {
+    currentSegIndex = 0;
+    startLearnSegment(currentSegIndex, { firstEntry:true, fromStart:true });
+  });
+
+  showPlainSwitch.onclick = () => {
+    PROG.showPlainDefault = !PROG.showPlainDefault;
+    saveProgress();
+        try{ showToast && showToast('✅ 已重置本篇進度'); }catch(_e){ try{ alert('已重置本篇進度'); }catch(__){} }
+
+    showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
+    openChapterHome();
+  };
+
+  /***********************
+   * AUDIO（beep）
+   ***********************/
+  let audioCtx = null;
+  function beep(type="ok"){
+    if(!PROG.soundOn) return;
+    try{
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "sine";
+      const now = audioCtx.currentTime;
+
+      if(type==="tap"){ o.frequency.setValueAtTime(520, now); g.gain.setValueAtTime(0.05, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.08); }
+      if(type==="ok"){  o.frequency.setValueAtTime(740, now); g.gain.setValueAtTime(0.06, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.18); }
+      if(type==="bad"){ o.frequency.setValueAtTime(220, now); g.gain.setValueAtTime(0.07, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.22); }
+
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(now); o.stop(now + 0.25);
+    }catch(e){}
+  }
+
+  /***********************
+   * ✅TTS（iOS 穩定暫停：onboundary 記錄斷點）
+   ***********************/
+  let ttsState = {
+    playing:false,
+    kind:"none",
+    queue:[],
+    idx:0,
+    boundaryChar:0,
+    currentText:"",
+    paused:false
+  };
+
+  function canTTS(){
+    return PROG.ttsOn && ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
+  }
+
+  function stopReading(){
+    try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
+    ttsState = { playing:false, kind:"none", queue:[], idx:0, boundaryChar:0, currentText:"", paused:false };
+    btnHomeRead.textContent = "朗讀";
+    btnSegRead.textContent = "朗讀";
+  }
+
+  function speakFrom(text, kind){
+    if(!canTTS()) return;
+    try{
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "zh-TW";
+      u.rate = 0.92;
+      u.pitch = 1.0;
+
+      ttsState.currentText = text;
+      ttsState.boundaryChar = 0;
+      ttsState.kind = kind;
+      ttsState.playing = true;
+      ttsState.paused = false;
+
+      u.onboundary = (ev) => {
+        if(typeof ev.charIndex === "number") ttsState.boundaryChar = ev.charIndex;
+      };
+
+      u.onend = () => {
+        if(!ttsState.playing) return;
+        ttsState.idx += 1;
+        playNextUtterance();
+      };
+
+      u.onerror = () => stopReading();
+
+      window.speechSynthesis.speak(u);
+    }catch(e){
+      stopReading();
+    }
+  }
+
+  function speakQueue(queue, kind){
+    if(!canTTS()) return;
+    stopReading();
+    ttsState.queue = queue;
+    ttsState.idx = 0;
+    ttsState.kind = kind;
+    ttsState.playing = true;
+    ttsState.paused = false;
+
+    if(kind==="chapter") btnHomeRead.textContent = "暫停";
+    if(kind==="segment") btnSegRead.textContent = "暫停";
+
+    playNextUtterance();
+  }
+
+  function playNextUtterance(){
+    if(!canTTS()) return;
+    if(ttsState.idx >= ttsState.queue.length){
+      stopReading();
+      return;
+    }
+    const text = ttsState.queue[ttsState.idx];
+    speakFrom(text, ttsState.kind);
+  }
+
+  function pauseOrResume(){
+    if(!canTTS()) return;
+
+    if(ttsState.playing && !ttsState.paused){
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      ttsState.paused = true;
+
+      if(ttsState.kind==="chapter") btnHomeRead.textContent = "續播";
+      if(ttsState.kind==="segment") btnSegRead.textContent = "續播";
+      return;
+    }
+
+    if(ttsState.playing && ttsState.paused){
+      const remain = (ttsState.currentText || "").slice(Math.max(0, ttsState.boundaryChar));
+      ttsState.paused = false;
+
+      if(ttsState.kind==="chapter") btnHomeRead.textContent = "暫停";
+      if(ttsState.kind==="segment") btnSegRead.textContent = "暫停";
+
+      if(remain.trim().length < 2){
+        ttsState.idx += 1;
+        playNextUtterance();
+        return;
+      }
+
+      speakFrom(remain, ttsState.kind);
+      return;
+    }
+  }
+
+  btnHomeRead.onclick = () => {
+    if(!canTTS()) return;
+    if(ttsState.playing && ttsState.kind==="chapter"){ pauseOrResume(); return; }
+    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    if(!ch) return;
+    const q = ch.segments.map(s => s.quote);
+    speakQueue(q, "chapter");
+  };
+  btnHomeStop.onclick = () => stopReading();
+
+  btnSegRead.onclick = () => {
+    if(!canTTS()) return;
+    if(ttsState.playing && ttsState.kind==="segment"){ pauseOrResume(); return; }
+    const seg = currentSeg();
+    speakQueue([seg.quote], "segment");
+  };
+
+  /***********************
+   * GAME
+   ***********************/
+  let pool = [];
+  let selection = [];
+
+  let mode = "learn";
+  let testRange = { start:0, end:0 };
+  let testCursor = 0;
+
+  function shuffle(a){
+    const arr = [...a];
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function setNpcOriginal(line){
+    const maxLen = 64;
+    if(line.length > maxLen){
+      npcLine.innerHTML = escapeHtml(line.slice(0, maxLen)) + `<span class="npcMore" id="npcMore">…（更多）</span>`;
+      document.getElementById("npcMore").onclick = () => showNpcFull(line);
+    }else{
+      npcLine.textContent = line;
+    }
+  }
+
+  function showNpcFull(line){
+    openModal("原文", `<div class="quote">${escapeHtml(line)}</div>`);
+  }
+
+  function currentChapter(){ return CHAPTERS.find(x => x.id===currentChapterId); }
+  function currentSeg(){
+    const ch = currentChapter();
+    return (mode==="test") ? ch.segments[testCursor] : ch.segments[currentSegIndex];
+  }
+
+  function updateBoardMeta(){
+    const ch = currentChapter();
+    const total = ch?.segments?.length || 0;
+    const idx = (mode==="test") ? (testCursor + 1) : (currentSegIndex + 1);
+    boardMeta.textContent = `第${idx}/${total}段`;
+    const navText = document.getElementById('navText');
+    if(navText) navText.textContent = `${idx}/${total}`;
+  }
+
+  function startLearnSegment(segIndex, opts={}) {
+    stopReading();
+    mode = "learn";
+    btnPrev.disabled = (segIndex <= 0);
+
+    btnBook.classList.remove("pulseStrong");
+    btnBook.disabled = true;
+
+    const ch = currentChapter();
+    const seg = ch.segments[segIndex];
+    // ✅若此段已通過，就不要再把「下一關」鎖灰
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
+    const freeNav = !!PROG.freeNav;
+    const unlocked = freeNav ? true : (passed >= (segIndex + 1));
+
+    btnNext.disabled = !unlocked;
+    btnBook.disabled = !unlocked;
+    btnBook.classList.toggle("pulseStrong", unlocked);
+
+
+    if(!opts.preserve){
+      selection = [];
+      pool = shuffle(seg.tokens);
+    }
+
+    topTitle.textContent = ch.name;
+    topSub.textContent = "佈令背誦";
+    showView(viewGame);
+
+    if(opts.firstEntry){
+      PROG.hintOn = !!PROG.hintDefault;
+      saveProgress();
+    }
+    renderHintSwitch();
+
+  if(freeNavSwitch) freeNavSwitch.onchange = () => {
+    PROG.freeNav = !!freeNavSwitch.checked;
+    saveProgress();
+    try{ showToast('已更新：自由瀏覽 ' + (PROG.freeNav ? '開啟' : '關閉')); }catch(_e){}
+    // refresh nav lock state
+    try{ renderSegment(); }catch(_e){}
+  };
+
+    setNpcOriginal(seg.quote);
+    updateBoardMeta();
+    renderBoard();
+    refreshFloatTestButton();
+    syncLearnUnlock();
+
+
+    if(PROG.hintOn) flashHintTimes(2);
+  }
+
+  btnReset.onclick = () => {
+    stopReading();
+    beep("tap");
+
+    openModal(
+      "重整",
+      `<div class="plain">想怎麼重整？</div>`,
+      `
+        <button class="btn" id="resetSegBtn">重整本段落</button>
+        <button class="btn primary" id="resetChBtn">重整本篇章</button>
+      `
+    );
+
+    // 綁定一次性按鈕
+    setTimeout(() => {
+      const a = document.getElementById("resetSegBtn");
+      const b = document.getElementById("resetChBtn");
+      if(a) a.onclick = () => {
+        modal.classList.remove("show");
+        restartCurrent();
+        // 完成後若提示開啟，給一次提示閃爍
+        try{ if(PROG.hintOn) flashHintTimes(1); }catch(_e){}
+      };
+      if(b) b.onclick = () => {
+        modal.classList.remove("show");
+        // 走既有的「重置本篇」確認流程
+        try{ __resetCurrentChapterHard(); }catch(_e){ openChapterHome(); }
+      };
+    }, 0);
+  };
+
+  function restartCurrent(){
+    btnNext.disabled = true;
+    btnBook.classList.remove("pulseStrong");
+    btnBook.disabled = true;
+
+    const seg = currentSeg();
+    selection = [];
+    pool = shuffle(seg.tokens);
+    renderBoard();
+    try{ setOrderError(false); }catch(_e){}
+  }
+
+  
+  // ✅放錯令牌：立即回饋（不受「學習提示」開關影響）
+  const orderErrorEl = document.getElementById("orderError");
+  function setOrderError(on){
+    if(!orderErrorEl) return;
+    orderErrorEl.classList.toggle("show", !!on);
+  }
+
+function vibrateSoft(){
+    try{
+      if(navigator && navigator.vibrate) navigator.vibrate(20);
+    }catch(_e){}
+  }
+
+function bindFastTap(el, handler){
+    if(!el) return;
+
+    // ✅手機瀏覽器「連發」的根因：同時綁了 pointerdown / pointerup / touchstart / touchend
+    // 會讓同一次觸控觸發 2~4 次。
+    // 這裡改成：
+    // 1) 以 pointerdown 為主（最靈敏）
+    // 2) 同一個 pointerId 只允許觸發一次
+    // 3) click 當最後保險（桌機/少數環境）
+
+    let activePointerId = null;
+    let lastFire = 0;
+
+    const fireOnce = (ev) => {
+      const now = Date.now();
+      if(now - lastFire < 220) return; // 防抖：避免極端情境（某些瀏覽器會再補一個 click）
+      lastFire = now;
+      try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
+      try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
+      handler();
+    };
+
+    const onDown = (ev) => {
+      // 同一次觸控，只觸發一次
+      if(activePointerId !== null) return;
+      activePointerId = ev && (ev.pointerId ?? 1);
+      try{ el.setPointerCapture && ev && el.setPointerCapture(ev.pointerId); }catch(_e){}
+      fireOnce(ev);
+    };
+
+    const release = () => { activePointerId = null; };
+
+    // Pointer events
+    el.addEventListener('pointerdown', onDown, {passive:false});
+    el.addEventListener('pointerup', release, {passive:true});
+    el.addEventListener('pointercancel', release, {passive:true});
+    el.addEventListener('lostpointercapture', release, {passive:true});
+
+    // Click 後援（桌機）
+    el.addEventListener('click', (ev)=>{
+      // 若剛剛已由 pointerdown 觸發，click 會被防抖擋掉
+      fireOnce(ev);
+    }, {passive:false});
+  }
+
+  function makeToken(text){
+    const el = document.createElement("div");
+    el.className = "token";
+    el.textContent = text;
+    return el;
+  }
+
+  function renderBoard(){
+    slots.innerHTML = "";
+
+    if(selection.length===0){
+      const hint = document.createElement("div");
+      hint.className = "slotHint";
+      hint.textContent = "點下方令牌，依順序放進佈令板";
+      slots.appendChild(hint);
+    }else{
+      selection.forEach((t, idx) => {
+        const el = makeToken(t);
+        bindFastTap(el, () => {
+          beep("tap");
+          selection.splice(idx,1);
+          pool.push(t);
+          renderBoard();
+          applyHint();
+        });
+        slots.appendChild(el);
+      });
+    }
+
+    tokensEl.innerHTML = "";
+    pool.forEach((t, idx) => {
+      const el = makeToken(t);
+      bindFastTap(el, () => {
+        beep("tap");
+        selection.push(t);
+        pool.splice(idx,1);
+
+        // ✅立即判斷「目前已放的前綴」是否正確（學習模式才做）
+        let prefixOk = true;
+        if(mode==="learn"){
+          const segNow = currentSeg();
+          prefixOk = selection.every((v,i)=> v===segNow.tokens[i]);
+        }
+
+        renderBoard();
+
+        // ✅ 放錯：紅框閃 + 輕震 + 淡字提示（不受「學習提示」開關影響）
+        if(!prefixOk){
+          const placed = slots.querySelectorAll(".token");
+          const last = placed[placed.length-1];
+          if(last){
+            last.classList.add("wrongFlash");
+            setTimeout(()=> last.classList.remove("wrongFlash"), 520);
+          }
+          vibrateSoft();
+          setOrderError(true);
+        }else{
+          setOrderError(false);
+        }
+
+        checkWinRouter();
+      });
+      tokensEl.appendChild(el);
+    });
+
+    applyHint();
+  }
+
+  function applyHint(){
+    const all = tokensEl.querySelectorAll(".token");
+    all.forEach(t => t.classList.remove("hintStrong","hintMid","hintWeak","hintFlash","breath"));
+
+    if(!PROG.hintOn) return;
+    const seg = currentSeg();
+    const next = seg.tokens[selection.length];
+    if(!next) return;
+
+    for(const el of all){
+      if(el.textContent === next){
+        el.classList.add("breath");
+        break;
+      }
+    }
+  }
+
+  function flashHintTimes(times=2){
+    if(!PROG.hintOn) return;
+    const seg = currentSeg();
+    const next = seg.tokens[selection.length];
+    if(!next) return;
+
+    const all = [...tokensEl.querySelectorAll(".token")];
+    const target = all.find(el => el.textContent === next);
+    if(!target) return;
+
+    let n = 0;
+    const tick = () => {
+      if(n >= times) return;
+      target.classList.remove("hintFlash");
+      void target.offsetWidth;
+      target.classList.add("hintFlash");
+      n++;
+      setTimeout(tick, 760);
+    };
+    tick();
+  }
+
+  function checkLearnWin(){
+    const seg = currentSeg();
+    if(selection.length !== seg.tokens.length) return;
+
+    const ok = selection.every((v,i)=> v===seg.tokens[i]);
+    if(ok){
+      beep("ok");
+      onSegmentPassed();
+    }else{
+      beep("bad");
+    }
+  }
+
+  function onSegmentPassed(){
+    btnNext.disabled = false;
+
+    btnBook.disabled = false;
+    btnBook.classList.add("pulseStrong");
+
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    p.stars = Math.max(p.stars || 0, currentSegIndex + 1);
+    saveProgress();
+
+    refreshFloatTestButton();
+  }
+  // ✅把「下一關 / 兵書」按鈕狀態同步回學習模式
+  function syncLearnUnlock(){
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
+
+    const unlocked = (!!PROG.freeNav) ? true : (passed >= (currentSegIndex + 1));
+
+    // 下一關：已通過當前段就應該可按
+    btnNext.disabled = !unlocked;
+
+    // 兵書：同樣規則（你通過了才給你“打開兵書”爽一下）
+    btnBook.disabled = !unlocked;
+    btnBook.classList.toggle("pulseStrong", unlocked);
+  }
+
+
+  function checkTestWin(){
+    const seg = currentSeg();
+    if(selection.length !== seg.tokens.length) return;
+    const ok = selection.every((v,i)=> v===seg.tokens[i]);
+
+    if(ok){
+      beep("ok");
+      if(testCursor < testRange.end){
+        testCursor++;
+btnPrev.disabled = (testCursor <= testRange.start);
+btnNext.disabled = true; // 測驗不走「下一關」，保持鎖住是對的
+
+        setNpcOriginal(currentChapter().segments[testCursor].quote);
+        updateBoardMeta();
+        restartCurrent();
+btnPrev.disabled = (testCursor <= testRange.start);
+
+
+
+        if(PROG.hintOn) flashHintTimes(1);
+      }else{
+        openModal("測驗通過", `<div class="plain">完成範圍：第${testRange.start+1}段～第${testRange.end+1}段</div>`, `
+          <button class="btn" id="btnBackToLearn">回到佈令</button>
+          <button class="btn primary" id="btnBackHome">回到篇章首頁</button>
+        `);
+        setTimeout(() => {
+          const a = document.getElementById("btnBackToLearn");
+          const b = document.getElementById("btnBackHome");
+          if(a) a.onclick = () => { modalClose.click(); mode="learn"; startLearnSegment(currentSegIndex, { firstEntry:false }); };
+          if(b) b.onclick = () => { modalClose.click(); openChapterHome(); };
+        }, 0);
+      }
+    }else{
+      beep("bad");
+      openModal("測驗未過", `
+        <div class="plain">沒關係。你按下「重來」那一刻，腦子其實正在重編碼。</div>
+      `, `
+        <button class="btn" id="btnRetryTest">重來</button>
+        <button class="btn primary" id="btnPauseLater">先放下</button>
+      `);
+      setTimeout(() => {
+        const r = document.getElementById("btnRetryTest");
+        const g = document.getElementById("btnPauseLater");
+        if(r) r.onclick = () => { modalClose.click(); restartCurrent(); if(PROG.hintOn) flashHintTimes(1); };
+        if(g) g.onclick = () => { modalClose.click(); openChapterHome(); };
+      }, 0);
+    }
+  }
+
+  function checkWinRouter(){
+    if(mode==="learn") checkLearnWin();
+    else checkTestWin();
+  }
+
+  btnPrev.onclick = () => {
+  stopReading();
+  beep("tap");
+
+  const ch = currentChapter();
+
+  // 測驗模式：回到測驗範圍的上一段
+  if(mode === "test"){
+    if(testCursor > testRange.start){
+      testCursor -= 1;
+      setNpcOriginal(ch.segments[testCursor].quote);
+      updateBoardMeta();
+      restartCurrent();
+      if(PROG.hintOn) flashHintTimes(1);
+    }
+    return;
+  }
+
+  // 佈令模式：回到上一關複習
+  if(currentSegIndex > 0){
+    currentSegIndex -= 1;
+    startLearnSegment(currentSegIndex, { firstEntry:false });
+  }
+};
+
+
+  /***********************
+   * BOOK（原文＋白話）
+   ***********************/
+  btnBook.onclick = () => {
+    if(btnBook.disabled) return;
+    const seg = currentSeg();
+    openModal("兵書", `
+      <div class="quote">${escapeHtml(seg.quote)}</div>
+      <div class="plain"><strong>白話：</strong>${escapeHtml((seg.plain || "（待補）").trim() || "（待補）")}</div>
+    `);
+  };
+
+  function openModal(title, html, actionsHtml=null){
+    modalTitle.textContent = title;
+    modalBody.innerHTML = html;
+
+    if(actionsHtml){
+      modalActions.style.display = "flex";
+      modalActions.innerHTML = actionsHtml;
+    }else{
+      modalActions.style.display = "none";
+      modalActions.innerHTML = "";
+    }
+    modal.classList.add("show");
+  }
+  // ✅ 統一關閉 Modal（避免未定義造成按鈕無反應）
+  function closeModal(){
+    try{ modalClose.click(); }catch(_e){
+      try{ modal.classList.remove("show"); }catch(_e2){}
+    }
+  }
+
+
+
+    modalClose.onclick = () => {
+    // 關閉視窗
+    modal.classList.remove("show");
+
+    // 清空 actions
+    modalActions.style.display = "none";
+    modalActions.innerHTML = "";
+
+    // ✅保險：只在「佈令畫面」且剛好在「測驗模式」時，才做復原
+    try{
+      if(viewGame.classList.contains("active") && mode === "test"){
+        mode = "learn";
+        startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
+        syncLearnUnlock(); // 恢復「下一關 / 兵書」狀態
+      }
+    }catch(_e){}
+  };
+
+  modal.onclick = (e) => { if(e.target === modal) modalClose.click(); };
+
+  /***********************
+   * ✅浮動測驗鈕（不佔空間）
+   ***********************/
+  function refreshFloatTestButton(){
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
+
+    if(viewGame.classList.contains("active") && mode==="learn" && passed >= 1){
+      floatTestBtn.classList.add("show");
+    }else{
+      floatTestBtn.classList.remove("show");
+    }
+  }
+
+  function beginTest(s,e){
+    stopReading();
+    mode = "test";
+    testRange = { start:s, end:e };
+    testCursor = s;
+    btnPrev.disabled = (testCursor <= testRange.start);
+
+
+    btnNext.disabled = true;
+    btnBook.classList.remove("pulseStrong");
+    btnBook.disabled = true;
+
+    setNpcOriginal(currentChapter().segments[testCursor].quote);
+    updateBoardMeta();
+    restartCurrent();
+    refreshFloatTestButton();
+    if(PROG.hintOn) flashHintTimes(1);
+  }
+
+  floatTestBtn.onclick = () => {
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch.segments.length);
+
+    const options = Array.from({length: passed}, (_,i)=> `<option value="${i}">第${i+1}段</option>`).join("");
+    openModal("測驗", `
+      <div class="plain">選擇範圍：</div>
+      <div class="plain">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <span style="font-weight:1000;">從</span>
+          <select id="mTestStart" class="select">${options}</select>
+          <span style="font-weight:1000;">到</span>
+          <select id="mTestEnd" class="select">${options}</select>
+        </div>
+      </div>
+    `, `
+      <button class="btn" id="btnCancelTest">取消</button>
+      <button class="btn primary" id="btnGoTest">開始測驗</button>
+    `);
+
+    setTimeout(()=>{
+      const sEl = document.getElementById("mTestStart");
+      const eEl = document.getElementById("mTestEnd");
+      const cancel = document.getElementById("btnCancelTest");
+      const go = document.getElementById("btnGoTest");
+
+      sEl.value = "0";
+      eEl.value = String(passed-1);
+
+      sEl.onchange = () => { if(Number(eEl.value) < Number(sEl.value)) eEl.value = sEl.value; };
+      eEl.onchange = () => { if(Number(eEl.value) < Number(sEl.value)) sEl.value = eEl.value; };
+
+      cancel.onclick = () => modalClose.click();
+      go.onclick = () => {
+        const s = Number(sEl.value);
+        const e = Number(eEl.value);
+        modalClose.click();
+        beginTest(s,e);
+      };
+    },0);
+  };
+
+  /***********************
+   * HINT TOGGLE
+   ***********************/
+  function renderHintSwitch(){ hintSwitch.classList.toggle("on", !!PROG.hintOn); }
+  hintToggleWrap.onclick = () => {
+    PROG.hintOn = !PROG.hintOn;
+    saveProgress();
+    renderHintSwitch();
+    applyHint();
+    if(PROG.hintOn) flashHintTimes(2);
+  };
+
+  
+  /***********************
+   * CHAPTER RESET (robust)
+   ***********************/
+  function resetChapterProgress(){
+    try{
+      const chId = currentChapterId;
+      const p = getChapterProg(chId);
+      p.stars = 0;
+      saveProgress();
+      currentSegIndex = 0;
+      // If currently in game, refresh; otherwise go to chapter home
+      try{ showToast("✅ 已重置本篇進度"); }catch(_e){ try{ alert("已重置本篇進度"); }catch(__){} }
+      try{ openChapterHome(); }catch(_e){ try{ renderOverview(); showView(viewOverview); }catch(__){} }
+    }catch(err){
+      try{ alert("重置失敗，請告訴小樂：" + err); }catch(_e){}
+    }
+  }
+
+/***********************
+   * SETTINGS
+   ***********************/
+  function syncSettingsUI(){
+    if(freeNavSwitch) freeNavSwitch.checked = !!PROG.freeNav;
+    fontRange.value = String(PROG.fontScale);
+    soundSwitch.classList.toggle("on", !!PROG.soundOn);
+    ttsSwitch.classList.toggle("on", !!PROG.ttsOn);
+    hintDefaultSwitch.classList.toggle("on", !!PROG.hintDefault);
+}
 
   fontRange.oninput = () => {
     PROG.fontScale = Number(fontRange.value);
@@ -3691,9 +4663,9 @@ if (typeof btnNext !== "undefined" && btnNext) {
           之後若想再看步驟：到「設定」→「加入主畫面（捷徑）」即可。
         </div>`;
       openModal("加入主畫面（捷徑）", html, `
+        <button class="btn" id="a2hsLater">先看看</button>
         <button class="btn primary" id="a2hsOk">我知道了</button>
       `);
-      try{ const m=document.getElementById("modal"); if(m) m.classList.add("a2hs"); }catch(_e){}
       setTimeout(()=>{
         const later = document.getElementById('a2hsLater');
         const ok = document.getElementById('a2hsOk');
