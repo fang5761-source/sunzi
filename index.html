@@ -3,7 +3,7 @@
 <!--
 孫子兵法背誦
 版本：v5.8
-狀態：功能穩定，可正常清空
+狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
 -->
@@ -242,7 +242,7 @@
 
     
     /* ✅ 允許遊戲畫面在小螢幕/有網址列時可垂直捲動，避免令牌被遮住 */
-    #viewGame.view.active{ overflow:auto; -webkit-overflow-scrolling:touch; }
+    #viewGame.view.active{ overflow:hidden; }
 .scroll{
       overflow:auto;
       -webkit-overflow-scrolling: touch;
@@ -544,6 +544,7 @@
       display:flex; 
       flex-direction:column; 
       gap:10px; 
+      flex:1;
       overflow:auto; 
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
@@ -593,15 +594,14 @@
     }
 
     /* Token zone */
-    .tokensPanel{ padding:10px; overflow:hidden; min-height:0; }
+    .tokensPanel{ padding:10px; overflow:visible; min-height:0; }
+    /* ✅ 取消令牌區「內部捲動」：避免 iPhone Safari 出現捲動鎖死/點擊失靈（改成整頁只用一個捲動容器） */
     .tokens{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
-      max-height: 230px;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
+      overflow:visible;
+      max-height:none;
       align-content:flex-start;
       padding-bottom: 2px;
       min-width: 0;
@@ -4661,203 +4661,67 @@ document.addEventListener("change", function(ev){
 
 </script>
 
-<!-- ✅ 加入主畫面（捷徑）｜A2HS 引導（iOS/Android） -->
-<div id="a2hsMask" class="a2hs-mask" aria-hidden="true">
-  <div class="a2hs-card" role="dialog" aria-modal="true" aria-labelledby="a2hsTitle">
-    <div class="a2hs-title" id="a2hsTitle">要把「孫子兵法背誦」加到主畫面嗎？</div>
-    <div class="a2hs-text">
-      加入後會「全畫面」開啟，字更清楚、像 App 一樣一點就進來。<br>
-      這只是建立「捷徑」，不是安裝程式，請放心。
-    </div>
-
-    <div class="a2hs-actions">
-      <button class="a2hs-btn a2hs-secondary" id="a2hsSkip">先看看</button>
-      <button class="a2hs-btn a2hs-primary" id="a2hsShowGuide">查看加入方式</button>
-    </div>
-
-    <div class="a2hs-guide" id="a2hsGuide" hidden>
-      <div class="a2hs-guideTitle">iPhone（Safari）</div>
-      <div class="a2hs-steps">
-        1. 點下方「分享」按鈕（方框上箭頭）<br>
-        2. 往下滑找「加入主畫面」<br>
-        3. 右上角按「加入」
-      </div>
-
-      <div class="a2hs-guideTitle" style="margin-top:10px;">Android（Chrome）</div>
-      <div class="a2hs-steps">
-        1. 點右上角「⋮」<br>
-        2. 選「加入主畫面」或「安裝應用程式」<br>
-        3. 依提示按「新增／加入」
-      </div>
-
-      <div class="a2hs-note">
-        之後若想再看步驟：到「設定」→「加入主畫面（捷徑）」即可。
-      </div>
-
-      <div class="a2hs-actions" style="margin-top:12px;">
-        <button class="a2hs-btn a2hs-secondary" id="a2hsClose">我知道了</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<style>
-  .a2hs-mask{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,.62);
-    display:none;
-    align-items:center; justify-content:center;
-    z-index:99999;
-    padding:14px;
-  }
-  .a2hs-card{
-    width:min(420px, 92vw);
-    background:#151b16;
-    color:#e9efe9;
-    border-radius:16px;
-    padding:16px 16px 14px;
-    box-shadow:0 0 28px rgba(0,0,0,.55);
-    border:1px solid rgba(214,178,94,.18);
-  }
-  .a2hs-title{
-    font-size:16px;
-    color:#d6b25e;
-    margin-bottom:10px;
-    line-height:1.35;
-  }
-  .a2hs-text{
-    font-size:14px;
-    line-height:1.7;
-    color:#e9efe9;
-    margin-bottom:12px;
-  }
-  .a2hs-actions{
-    display:flex;
-    gap:10px;
-    justify-content:flex-end;
-    margin-top:6px;
-  }
-  .a2hs-btn{
-    border:none;
-    border-radius:10px;
-    padding:10px 12px;
-    font-size:14px;
-    cursor:pointer;
-    flex:1;
-  }
-  .a2hs-primary{ background:#d6b25e; color:#000; }
-  .a2hs-secondary{ background:#2b3a2f; color:#e9efe9; }
-
-  .a2hs-guide{
-    margin-top:12px;
-    padding-top:12px;
-    border-top:1px solid rgba(233,239,233,.12);
-  }
-  .a2hs-guideTitle{
-    font-size:14px;
-    font-weight:700;
-    margin-bottom:6px;
-  }
-  .a2hs-steps{
-    font-size:13px;
-    line-height:1.8;
-    color:#e9efe9;
-    background:#1b241d;
-    border:1px solid rgba(233,239,233,.10);
-    padding:10px 12px;
-    border-radius:12px;
-  }
-  .a2hs-note{
-    margin-top:10px;
-    font-size:12.5px;
-    color:#aab6aa;
-    line-height:1.6;
-  }
-</style>
 
 <script>
+/* ✅ 加入主畫面（捷徑）｜iPhone Safari 友善版（不再用全螢幕遮罩，避免 iOS 出現「看不到但擋住操作」） */
 (function(){
-  const KEY = 'sunzi_a2hs_dismissed_v1';
-
+  const KEY = 'sunzi_a2hs_dismissed_v2';
   const isStandalone =
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
     window.navigator.standalone === true;
 
-  const mask = document.getElementById('a2hsMask');
-  const guide = document.getElementById('a2hsGuide');
-  const btnSkip = document.getElementById('a2hsSkip');
-  const btnShowGuide = document.getElementById('a2hsShowGuide');
-  const btnClose = document.getElementById('a2hsClose');
-
-  function openPrompt(force=false){
-    if(!mask) return;
-    if(isStandalone) return;
-    if(!force && localStorage.getItem(KEY) === 'yes') return;
-
-    // reset
-    guide.hidden = true;
-    mask.style.display = 'flex';
-    mask.setAttribute('aria-hidden','false');
-  }
-
-  function closePrompt(){
-    if(!mask) return;
-    mask.style.display = 'none';
-    mask.setAttribute('aria-hidden','true');
-  }
-
-  if(btnSkip){
-    btnSkip.addEventListener('click', () => {
-      // 不再自動跳出，但仍可在「設定」中查看
-      localStorage.setItem(KEY,'yes');
-      closePrompt();
-    });
-  }
-
-  if(btnShowGuide){
-    btnShowGuide.addEventListener('click', () => {
-      // 進入「步驟說明」模式：把上半部提示收起來，避免重複干擾
-      guide.hidden = false;
-      try{
-        const card = btnShowGuide.closest('.a2hs-card');
-        const title = card && card.querySelector('.a2hs-title');
-        const text  = card && card.querySelector('.a2hs-text');
-        const topActions = btnShowGuide.closest('.a2hs-actions');
-        if (title) title.style.display = 'none';
-        if (text)  text.style.display  = 'none';
-        if (topActions) topActions.style.display = 'none';
-      }catch(_e){}
-    });
+  function showGuide(force){
+    try{
+      const okDismiss = () => { try{ localStorage.setItem(KEY,'yes'); }catch(_e){} };
+      const html = `
+        <div class="plain" style="line-height:1.8">
+          加入後會「全畫面」開啟，字更清楚、像 App 一樣一點就進來。<br>
+          這只是建立「捷徑」，不是安裝程式，請放心。<br><br>
+          <b>iPhone（Safari）</b><br>
+          (1) 點下方「分享」按鈕（方框上箭頭）<br>
+          (2) 往下滑找「加入主畫面」<br>
+          (3) 右上角按「加入」<br><br>
+          <b>Android（Chrome）</b><br>
+          (1) 點右上角「⋮」<br>
+          (2) 選「加入主畫面」或「安裝應用程式」<br>
+          (3) 依提示按「新增／加入」<br><br>
+          之後若想再看步驟：到「設定」→「加入主畫面（捷徑）」即可。
+        </div>`;
+      openModal("加入主畫面（捷徑）", html, `
+        <button class="btn" id="a2hsLater">先看看</button>
+        <button class="btn primary" id="a2hsOk">我知道了</button>
+      `);
+      setTimeout(()=>{
+        const later = document.getElementById('a2hsLater');
+        const ok = document.getElementById('a2hsOk');
+        if(later) later.onclick = ()=>{ okDismiss(); modalClose.click(); };
+        if(ok) ok.onclick = ()=>{ okDismiss(); modalClose.click(); };
+      },0);
+    }catch(e){
+      // fallback
+      try{ alert("加入主畫面：Safari 分享 → 加入主畫面"); }catch(_e){}
     }
-
-  if(btnClose){
-    btnClose.addEventListener('click', () => {
-      localStorage.setItem(KEY,'yes');
-      closePrompt();
-    });
   }
 
-  // 點遮罩外側關閉（不強迫）
-  if(mask){
-    mask.addEventListener('click', (e) => {
-      if(e.target === mask){
-        localStorage.setItem(KEY,'yes');
-        closePrompt();
-      }
-    });
+  function shouldPrompt(){
+    if(isStandalone) return false;
+    try{ return localStorage.getItem(KEY) !== 'yes'; }catch(_e){ return true; }
   }
 
-  // 設定頁入口
-  const btnInSettings = document.getElementById('btnA2HSOpen');
-  if(btnInSettings){
-    btnInSettings.addEventListener('click', () => openPrompt(true));
-  }
-
-  // 第一次開啟才提示：不自動跳轉、也不會強迫安裝
-  window.addEventListener('load', () => {
-    setTimeout(() => openPrompt(false), 350);
+  // 設定頁入口（強制顯示，不管是否已關閉）
+  window.addEventListener('load', ()=>{
+    const btn = document.getElementById('btnA2HSOpen');
+    if(btn){
+      btn.addEventListener('click', ()=> showGuide(true));
+    }
   });
 
+  // 第一次開啟提示（非捷徑/非PWA才出現）
+  window.addEventListener('load', ()=>{
+    if(shouldPrompt()){
+      setTimeout(()=> showGuide(false), 350);
+    }
+  });
 })();
 </script>
 
