@@ -913,7 +913,14 @@
     .helpFold .helpLine{ margin-top:6px; }
     .helpLine.version{ font-size:11px; opacity:.85; }
 
-  </style>
+  
+/* iOS tap fix: 減少 Safari/LINE 內建瀏覽器點擊遲鈍 */
+button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+</style>
 </head>
 
 <body style="--fontScale:1;">
@@ -3527,7 +3534,7 @@ const btnClear = document.getElementById("btnClear");
     showView(viewChapterHome);
   }
 
-  btnStart.onclick = () => {
+  bindFastTap(btnStart, () => {
     // ✅ 防呆：避免某些手機瀏覽器在「清空/返回」後，chapterId 變成字串導致找不到章節
     let ch = CHAPTERS.find(x => x.id===currentChapterId);
     if(!ch){
@@ -3545,12 +3552,12 @@ const btnClear = document.getElementById("btnClear");
 
     currentSegIndex = Math.min((p.stars || 0), ch.segments.length-1);
     startLearnSegment(currentSegIndex, { firstEntry:true });
-  };
+  });
 
-  btnFromStart.onclick = () => {
+  bindFastTap(btnFromStart, () => {
     currentSegIndex = 0;
     startLearnSegment(currentSegIndex, { firstEntry:true, fromStart:true });
-  };
+  });
 
   showPlainSwitch.onclick = () => {
     PROG.showPlainDefault = !PROG.showPlainDefault;
@@ -3870,7 +3877,32 @@ function vibrateSoft(){
     }catch(_e){}
   }
 
-function makeToken(text){
+function bindFastTap(el, handler){
+    if(!el) return;
+    // iOS Safari / LINE 內建瀏覽器：減少點擊遲鈍、避免需要連點
+    let last = 0;
+    const fire = (ev) => {
+      const now = Date.now();
+      if(now - last < 450) return; // 防止 click + pointer 連發
+      last = now;
+      try{ ev && ev.preventDefault && ev.preventDefault(); }catch(_e){}
+      try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
+      handler();
+    };
+    // Pointer events 優先
+    el.addEventListener('pointerup', fire, {passive:false});
+    // iOS 某些情境 pointer 不穩，補 touchend
+    el.addEventListener('touchend', fire, {passive:false});
+    // click 當後援
+    el.addEventListener('click', (ev)=>{
+      const now = Date.now();
+      if(now - last < 450) return;
+      last = now;
+      handler();
+    }, {passive:true});
+  }
+
+  function makeToken(text){
     const el = document.createElement("div");
     el.className = "token";
     el.textContent = text;
@@ -3888,13 +3920,13 @@ function makeToken(text){
     }else{
       selection.forEach((t, idx) => {
         const el = makeToken(t);
-        el.onclick = () => {
+        bindFastTap(el, () => {
           beep("tap");
           selection.splice(idx,1);
           pool.push(t);
           renderBoard();
           applyHint();
-        };
+        });
         slots.appendChild(el);
       });
     }
@@ -3902,7 +3934,7 @@ function makeToken(text){
     tokensEl.innerHTML = "";
     pool.forEach((t, idx) => {
       const el = makeToken(t);
-      el.onclick = () => {
+      bindFastTap(el, () => {
         beep("tap");
         selection.push(t);
         pool.splice(idx,1);
@@ -3931,7 +3963,7 @@ function makeToken(text){
         }
 
         checkWinRouter();
-      };
+      });
       tokensEl.appendChild(el);
     });
 
@@ -4712,6 +4744,13 @@ document.addEventListener("change", function(ev){
     const btn = document.getElementById('btnA2HSOpen');
     if(btn){
       btn.addEventListener('click', ()=> showGuide(true));
+    }
+    const btnR = document.getElementById('btnA2HSReset');
+    if(btnR){
+      btnR.addEventListener('click', ()=>{
+        try{ localStorage.removeItem(KEY); }catch(_e){}
+        showGuide(true);
+      });
     }
   });
 })();
