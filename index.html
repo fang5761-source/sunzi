@@ -645,10 +645,6 @@
       50%{ box-shadow: var(--glowStrong); opacity: 1; }
       100%{ box-shadow: var(--glowWeak); opacity: 1; }
     }
-      50%{ filter: brightness(1.10); transform: translateY(-1px); }
-      100%{ filter: brightness(1.00); transform: translateY(0); }
-    }
-
     .token.hintFlash{
       animation: hintFlash 1.9s ease-in-out 1;
     }
@@ -666,6 +662,7 @@
     .testBar{ display:none !important; }
 
     .floatTestBtn{
+      display:none !important;
       position: fixed;
       right: 14px;
       bottom: calc(14px + env(safe-area-inset-bottom));
@@ -1001,6 +998,7 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
                 <button class="toolbtn" id="btnSegRead"><span class="icon">🔊</span><span>朗讀</span></button>
                 <button class="toolbtn" id="btnReset"><span class="icon">♻</span><span>重整</span></button>
                 <button class="toolbtn book" id="btnBook"><span class="icon">📜</span><span>兵書</span></button>
+                <button class="toolbtn" id="btnTestTop"><span class="icon">🧪</span><span>測驗</span></button>
 </div>
               <div class="navMini">
                 <button class="toolbtn mini" id="btnPrev">◀</button>
@@ -1093,7 +1091,7 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 
     
 
-    <div class="settingRow">
+    <div class="row">
       <div class="rowLeft">
         <div class="rowTitle">加入主畫面教學</div>
         <div class="rowDesc">需要時再查看（不會自動跳出）</div>
@@ -3369,6 +3367,7 @@ freeNav: false,
   const hintToggleWrap = document.getElementById("hintToggleWrap");
 
   const floatTestBtn = document.getElementById("floatTestBtn");
+  const btnTestTop = document.getElementById("btnTestTop");
 
   const modal = document.getElementById("modal");
   const modalTitle = document.getElementById("modalTitle");
@@ -3592,7 +3591,7 @@ const btnClear = document.getElementById("btnClear");
   showPlainSwitch.onclick = () => {
     PROG.showPlainDefault = !PROG.showPlainDefault;
     saveProgress();
-        try{ showToast && showToast('✅ 已重置本篇進度'); }catch(_e){ try{ alert('已重置本篇進度'); }catch(__){} }
+        try{ showToast && showToast('✅ 已重置本篇進度'); }catch(_e){}catch(__){} }
 
     showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
     openChapterHome();
@@ -4212,16 +4211,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
   /***********************
    * ✅浮動測驗鈕（不佔空間）
    ***********************/
-  function refreshFloatTestButton(){
-    const ch = currentChapter();
-    const p = getChapterProg(currentChapterId);
-    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
-
-    if(viewGame.classList.contains("active") && mode==="learn" && passed >= 1){
-      floatTestBtn.classList.add("show");
-    }else{
-      floatTestBtn.classList.remove("show");
-    }
+  function refreshFloatTestButton(){ /* 已改為上方工具列測驗鈕，避免遮到令牌 */ }
   }
 
   function beginTest(s,e){
@@ -4243,10 +4233,20 @@ btnPrev.disabled = (testCursor <= testRange.start);
     if(PROG.hintOn) flashHintTimes(1);
   }
 
-  floatTestBtn.onclick = () => {
+
+  function openTestPicker(){
     const ch = currentChapter();
     const p = getChapterProg(currentChapterId);
     const passed = Math.min(p.stars || 0, ch.segments.length);
+
+    if(!(viewGame.classList.contains("active") && mode==="learn")){
+      try{ showToast("先回到佈令畫面再測驗"); }catch(_e){}
+      return;
+    }
+    if(passed < 1){
+      try{ showToast("至少先完成 1 段，才會開放測驗"); }catch(_e){}
+      return;
+    }
 
     const options = Array.from({length: passed}, (_,i)=> `<option value="${i}">第${i+1}段</option>`).join("");
     openModal("測驗", `
@@ -4264,25 +4264,26 @@ btnPrev.disabled = (testCursor <= testRange.start);
       <button class="btn primary" id="btnGoTest">開始測驗</button>
     `);
 
-    setTimeout(()=>{
-      const sEl = document.getElementById("mTestStart");
-      const eEl = document.getElementById("mTestEnd");
-      const cancel = document.getElementById("btnCancelTest");
-      const go = document.getElementById("btnGoTest");
+    const sEl = document.getElementById("mTestStart");
+    const eEl = document.getElementById("mTestEnd");
+    const sync = () => {
+      let s = +sEl.value, e = +eEl.value;
+      if(e < s){ e = s; eEl.value = String(e); }
+    };
+    sEl.onchange = sync; eEl.onchange = sync;
 
-      sEl.value = "0";
-      eEl.value = String(passed-1);
+    document.getElementById("btnCancelTest").onclick = () => modalClose.click();
+    document.getElementById("btnGoTest").onclick = () => {
+      let s = +sEl.value, e = +eEl.value;
+      if(e < s){ [s,e] = [e,s]; }
+      modalClose.click();
+      beginTest(s,e);
+    };
+  }
 
-      sEl.onchange = () => { if(Number(eEl.value) < Number(sEl.value)) eEl.value = sEl.value; };
-      eEl.onchange = () => { if(Number(eEl.value) < Number(sEl.value)) sEl.value = eEl.value; };
+  floatTestBtn.onclick = () => openTestPicker();
+  if(btnTestTop){ btnTestTop.onclick = () => openTestPicker(); }
 
-      cancel.onclick = () => modalClose.click();
-      go.onclick = () => {
-        const s = Number(sEl.value);
-        const e = Number(eEl.value);
-        modalClose.click();
-        beginTest(s,e);
-      };
     },0);
   };
 
@@ -4313,8 +4314,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
       try{ showToast("✅ 已重置本篇進度"); }catch(_e){ try{ alert("已重置本篇進度"); }catch(__){} }
       try{ openChapterHome(); }catch(_e){ try{ renderOverview(); showView(viewOverview); }catch(__){} }
     }catch(err){
-      try{ alert("重置失敗，請告訴小樂：" + err); }catch(_e){}
-    }
+}
   }
 
 /***********************
@@ -4358,17 +4358,14 @@ btnPrev.disabled = (testCursor <= testRange.start);
       }catch(_e){}
       openModal("加入主畫面（捷徑）", `
         <div class="plain">想要像 App 一樣全螢幕、比較順暢（也比較不會被網址列擠壓），建議加入主畫面。</div>
-        <div class="helpBox" style="margin-top:10px">
-          <div class="helpLine">1. 用 Safari 開啟本頁</div>
-          <div class="helpLine">2. 點下方「分享」按鈕</div>
-          <div class="helpLine">3. 選「加入主畫面」</div>
-          <div class="helpLine">4. 之後從主畫面打開就像 App</div>
+        <div class="plain">
+          1. 用 Safari 開啟本頁<br>
+          2. 點下方「分享」按鈕<br>
+          3. 選「加入主畫面」<br>
+          4. 之後從主畫面打開就像 App
         </div>
-        <div class="plain muted" style="margin-top:10px">小提醒：如果你是在 LINE 內建瀏覽器，建議右上角改用 Safari 開啟，操作會更穩。</div>
-        <div class="modalActions">
-          <button class="btn" id="btnGuideOK">知道了</button>
-        </div>
-      `);
+        <div class="plain">小提醒：如果你是在 LINE 內建瀏覽器，建議改用 Safari 開啟，操作會更穩。</div>
+      `, `<button class="btn primary" id="btnGuideOK">知道了</button>`);
       const ok = document.getElementById("btnGuideOK");
       if(ok){
         ok.onclick = () => {
@@ -4597,7 +4594,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
         if(typeof currentSegIndex !== "undefined") currentSegIndex = 0;
         // 回到本篇首頁（第1段）
         if(typeof openChapterHome === "function") openChapterHome();
-        try{ showToast && showToast("✅ 已重置本篇進度"); }catch(_e){ alert("已重置本篇進度"); }
+        try{ showToast && showToast("✅ 已重置本篇進度"); }catch(_e){}
       }catch(err){
         alert("重置失敗，請告訴小樂："+err);
       }
@@ -4647,12 +4644,11 @@ if (typeof btnNext !== "undefined" && btnNext) {
       const p = getChapterProg(chId);
       p.stars = 0;
       saveProgress();
-      try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){ alert(`已重置：${name}`); }
+      try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){}`); }
       currentSegIndex = 0;
       openChapterHome();
     }catch(e){
-      try{ alert("重置失敗：請將錯誤畫面截圖給小樂"); }catch(_e){}
-      console.error(e);
+console.error(e);
     }
   }
 
@@ -4688,7 +4684,7 @@ function __resetCurrentChapterHard(){
   const p = getChapterProg(currentChapterId);
   p.stars = 0;
   saveProgress();
-  try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){ alert(`已重置：${name}`); }
+  try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){}`); }
   currentSegIndex = 0;
   openChapterHome();
 }
@@ -4710,7 +4706,7 @@ function __clearAllProgressHard(){
     try{ saveProgress(); }catch(__e){}
   }
 
-  try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){ alert("已清空全部足跡"); }
+  try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){}
   
   // ✅確保在 iOS Safari / LINE 內建瀏覽器中也能從任何錯誤復原流程呼叫到（避免 "Can't find variable"）
   try{
@@ -4793,8 +4789,7 @@ document.addEventListener("change", function(ev){
       },0);
     }catch(e){
       // fallback
-      try{ alert("加入主畫面：Safari 分享 → 加入主畫面"); }catch(_e){}
-    }
+}
   }
 
   function shouldPrompt(){
