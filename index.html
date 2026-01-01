@@ -1107,9 +1107,7 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
     <div class="helpLine">• 放錯也會提示：紅框閃一下 + 下方顯示「請再想一想」（排對才會消失）。</div>
     <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</div>
     <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
-    <div class="helpLine" style="margin-top:.55rem;">• 建議加入手機主畫面使用（全畫面體驗更像 App）：</div>
-    <div class="helpLine">　- iPhone（Safari）：分享 → 加入主畫面</div>
-    <div class="helpLine">　- Android（Chrome）：右上「⋮」→ 加入主畫面／安裝應用程式</div>
+    <div class="helpLine" style="margin-top:.55rem;">• 想要像 App 一樣全螢幕：請點上方「加入主畫面教學 → 重看教學」。</div>
   </div>
 </details>
 
@@ -3922,9 +3920,12 @@ function bindFastTap(el, handler){
       try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
       handler();
     };
-    // Pointer events 優先
+    // Pointer events 優先（用 pointerdown 提升手機瀏覽器點擊成功率）
+    el.addEventListener('pointerdown', fire, {passive:false});
+    // 某些情境 pointerdown 可能被吃掉，保留 pointerup 當後援
     el.addEventListener('pointerup', fire, {passive:false});
-    // iOS 某些情境 pointer 不穩，補 touchend
+    // iOS/安卓：補 touchstart/touchend
+    el.addEventListener('touchstart', fire, {passive:false});
     el.addEventListener('touchend', fire, {passive:false});
     // click 當後援
     el.addEventListener('click', (ev)=>{
@@ -4191,6 +4192,14 @@ btnPrev.disabled = (testCursor <= testRange.start);
     }
     modal.classList.add("show");
   }
+  // ✅ 統一關閉 Modal（避免未定義造成按鈕無反應）
+  function closeModal(){
+    try{ modalClose.click(); }catch(_e){
+      try{ modal.classList.remove("show"); }catch(_e2){}
+    }
+  }
+
+
 
     modalClose.onclick = () => {
     // 關閉視窗
@@ -4359,19 +4368,31 @@ btnPrev.disabled = (testCursor <= testRange.start);
         localStorage.removeItem("A2HS_SEEN_V1");
         sessionStorage.removeItem("A2HS_SEEN_SESSION");
       }catch(_e){}
-      openModal("加入主畫面（捷徑）", `
+
+      const body = `
         <div class="plain">想要像 App 一樣全螢幕、比較順暢（也比較不會被網址列擠壓），建議加入主畫面。</div>
+
         <div class="helpBox" style="margin-top:10px">
+          <div class="helpLine"><b>iPhone / iPad（Safari）</b></div>
           <div class="helpLine">1. 用 Safari 開啟本頁</div>
-          <div class="helpLine">2. 點下方「分享」按鈕</div>
+          <div class="helpLine">2. 點下方「分享」按鈕（方框＋上箭頭）</div>
           <div class="helpLine">3. 選「加入主畫面」</div>
-          <div class="helpLine">4. 之後從主畫面打開就像 App</div>
+          <div class="helpLine">4. 從主畫面打開，就像 App</div>
         </div>
-        <div class="plain muted" style="margin-top:10px">小提醒：如果你是在 LINE 內建瀏覽器，建議右上角改用 Safari 開啟，操作會更穩。</div>
-        <div class="modalActions">
-          <button class="btn" id="btnGuideOK">知道了</button>
+
+        <div class="helpBox" style="margin-top:10px">
+          <div class="helpLine"><b>Android（Chrome）</b></div>
+          <div class="helpLine">1. 用 Chrome 開啟本頁</div>
+          <div class="helpLine">2. 點右上角「⋮」選單</div>
+          <div class="helpLine">3. 選「加入主畫面」或「安裝應用程式」</div>
+          <div class="helpLine">4. 從主畫面打開，就像 App</div>
         </div>
-      `);
+
+        <div class="plain muted" style="margin-top:10px">小提醒：若你是在 LINE/FB 內建瀏覽器，建議改用「在 Safari/Chrome 開啟」，操作會更穩。</div>
+      `;
+
+      openModal("加入主畫面（捷徑）", body, `<button class="btn" id="btnGuideOK">知道了</button>`);
+
       const ok = document.getElementById("btnGuideOK");
       if(ok){
         ok.onclick = () => {
@@ -4383,7 +4404,6 @@ btnPrev.disabled = (testCursor <= testRange.start);
         };
       }
     };
-  }
 
   // ✅ 清空足跡：用自家 Modal（不跳 iOS 原生對話方塊）
   btnClear.onclick = () => {
