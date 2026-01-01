@@ -608,8 +608,9 @@
       min-height:0;
     }
     .token{
-      position:relative;
-      z-index:3;
+      position: relative;
+      z-index: 1;
+      pointer-events: auto;
       display:inline-flex;
       align-items:center;
       cursor:pointer;
@@ -625,8 +626,6 @@
       user-select:none;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
-      pointer-events:auto;
-      will-change: box-shadow;
       text-rendering: geometricPrecision;
       -webkit-font-smoothing: antialiased;
       word-break: normal;
@@ -634,7 +633,7 @@
       writing-mode: horizontal-tb;
       max-width: 100%;
     }
-    .token:active{ box-shadow: var(--glowMid); }
+    .token:active{ transform: translateY(1px) scale(.99); }
 
     .token.hintStrong{ box-shadow: var(--glowStrong); }
     .token.hintMid{ box-shadow: var(--glowMid); }
@@ -648,9 +647,6 @@
       0%{ box-shadow: var(--glowWeak); opacity: 1; }
       50%{ box-shadow: var(--glowStrong); opacity: 1; }
       100%{ box-shadow: var(--glowWeak); opacity: 1; }
-    }
-      50%{ filter: brightness(1.10); transform: translateY(-1px); }
-      100%{ filter: brightness(1.00); transform: translateY(0); }
     }
 
     .token.hintFlash{
@@ -928,8 +924,6 @@
 /* iOS tap fix: 減少 Safari/LINE 內建瀏覽器點擊遲鈍 */
 button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
   touch-action: manipulation;
-      pointer-events:auto;
-      will-change: box-shadow;
   -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
@@ -1124,7 +1118,7 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
       <div class="helpBody">
         <div class="helpLine">• 這是一個背誦《孫子兵法》的練習工具。</div>
         <div class="helpLine">• 目標：讓你用最少摩擦，反覆進入記憶節奏。</div>
-        <div class="helpLine version">• 版本：v5.8</div>
+        <div class="helpLine version">• 版本：v5.8 (fixed10)</div>
       </div>
     </details>
 
@@ -3284,6 +3278,9 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 
   // ✅避免 iOS/LINE 對話方塊阻擋：把 alert 轉成 toast（不影響流程）
   (function(){
+  // ✅ iOS/LINE 內建瀏覽器會封鎖原生 alert/confirm（也會造成操作卡住）；統一改用自家 Modal/Toast
+  try{ window.alert = function(){}; window.confirm = function(){ return false; }; }catch(_e){}
+
     const _native = window.alert;
     window.alert = function(msg){
       try{
@@ -3940,11 +3937,9 @@ function bindFastTap(el, handler){
   }
 
   function makeToken(text){
-    const el = document.createElement("button");
-    el.type = "button";
+    const el = document.createElement("div");
     el.className = "token";
     el.textContent = text;
-    el.setAttribute("aria-label", text);
     return el;
   }
 
@@ -4168,10 +4163,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
     currentSegIndex -= 1;
     startLearnSegment(currentSegIndex, { firstEntry:false });
   }
-}
-  // expose for iOS/LINE scope quirks
-  try{ window.renderOverview = renderOverview; }catch(_e){}
-;
+};
 
 
   /***********************
@@ -4186,23 +4178,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
     `);
   };
 
-  
-  function uiConfirmModal(title, msg, yesText, noText, onYes){
-    try{
-      openModal({
-        title: title || "確認",
-        content: `<div class="p">${msg}</div>`,
-        actions: [
-          { text: noText || "取消", kind: "ghost", onClick: () => closeModal() },
-          { text: yesText || "確定", kind: "danger", onClick: () => { closeModal(); try{ onYes && onYes(); }catch(e){ console.error(e); } } }
-        ]
-      });
-    }catch(e){
-      const ok = window.confirm(msg);
-      if(ok) onYes && onYes();
-    }
-  }
-function openModal(title, html, actionsHtml=null){
+  function openModal(title, html, actionsHtml=null){
     modalTitle.textContent = title;
     modalBody.innerHTML = html;
 
@@ -4552,12 +4528,6 @@ if (typeof btnPrev !== "undefined" && btnPrev) {
     }
   };
 }
-  // iOS/LINE 內建瀏覽器容易出現「禁止顯示對話方塊」：避免用原生 alert
-  function safeToast(msg){
-    try{ showToast(String(msg)); }catch(e){ try{ console.log(msg); }catch(_){} }
-  }
-  window.alert = safeToast;
-
 
 if (typeof btnNext !== "undefined" && btnNext) {
   btnNext.onclick = () => {
@@ -4608,186 +4578,6 @@ if (typeof btnNext !== "undefined" && btnNext) {
   init();
 })();
 </script>
-
-
-
-<script>
-/* v5.4.5 hotfix: make Settings -> 本篇重置 always work */
-(function(){
-  function bind(){
-    const b = document.getElementById("btnResetChapter");
-    if(!b) return;
-    b.addEventListener("click", function(e){
-      try{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }catch(_){}
-      const ok = confirm("確定要重置【本篇】進度嗎？\n（只會把本篇完成數歸零，不影響其他篇）");
-      if(!ok) return;
-      try{ stopReading && stopReading(); }catch(_){}
-      try{
-        if(typeof PROG !== "undefined" && typeof currentChapterId !== "undefined"){
-          PROG.chapters[currentChapterId] = { stars:0 };
-          saveProgress && saveProgress();
-        }
-        if(typeof currentSegIndex !== "undefined") currentSegIndex = 0;
-        // 回到本篇首頁（第1段）
-        if(typeof openChapterHome === "function") openChapterHome();
-        try{ showToast && showToast("✅ 已重置本篇進度"); }catch(_e){ alert("已重置本篇進度"); }
-      }catch(err){
-        alert("重置失敗，請告訴小樂："+err);
-      }
-    }, true); // capture = true, avoid parent click handlers
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bind);
-  else bind();
-})();
-
-  // Bind reset buttons (settings + more sheet) with capture to avoid parent handlers
-  function bindResetButtons(){
-    const a = document.getElementById("btnResetChapter");
-    const handler = (ev)=>{
-      if(ev){ ev.preventDefault(); ev.stopPropagation(); try{ ev.stopImmediatePropagation(); }catch(_e){} }
-      // confirm to avoid mis-tap
-      const ok = confirm("確定要「本篇重置」嗎？\n只會把目前篇章的完成數歸零。");
-      if(!ok) return;
-      resetChapterProgress();
-    };
-    if(a) a.addEventListener("click", handler, true);
-
-    // fallback delegation
-    document.addEventListener("click", (ev)=>{
-      const t = ev.target;
-      if(!t) return;
-      if(t.id==="btnResetChapter" ){
-        handler(ev);
-      }
-    }, true);
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bindResetButtons);
-  else bindResetButtons();
-
-
-  /***********************
-   * CAPTURE_RESET_CHAPTER_V57
-   * - Reset should live in chapter-level "更多", not global settings.
-   * - Handle btnResetChapter defensively.
-   ***********************/
-  function __resetCurrentChapter(){
-    try{
-      const chId = currentChapterId;
-      const ch = (CHAPTERS || []).find(x => x.id === chId);
-      const name = ch ? (ch.title || ch.top || chId) : chId;
-      const ok = confirm(`確定要重置「${name}」本篇進度嗎？\n（只會影響本篇，不影響其他篇章）`);
-      if(!ok) return;
-      const p = getChapterProg(chId);
-      p.stars = 0;
-      saveProgress();
-      try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){ alert(`已重置：${name}`); }
-      currentSegIndex = 0;
-      openChapterHome();
-    }catch(e){
-      try{ alert("重置失敗：請將錯誤畫面截圖給小樂"); }catch(_e){}
-      console.error(e);
-    }
-  }
-
-  document.addEventListener("click", function(ev){
-    const t = ev.target;
-    if(!t) return;
-    const isBtnResetChapter = (t.id === "btnResetChapter");
-
-    if(isBtnResetChapter){
-      ev.preventDefault();
-      ev.stopPropagation();
-      try{ ev.stopImmediatePropagation(); }catch(_e){}
-      __resetCurrentChapter();
-    }
-  }, true);
-
-
-
-/***********************
- * v5.8 robust actions
- ***********************/
-function __getChapterName(){
-  try{
-    const ch = (CHAPTERS||[]).find(x=>x.id===currentChapterId);
-    return ch ? (ch.title || ch.top || currentChapterId) : currentChapterId;
-  }catch(_e){ return currentChapterId; }
-}
-
-function __resetCurrentChapterHard(){
-  const name = __getChapterName();
-  const ok = confirm(`確定要重置「${name}」本篇進度嗎？\n（只影響本篇，不影響其他篇章）`);
-  if(!ok) return;
-  const p = getChapterProg(currentChapterId);
-  p.stars = 0;
-  saveProgress();
-  try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){ alert(`已重置：${name}`); }
-  currentSegIndex = 0;
-  openChapterHome();
-}
-
-function __clearAllProgressHard(){
-    const msg = "確定要清空所有篇章的足跡紀錄嗎？
-（不會重置字級與顯示設定）
-
-此動作不可復原。";
-    uiConfirmModal("清空足跡紀錄", msg.replace(/
-/g,"<br>"), "確定清空", "取消", () => {
-      try{
-        if(!PROG) return;
-        const keep = {
-          fontScale: PROG.fontScale,
-          showPlainDefault: PROG.showPlainDefault,
-          hintOn: PROG.hintOn,
-          audioOn: PROG.audioOn,
-          freeNext: PROG.freeNext
-        };
-        PROG = Object.assign({ v: (PROG.v||1), chapters:{} }, keep);
-        saveProg();
-        goOverview();
-        setTimeout(()=>{ try{ renderOverview(); }catch(e){} }, 0);
-        safeToast("✅ 已清空全部足跡");
-      }catch(e){
-        console.error(e);
-        openModal({ title:"清空失敗", content:`<div class="p">清空時發生問題，請截圖傳給小樂：<br><small>${String(e)}</small></div>`, actions:[{text:"知道了",kind:"primary",onClick:()=>closeModal()}] });
-      }
-    });
-  }
-
-function __applyFreeNavOverride(){
-  try{
-    if(!PROG || !PROG.freeNav) return;
-    // Only relevant in game view
-    if(viewGame && viewGame.classList.contains("hidden")===false){
-      const isLast = (segIndex >= currentSegs.length-1);
-      if(btnNext) btnNext.disabled = isLast ? true : false;
-      if(btnBook) btnBook.disabled = false;
-    }
-  }catch(_e){}
-}
-
-document.addEventListener("click", function(ev){
-  const t = ev.target;
-  if(!t) return;
-  // Global clear（⚠️ 已停用：避免與「設定頁清空足跡」的確認視窗衝突）
-  // 若未來需要「長按/隱藏按鈕」的硬清除，再另外掛在專用按鈕上即可。
-}, true);
-
-// FreeNav switch wiring (ensure works even if other handlers fail)
-document.addEventListener("change", function(ev){
-  const t = ev.target;
-  if(t && t.id==="freeNavSwitch"){
-    PROG.freeNav = !!t.checked;
-    saveProgress();
-    try{ showToast && showToast("已更新：自由瀏覽 " + (PROG.freeNav ? "開啟" : "關閉")); }catch(_e){}
-    try{ renderSegment(); }catch(_e){}
-    __applyFreeNavOverride();
-  }
-}, true);
-
-</script>
-
-
 <script>
 /* ✅ 加入主畫面（捷徑）｜iPhone Safari 友善版（不再用全螢幕遮罩，避免 iOS 出現「看不到但擋住操作」） */
 (function(){
@@ -4825,7 +4615,7 @@ document.addEventListener("change", function(ev){
       },0);
     }catch(e){
       // fallback
-      try{ alert("加入主畫面：Safari 分享 → 加入主畫面"); }catch(_e){}
+      try{ if(typeof openModal==="function"){ openModal("加入主畫面", `<div class="plain">請用 Safari：分享 → 加入主畫面</div>`, `<button class="btn primary" id="a2hsOk2">知道了</button>`); setTimeout(()=>{ const b=document.getElementById("a2hsOk2"); if(b) b.onclick=()=>{ try{ closeModal && closeModal(); }catch(_e){} }; },0); } }catch(_e){}
     }
   }
 
