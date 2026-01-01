@@ -62,7 +62,7 @@
   color:rgba(233,239,233,.9);
 }
 
-/* fixed19: 單排工具列（🔊 ♻️ 📜 ◀ 2/19 ▶） */
+/* fixed21: 單排工具列（🔊 ♻️ 📜 ◀ 2/19 ▶） */
 .toolbarWrap{flex-direction:row; gap:0;}
 .toolbar.toolbarOneLine{display:flex; align-items:center; gap:.5rem; flex-wrap:nowrap;}
 .toolbtn.iconOnly{padding:.55rem .7rem;}
@@ -70,7 +70,7 @@
 .toolbtn.iconOnly span:not(.icon){display:none;}
 .toolbarSpacer{flex:1 1 auto;}
 
-/* fixed19: 避開 Safari 底部工具列吃點擊區（不推畫面，只留安全緩衝空間） */
+/* fixed21: 避開 Safari 底部工具列吃點擊區（不推畫面，只留安全緩衝空間） */
 .gameWrap{padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 120px) !important;}
 .tokensPanel{padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 120px) !important;}
 /* Bottom sheet */
@@ -1045,8 +1045,6 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
     <button class="toolbtn mini primary" id="btnNext" aria-label="下一關" disabled>▶</button>
   </div>
 </div>
-
-          </div>
 
           <div class="board">
             <div class="boardHead">
@@ -3406,7 +3404,7 @@ freeNav: false,
   const gameWrapEl = document.querySelector('.gameWrap');
   const tokensPanelEl = document.querySelector('.tokensPanel');
 
-  function ensureBottomSafe(){ /* fixed19: no-op */ }
+  function ensureBottomSafe(){ /* fixed21: no-op */ }
 
   fontRange.oninput = () => {
     PROG.fontScale = Number(fontRange.value);
@@ -3664,25 +3662,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
     showView(viewOverview);
   }
 
-  // ✅ fixed20：啟動保護罩，避免任何單一 DOM/事件錯誤讓整頁只剩頂欄（俗稱「惡夢」）
-  try{
-    init();
-  }catch(err){
-    console.error("[init crash]", err);
-    try{
-      // 最低限度：至少把「總覽」顯示出來，讓使用者還能進入篇章
-      const vO = document.getElementById("viewOverview");
-      const vG = document.getElementById("viewGame");
-      const vS = document.getElementById("viewSettings");
-      if(vG) vG.style.display="none";
-      if(vS) vS.style.display="none";
-      if(vO) vO.style.display="block";
-    }catch(_e){}
-    try{
-      // 若 toast 工具可用，給一個提示（不阻斷操作）
-      if(typeof showToast==="function") showToast("已自動回復到總覽（偵測到初始化錯誤）");
-    }catch(_e){}
-  }
+  init();
 })();
 </script>
 <script>
