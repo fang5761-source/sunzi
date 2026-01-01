@@ -548,8 +548,8 @@
       overflow:auto; 
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-            padding-bottom: calc(90px + env(safe-area-inset-bottom));
-min-height:0; 
+      padding-bottom: calc(96px + env(safe-area-inset-bottom));
+      min-height:0; 
     }
     .boardHead{
       display:flex;
@@ -937,6 +937,7 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
         <div class="topActions">
           <button class="pillBtn primary" id="btnOverview">總覽</button>
           <button class="pillBtn" id="btnBackOrSettings">設定</button>
+          <button class="pillBtn" id="floatTestBtn">測驗</button>
         </div>
       </div>
     </div>
@@ -1129,8 +1130,6 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
   </div>
 </div>
 
-
-<button class="floatTestBtn" id="floatTestBtn">測驗</button>
 
     <div class="modal" id="modal">
       <div class="modalCard">
@@ -4356,6 +4355,34 @@ btnClear.onclick = () => {
         showPlainDefault: PROG?.showPlainDefault,
         freeNav: PROG?.freeNav
       };
+  // ✅「重看教學」：只在使用者主動點擊時顯示（避免 LINE 內建瀏覽器一直跳）
+  btnGuide && (btnGuide.onclick = () => {
+    // 清掉「已看過」旗標，方便測試第一次提示
+    try{
+      localStorage.removeItem("A2HS_SEEN_V1");
+      sessionStorage.removeItem("A2HS_SEEN_SESSION");
+    }catch(_e){}
+    openModal("加入主畫面（捷徑）", `
+      <div class="plain">想要像 App 一樣全螢幕、比較順暢（也比較不會被網址列擠壓），建議加入主畫面。</div>
+      <div class="helpBox" style="margin-top:10px">
+        <div class="helpLine">1. 用 Safari 開啟本頁</div>
+        <div class="helpLine">2. 點下方「分享」按鈕</div>
+        <div class="helpLine">3. 選「加入主畫面」</div>
+        <div class="helpLine">4. 之後從主畫面打開就像 App</div>
+      </div>
+      <div class="plain muted" style="margin-top:10px">小提醒：如果你是在 LINE 內建瀏覽器，建議右上角改用 Safari 開啟，操作會更穩。</div>
+      <div class="modalActions">
+        <button class="btn" id="btnGuideOK">知道了</button>
+      </div>
+    `);
+    const ok = document.getElementById("btnGuideOK");
+    ok && (ok.onclick = () => {
+      try{
+        localStorage.setItem("A2HS_SEEN_V1","1");
+        sessionStorage.setItem("A2HS_SEEN_SESSION","1");
+      }catch(_e){}
+      closeModal();
+    });
   });
 
 
@@ -4393,32 +4420,7 @@ try{ mode = "learn"; }catch(_e){}
       // 少數情況用 reload 才會真的刷新畫面（保險起見）
       // setTimeout(() => { try{ location.reload(); }catch(e){} }, 50);
     });
-  };  btnResetChapter && (
-  // ✅「重看教學」：只在使用者主動點擊時顯示（避免 iOS / LINE 內建瀏覽器一直跳）
-  btnGuide && (btnGuide.onclick = (e) => {
-    try{ e && e.stopPropagation && e.stopPropagation(); }catch(_e){}
-    try{
-      localStorage.removeItem("A2HS_SEEN_V1");
-      sessionStorage.removeItem("A2HS_SEEN_SESSION");
-    }catch(_e){}
-    openModal("加入主畫面（捷徑）", `
-      <div class="plain">想要像 App 一樣全螢幕、比較順暢（也比較不會被網址列擠壓），建議加入主畫面。</div>
-      <div class="helpBox" style="margin-top:10px">
-        <div class="helpLine">1. 用 Safari 開啟本頁</div>
-        <div class="helpLine">2. 點下方「分享」按鈕</div>
-        <div class="helpLine">3. 選「加入主畫面」</div>
-        <div class="helpLine">4. 之後從主畫面打開就像 App</div>
-      </div>
-      <div class="plain muted" style="margin-top:10px">小提醒：如果你是在 LINE 內建瀏覽器，建議右上角改用 Safari 開啟，操作會更穩。</div>
-      <div class="modalActions">
-        <button class="btn" id="btnGuideOK">知道了</button>
-      </div>
-    `);
-    const ok = document.getElementById("btnGuideOK");
-    ok && ok.addEventListener("click", () => { try{ modalClose.click(); }catch(_e){} });
-  });
-
-btnResetChapter.onclick = (e) => { try{ e && e.stopPropagation && e.stopPropagation(); }catch(_e){}
+  };  btnResetChapter && (btnResetChapter.onclick = (e) => { try{ e && e.stopPropagation && e.stopPropagation(); }catch(_e){}
     openModal("本篇重置", `
       <div class="plain">只會把「目前篇章」的完成數歸零，其他篇不受影響。</div>
       <div class="plain">確定要重置本篇嗎？</div>
@@ -4795,5 +4797,6 @@ document.addEventListener("change", function(ev){
   });
 })();
 </script>
+
 </body>
 </html>
