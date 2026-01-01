@@ -60,13 +60,6 @@
   border-radius:1rem;
   background:rgba(0,0,0,.18);
   color:rgba(233,239,233,.9);
-
-/* ===== v5.8 toolbar one-line (icons) ===== */
-.toolbar.toolbarOneLine{ flex-wrap:nowrap; }
-.toolbtn.iconOnly{ gap:0; padding:.45rem .55rem; min-width:40px; justify-content:center; }
-.toolbtn.iconOnly:active{ transform: translateY(1px); }
-.toolSep{ width:1px; height:22px; background: var(--line); opacity:.75; margin:0 .1rem; border-radius:999px; }
-.navText.navInline{ min-width:60px; text-align:center; }
 }
 /* Bottom sheet */
 #moreSheetBack{
@@ -117,7 +110,7 @@
       --token2:#1a221b;
 
       --glowStrong: 0 0 1.15rem rgba(255,225,140,.95), 0 0 2.1rem rgba(255,225,140,.65);
-      --glowBook: 0 0 .75rem rgba(214,178,94,.58), 0 0 1.85rem rgba(214,178,94,.34);
+      --glowBook: 0 0 .55rem rgba(214,178,94,.40), 0 0 1.35rem rgba(214,178,94,.18);
       --glowMid:    0 0 0.85rem rgba(255,225,140,.75), 0 0 1.45rem rgba(255,225,140,.45);
       --glowWeak:   0 0 0.55rem rgba(255,225,140,.55), 0 0 0.95rem rgba(255,225,140,.30);
 
@@ -486,8 +479,8 @@
     .miniBtn.book{
   border-color: rgba(214,178,94,.35);
   box-shadow:
-    0 0 16px rgba(214,178,94,.62),
-    0 0 34px rgba(214,178,94,.34);
+    0 0 14px rgba(214,178,94,.52),
+    0 0 28px rgba(214,178,94,.26);
 }
 
     .miniBtn.primary{
@@ -1025,19 +1018,21 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
             </div>
             
             <div class="toolbarWrap">
-              <div class="toolbar toolbarOneLine" id="gameToolbar">
-                <button class="toolbtn iconOnly" id="btnSegRead" aria-label="朗讀" title="朗讀">🔊</button>
-                <button class="toolbtn iconOnly" id="btnReset" aria-label="重整" title="重整">♻️</button>
-                <button class="toolbtn iconOnly book" id="btnBook" aria-label="兵書" title="兵書">📜</button>
-
-                <span class="toolSep" aria-hidden="true"></span>
-
-                <button class="toolbtn iconOnly mini" id="btnPrev" aria-label="上一關" title="上一關">◀</button>
-                <div class="navText navInline" id="navText">1/1</div>
-                <button class="toolbtn iconOnly mini primary" id="btnNext" aria-label="下一關" title="下一關" disabled>▶</button>
+              <div class="toolbar">
+                <button class="toolbtn" id="btnSegRead"><span class="icon">🔊</span><span>朗讀</span></button>
+                <button class="toolbtn" id="btnReset"><span class="icon">♻</span><span>重整</span></button>
+                <button class="toolbtn book" id="btnBook"><span class="icon">📜</span><span>兵書</span></button>
+</div>
+              <div class="navMini">
+                <button class="toolbtn mini" id="btnPrev">◀</button>
+                <div class="navText" id="navText">1/1</div>
+                <button class="toolbtn mini primary" id="btnNext" disabled>▶</button>
               </div>
             </div>
-<div class="board">
+
+          </div>
+
+          <div class="board">
             <div class="boardHead">
               <div class="boardTitle">
                 <span id="boardTitle">佈令板</span>
