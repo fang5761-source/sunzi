@@ -138,9 +138,11 @@
     .safeBottom{ padding-bottom: env(safe-area-inset-bottom); }
 
     .app{
-      height:100%;
+      /* ✅ Mobile browser (含網址列) 使用動態視窗高度，避免底部內容被推到看不到 */
+      height: calc(var(--vh, 1vh) * 100);
       display:flex;
       flex-direction:column;
+      min-height: -webkit-fill-available;
     }
 
     .topbar{
@@ -238,7 +240,10 @@
     }
     .view.active{ display:flex; flex-direction:column; gap:10px; }
 
-    .scroll{
+    
+    /* ✅ 允許遊戲畫面在小螢幕/有網址列時可垂直捲動，避免令牌被遮住 */
+    #viewGame.view.active{ overflow:auto; -webkit-overflow-scrolling:touch; }
+.scroll{
       overflow:auto;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain; /* ✅防止 iOS 捲動把整個頁面「鎖死」 */
@@ -535,8 +540,15 @@
     .switch.on .knob{ left:18px; }
 
     /* Board */
-    .gameWrap{ display:flex; flex-direction:column; gap:10px; overflow:hidden; min-height:0; }
-    .board{ padding:10px; border-bottom:1px solid rgba(255,255,255,.06); }
+    .gameWrap{ 
+      display:flex; 
+      flex-direction:column; 
+      gap:10px; 
+      overflow:auto; 
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      min-height:0; 
+    }
     .boardHead{
       display:flex;
       align-items:center;
@@ -3266,7 +3278,20 @@ freeNav: false,
   let PROG = loadProgress();
   document.body.style.setProperty("--fontScale", String(PROG.fontScale));
 
+  
   /***********************
+   * MOBILE VIEWPORT FIX (URL bar safe)
+   ***********************/
+  function __setVh(){
+    try{
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    }catch(_e){}
+  }
+  __setVh();
+  window.addEventListener("resize", __setVh);
+  window.addEventListener("orientationchange", __setVh);
+/***********************
    * UI REFS
    ***********************/
   const viewOverview = document.getElementById("viewOverview");
@@ -4263,38 +4288,47 @@ btnClear.onclick = () => {
     });
 
     document.getElementById("btnClearOK")?.addEventListener("click", () => {
-      // 保留顯示設定（字級/自由瀏覽等）
-      const keepUI = PROG && PROG.ui ? JSON.parse(JSON.stringify(PROG.ui)) : null;
+      // ✅ 清空「足跡」但保留設定（字級 / 顯示 / 音效等）
+      try{ stopReading && stopReading(); }catch(_e){}
 
-      // 1) 直接刪掉儲存（最乾淨）
-      try { localStorage.removeItem(LS_KEY); } catch(e) {}
+      const keep = {
+        fontScale: PROG?.fontScale,
+        hintDefault: PROG?.hintDefault,
+        hintOn: PROG?.hintOn,
+        soundOn: PROG?.soundOn,
+        ttsOn: PROG?.ttsOn,
+        showPlainDefault: PROG?.showPlainDefault,
+        freeNav: PROG?.freeNav
+      };
 
-      // 2) 重新寫入「乾淨進度 + 保留 UI」
+      // 重建乾淨進度（只清 chapters）
       try{
-        PROG = JSON.parse(JSON.stringify(defaultProgress())); // 修正：確保呼叫函式
-        if (keepUI) PROG.ui = keepUI;
-      }catch(e){
         PROG = defaultProgress();
+        Object.keys(keep).forEach(k=>{
+          if(keep[k] !== undefined && keep[k] !== null) PROG[k] = keep[k];
+        });
+        PROG.chapters = {};
+        saveProgress();
+      }catch(e){
+        // fallback：最後手段
+        try{ localStorage.removeItem(LS_KEY); }catch(_e){}
+        try{ PROG = defaultProgress(); PROG.chapters = {}; saveProgress(); }catch(_e){}
       }
 
-      // 強制覆寫一次
-      try { localStorage.setItem(LS_KEY, JSON.stringify(PROG)); } catch(e) {}
-
-      // 立刻刷新 UI
-      try {
-        renderOverview(); // ✅ 修正這裡：原本是 renderChapterList();
-        
-        // 更新標題並跳轉
+      // ✅ 同步 UI 並跳回總覽
+      try{
+        currentChapterId = 1;
+        currentSegIndex = 0;
+      }catch(_e){}
+      try{
         topTitle.textContent = "孫子兵法";
         topSub.textContent = "原書順序";
-        showView(viewOverview); 
-        
-        showToast && showToast("✅ 已清空全部足跡");
-      } catch(e) {
-        console.error(e);
-      }
-
-      modalClose.click(); // 關閉視窗
+      }catch(_e){}
+      try{ renderOverview(); }catch(_e){}
+      try{ showView(viewOverview); }catch(_e){}
+      try{ syncSettingsUI && syncSettingsUI(); }catch(_e){}
+      try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){ try{ alert("已清空全部足跡"); }catch(__){} }
+modalClose.click(); // 關閉視窗
 
       // 少數情況用 reload 才會真的刷新畫面（保險起見）
       // setTimeout(() => { try{ location.reload(); }catch(e){} }, 50);
@@ -4595,14 +4629,8 @@ function __applyFreeNavOverride(){
 document.addEventListener("click", function(ev){
   const t = ev.target;
   if(!t) return;
-
-  // Global clear
-  if(t.id==="btnClear" || (t.closest && t.closest("#btnClear"))){
-    ev.preventDefault(); ev.stopPropagation();
-    try{ ev.stopImmediatePropagation(); }catch(_e){}
-    __clearAllProgressHard();
-    return;
-  }
+  // Global clear（⚠️ 已停用：避免與「設定頁清空足跡」的確認視窗衝突）
+  // 若未來需要「長按/隱藏按鈕」的硬清除，再另外掛在專用按鈕上即可。
 }, true);
 
 // FreeNav switch wiring (ensure works even if other handlers fail)
