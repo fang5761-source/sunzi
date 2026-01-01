@@ -549,6 +549,7 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
       min-height:0; 
+          padding-bottom: calc(140px + env(safe-area-inset-bottom));
     }
     .boardHead{
       display:flex;
@@ -594,7 +595,7 @@
     }
 
     /* Token zone */
-    .tokensPanel{ padding:10px 10px calc(10px + 72px + env(safe-area-inset-bottom)); overflow:visible; min-height:0; }
+    .tokensPanel{ padding:10px 10px calc(10px + 160px + env(safe-area-inset-bottom)); overflow:visible; min-height:0; }
     /* ✅ 取消令牌區「內部捲動」：避免 iPhone Safari 出現捲動鎖死/點擊失靈（改成整頁只用一個捲動容器） */
     .tokens{
       display:flex;
