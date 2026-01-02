@@ -1010,6 +1010,33 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
     0 0 .9rem rgba(255,225,140,.42);
 }
 
+
+/* fixed25: 單排工具列（圖示版） */
+.toolbar.singleRow{ display:flex; align-items:center; gap:10px; flex-wrap:nowrap; }
+.toolbar.singleRow .toolbtn{ padding:10px 12px; min-width:44px; }
+.toolbar.singleRow .toolbtn .label{ display:none; } /* 只留圖示，省空間 */
+.toolbar.singleRow .toolbtn .icon{ font-size:18px; line-height:1; }
+.navInline{ display:flex; align-items:center; gap:10px; margin-left:auto; flex-wrap:nowrap; }
+.navInline .navText{ min-width:64px; text-align:center; font-weight:800; }
+.navInline .toolbtn.mini{ width:44px; padding:10px 0; }
+
+
+/* fixed25: 佈令板 vs 令牌區 更好辨識 */
+.board{ background: rgba(21,27,22,.92); border:1px solid rgba(214,178,94,.25); }
+.tokensPanel{ margin-top:14px; padding:12px; border-radius:18px; background: rgba(15,20,16,.92); border:1px solid rgba(46,125,50,.28); }
+.tokensHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.tokensTitle{ font-weight:800; color: var(--muted); letter-spacing:.06em; }
+.tokensRemain{ font-size:12px; color: var(--muted); opacity:.95; }
+.tokensPanel .orderError{ margin-top:10px; }
+
+
+/* fixed25: 總覽提示行移除 */
+.chapterHint{ display:none !important; }
+
+
+/* fixed25: modal 按鈕文字不吃事件（點字也算按按鈕） */
+.btnLabel{ pointer-events:none; }
+
 </style>
 </head>
 
@@ -1115,6 +1142,7 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
           </div>
 
           <div class="tokensPanel">
+            <div class="tokensHead"><div class="tokensTitle">令牌區</div><div class="tokensRemain" id="tokensRemain"></div></div>
             <div class="tokens" id="tokens"></div>
             <div class="orderError" id="orderError" aria-live="polite">請再想一想</div>
           </div>
@@ -4525,7 +4553,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
         <div class="plain muted" style="margin-top:10px">小提醒：若你是在 LINE/FB 內建瀏覽器，建議改用「在 Safari/Chrome 開啟」，操作會更穩。</div>
       `;
 
-      openModal("加入主畫面（捷徑）", body, `<button class="btn" id="btnGuideOK">知道了</button>`);
+      openModal("加入主畫面（捷徑）", body, `<button class="btn" id="btnGuideOK"><span class="btnLabel">知道了</span></button>`);
 
       const ok = document.getElementById("btnGuideOK");
       if(ok){
