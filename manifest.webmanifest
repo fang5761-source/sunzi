@@ -1,6 +1,6 @@
 {
   "name": "孫子兵法背誦",
-  "short_name": "孫子背誦",
+  "short_name": "孫子兵法背誦",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f1410",
