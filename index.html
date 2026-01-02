@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：fixed24（乾淨母版）
+版本：fixed26（乾淨母版・工具列收斂版）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -41,8 +41,16 @@
 #slots{ overflow:auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 
 
+.singleRow{ display:flex; align-items:center; gap:6px; flex-wrap:nowrap; width:100%; justify-content:space-between; }
+.singleRow .toolbtn{ padding:8px 10px; min-width:40px; }
+.singleRow .toolbtn .label{ display:none; }
+.singleRow .toolbtn .icon{ font-size:18px; line-height:1; }
+.singleRow .navInline{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+.singleRow .navInline .toolbtn.mini{ min-width:40px; padding:8px 10px; }
+.singleRow .navText{ min-width:64px; text-align:center; padding:8px 10px; border-radius:999px; }
+
 /* ===== v5.4 toolbar + sheet ===== */
-.toolbarWrap{display:flex; flex-direction:column; gap:.45rem; align-items:flex-end;}
+.toolbarWrap{display:flex; flex-direction:column; gap:.45rem; align-items:stretch; width:100%;}
 .toolbar{display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
 
 /* ===== v5.8 toolbar one-line (icons) ===== */
@@ -136,7 +144,8 @@
     }
 
     *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    html,html,body{overflow-x:hidden;}
+body{ height:100%; }
     body{
       margin:0;
       font-family: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Serif CJK TC", serif;
@@ -237,7 +246,7 @@
       gap:10px;
     }
 
-    .panel{
+    .panel{ overflow-x:hidden; 
       background: linear-gradient(180deg, rgba(21,27,22,.88), rgba(21,27,22,.72));
       border:1px solid rgba(255,255,255,.08);
       border-radius: var(--radius);
@@ -1012,10 +1021,10 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 
 
 /* fixed25: 單排工具列（圖示版） */
-.toolbar.singleRow{ display:flex; align-items:center; gap:10px; flex-wrap:nowrap; }
-.toolbar.singleRow .toolbtn{ padding:10px 12px; min-width:44px; }
-.toolbar.singleRow .toolbtn .label{ display:none; } /* 只留圖示，省空間 */
-.toolbar.singleRow .toolbtn .icon{ font-size:18px; line-height:1; }
+.toolbar
+.toolbar
+.toolbar /* 只留圖示，省空間 */
+.toolbar
 .navInline{ display:flex; align-items:center; gap:10px; margin-left:auto; flex-wrap:nowrap; }
 .navInline .navText{ min-width:64px; text-align:center; font-weight:800; }
 .navInline .toolbtn.mini{ width:44px; padding:10px 0; }
@@ -1037,6 +1046,10 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 /* fixed25: modal 按鈕文字不吃事件（點字也算按按鈕） */
 .btnLabel{ pointer-events:none; }
 
+
+/* fixed26: 強化佈令板金框辨識 */
+.board{ border-color: rgba(214,178,94,.55) !important; box-shadow: 0 0 0 1px rgba(214,178,94,.25), 0 0 18px rgba(214,178,94,.10); }
+.tokensPanel{ border-color: rgba(46,125,50,.55) !important; box-shadow: 0 0 0 1px rgba(46,125,50,.18), 0 0 14px rgba(46,125,50,.10); }
 </style>
 </head>
 
@@ -1109,9 +1122,9 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
             
             <div class="toolbarWrap">
               <div class="toolbar singleRow">
-                <button class="toolbtn" id="btnSegRead" title="朗讀"><span class="icon">🔊</span><span class="label">朗讀</span></button>
-                <button class="toolbtn" id="btnReset" title="重整"><span class="icon">♻</span><span class="label">重整</span></button>
-                <button class="toolbtn book pulseStrong" id="btnBook" title="兵書"><span class="icon">📜</span><span class="label">兵書</span></button>
+                <button class="toolbtn" id="btnSegRead" title="朗讀" aria-label="朗讀"><span class="icon">🔊</span></button>
+                <button class="toolbtn" id="btnReset" title="重整" aria-label="重整"><span class="icon">♻</span></button>
+                <button class="toolbtn book pulseStrong" id="btnBook" title="兵書" aria-label="兵書"><span class="icon">📜</span></button>
 
                 <div class="navInline" aria-label="關卡導覽">
                   <button class="toolbtn mini" id="btnPrev" title="上一關">◀</button>
