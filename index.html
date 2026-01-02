@@ -1202,6 +1202,7 @@ html, body{ overflow-x:hidden; }
   width: 40px !important;
   min-width: 40px !important;
   padding: .40rem 0 !important;
+  font-size: 16px !important;
 }
 .toolbar.singleRow.toolbarOneLine .navInline .navText{
   min-width: 0 !important;
@@ -1220,115 +1221,27 @@ html, body{ overflow-x:hidden; }
   }
 }
 
+
+
+/* ===== fixed32：更保守的右側安全區（Chrome iOS 也不裁切 ▶） ===== */
+.toolbar.singleRow.toolbarOneLine{
+  padding-right: calc(28px + env(safe-area-inset-right)) !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline{
+  max-width: 160px !important;
+  grid-template-columns: 36px minmax(48px, 1fr) 36px !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
+  width: 36px !important;
+  min-width: 36px !important;
+  padding: .40rem 0 !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .navText{
+  padding: .40rem .36rem !important;
+}
 </style>
 
-/* ===== fixed31：右箭頭保證露出（nav 改 grid + 更強 safe-area） ===== */
-.toolbar.singleRow.toolbarOneLine{
-  padding-right: calc(16px + env(safe-area-inset-right)) !important;
-  box-sizing: border-box;
-}
-
-/* 右側導覽：固定三欄（◀ / 進度 / ▶），確保不再被裁切 */
-.toolbar.singleRow.toolbarOneLine .navInline{
-  margin-left: auto !important;
-  display: grid !important;
-  grid-template-columns: 40px minmax(52px, 1fr) 40px;
-  gap: 4px !important;
-  align-items: center;
-  justify-items: stretch;
-  max-width: 180px;
-  min-width: 0;
-  padding-right: 0 !important;
-}
-
-.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
-  width: 40px !important;
-  min-width: 40px !important;
-  padding: .42rem 0 !important;
-}
-
-.toolbar.singleRow.toolbarOneLine .navInline .navText{
-  min-width: 0 !important;
-  width: 100% !important;
-  padding: .42rem .44rem !important;
-}
-
-/* 小螢幕再縮，保證 ▶ 永遠露面 */
-@media (max-width: 390px){
-  .toolbar.singleRow.toolbarOneLine .navInline{
-    grid-template-columns: 36px minmax(48px, 1fr) 36px;
-    max-width: 168px;
-  }
-  .toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
-    width: 36px !important;
-    min-width: 36px !important;
-    padding: .40rem 0 !important;
-  }
-  .toolbar.singleRow.toolbarOneLine .navInline .navText{
-    padding: .40rem .40rem !important;
-  }
-}
-
-/* 朗讀按鈕：先不硬改成 emoji，維持現有字樣（你說可接受）；但把字稍微縮緊避免擠壓 */
-#btnRead{ letter-spacing: .06em; }
-
-/* 佈令板標題避免貼框（再多一點空氣） */
-.boardHead{ padding-left: 16px !important; }
-
-/* ===== fixed31：右箭頭保證露出（nav 改 grid + 更強 safe-area） ===== */
-.toolbar.singleRow.toolbarOneLine{
-  padding-right: calc(16px + env(safe-area-inset-right)) !important;
-  box-sizing: border-box;
-}
-
-/* 右側導覽：固定三欄（◀ / 進度 / ▶），確保不再被裁切 */
-.toolbar.singleRow.toolbarOneLine .navInline{
-  margin-left: auto !important;
-  display: grid !important;
-  grid-template-columns: 40px minmax(52px, 1fr) 40px;
-  gap: 4px !important;
-  align-items: center;
-  justify-items: stretch;
-  max-width: 180px;
-  min-width: 0;
-  padding-right: 0 !important;
-}
-
-.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
-  width: 40px !important;
-  min-width: 40px !important;
-  padding: .42rem 0 !important;
-}
-
-.toolbar.singleRow.toolbarOneLine .navInline .navText{
-  min-width: 0 !important;
-  width: 100% !important;
-  padding: .42rem .44rem !important;
-}
-
-/* 小螢幕再縮，保證 ▶ 永遠露面 */
-@media (max-width: 390px){
-  .toolbar.singleRow.toolbarOneLine .navInline{
-    grid-template-columns: 36px minmax(48px, 1fr) 36px;
-    max-width: 168px;
-  }
-  .toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
-    width: 36px !important;
-    min-width: 36px !important;
-    padding: .40rem 0 !important;
-  }
-  .toolbar.singleRow.toolbarOneLine .navInline .navText{
-    padding: .40rem .40rem !important;
-  }
-}
-
-/* 朗讀按鈕：先不硬改成 emoji，維持現有字樣（你說可接受）；但把字稍微縮緊避免擠壓 */
-#btnRead{ letter-spacing: .06em; }
-
-/* 佈令板標題避免貼框（再多一點空氣） */
-.boardHead{ padding-left: 16px !important; }
 </head>
-
 <body style="--fontScale:1;">
   <div class="app safeTop safeBottom">
 
@@ -4068,8 +3981,7 @@ const btnClear = document.getElementById("btnClear");
   function stopReading(){
     try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
     ttsState = { playing:false, kind:"none", queue:[], idx:0, boundaryChar:0, currentText:"", paused:false };
-    btnHomeRead.textContent = "朗讀";
-    btnSegRead.textContent = "朗讀";
+    btnHomeRead.textContent = "🔊";
   }
 
   function speakFrom(text, kind){
@@ -4113,8 +4025,7 @@ const btnClear = document.getElementById("btnClear");
     ttsState.playing = true;
     ttsState.paused = false;
 
-    if(kind==="chapter") btnHomeRead.textContent = "暫停";
-    if(kind==="segment") btnSegRead.textContent = "暫停";
+    btnHomeRead.textContent = "🔊";
 
     playNextUtterance();
   }
@@ -4136,8 +4047,7 @@ const btnClear = document.getElementById("btnClear");
       try{ window.speechSynthesis.cancel(); }catch(e){}
       ttsState.paused = true;
 
-      if(ttsState.kind==="chapter") btnHomeRead.textContent = "續播";
-      if(ttsState.kind==="segment") btnSegRead.textContent = "續播";
+    btnHomeRead.textContent = "🔊";
       return;
     }
 
@@ -4145,8 +4055,7 @@ const btnClear = document.getElementById("btnClear");
       const remain = (ttsState.currentText || "").slice(Math.max(0, ttsState.boundaryChar));
       ttsState.paused = false;
 
-      if(ttsState.kind==="chapter") btnHomeRead.textContent = "暫停";
-      if(ttsState.kind==="segment") btnSegRead.textContent = "暫停";
+    btnHomeRead.textContent = "🔊";
 
       if(remain.trim().length < 2){
         ttsState.idx += 1;
