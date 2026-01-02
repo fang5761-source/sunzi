@@ -1050,6 +1050,28 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 /* fixed26: 強化佈令板金框辨識 */
 .board{ border-color: rgba(214,178,94,.55) !important; box-shadow: 0 0 0 1px rgba(214,178,94,.25), 0 0 18px rgba(214,178,94,.10); }
 .tokensPanel{ border-color: rgba(46,125,50,.55) !important; box-shadow: 0 0 0 1px rgba(46,125,50,.18), 0 0 14px rgba(46,125,50,.10); }
+
+
+/* === fixed27 patch: 工具列強制同一排、避免水平飄移 === */
+html, body{ overflow-x:hidden; }
+.toolbarWrap{ width:100%; }
+.toolbar.singleRow{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:nowrap; width:100%; }
+.toolbar.singleRow .toolbtn{ min-width:52px; padding:10px 0; display:flex; align-items:center; justify-content:center; }
+.toolbar.singleRow .toolbtn .icon{ font-size:20px; }
+.navInline{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+.navInline .navText{ min-width:62px; padding:8px 10px; border-radius:999px; font-weight:900; text-align:center; }
+.navInline .toolbtn.mini{ width:52px; padding:10px 0; }
+
+/* 佈令板/令牌區辨識再加強 */
+.board{ border:1px solid rgba(214,178,94,.45) !important; box-shadow: 0 0 1px rgba(214,178,94,.22), 0 0 14px rgba(214,178,94,.12); }
+.tokensPanel{ margin-top:14px; padding:12px; border-radius:18px; background: rgba(12,18,14,.92); border:1px solid rgba(46,125,50,.55); box-shadow: 0 0 1px rgba(46,125,50,.18), 0 0 14px rgba(46,125,50,.10); }
+.tokensHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.tokensTitle{ font-weight:1000; opacity:.95; }
+.tokensRemain{ font-weight:900; color: rgba(170,182,170,.95); }
+
+/* 首頁按鈕點擊區保護（iOS 非捷徑偶發點擊偏移） */
+.homeActions .btn{ position:relative; z-index:2; touch-action:manipulation; -webkit-tap-highlight-color: transparent; }
+
 </style>
 </head>
 
@@ -1140,11 +1162,11 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
             <div class="boardHead">
               <div class="boardTitle">
                 <span id="boardTitle">佈令板</span>
-                <span class="boardMeta" id="boardMeta">第1/1段</span>
+                <span class="boardMeta" id="boardMeta">完成 0/0</span>
               </div>
               <div class="boardRight">
                 <div class="toggle" id="hintToggleWrap">
-                  <span>學習提示</span>
+                  <span aria-label="學習提示" title="學習提示">💡</span>
                   <div class="switch on" id="hintSwitch"><div class="knob"></div></div>
                 </div>
               </div>
@@ -3938,11 +3960,20 @@ const btnClear = document.getElementById("btnClear");
 
   function updateBoardMeta(){
     const ch = currentChapter();
-    const total = ch?.segments?.length || 0;
+    const totalSeg = ch?.segments?.length || 0;
     const idx = (mode==="test") ? (testCursor + 1) : (currentSegIndex + 1);
-    boardMeta.textContent = `第${idx}/${total}段`;
+
+    // ✅此段完成度（已放入佈令板 / 此段總令牌）
+    let totalTokens = 0;
+    try{
+      const seg = ch?.segments?.[(mode==="test") ? testCursor : currentSegIndex];
+      totalTokens = seg?.tokens?.length || 0;
+    }catch(e){ totalTokens = 0; }
+    const placed = Array.isArray(selection) ? selection.length : 0;
+    boardMeta.textContent = `完成 ${placed}/${totalTokens}`;
+
     const navText = document.getElementById('navText');
-    if(navText) navText.textContent = `${idx}/${total}`;
+    if(navText) navText.textContent = `${idx}/${totalSeg}`;
   }
 
   function startLearnSegment(segIndex, opts={}) {
@@ -4691,6 +4722,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
       t.style.color = "rgba(233,239,233,.95)";
       t.style.fontWeight = "900";
       t.style.zIndex = "120";
+      t.style.pointerEvents = "none";
       t.style.backdropFilter = "blur(6px)";
       t.style.opacity = "0";
       t.style.transition = "opacity .18s ease";
