@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：fixed23（乾淨母版）
+版本：fixed24（乾淨母版）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -17,6 +17,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-title" content="孫子兵法背誦" />
   <meta name="application-name" content="孫子兵法背誦" />
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0f1410" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+
 
   <title>孫子兵法背誦</title>
   <style>
@@ -958,6 +963,53 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 
     /* ✅ 測驗按鈕改放到上方工具列（不再浮動干擾令牌） */
     .topActions #floatTestBtn{ position: static !important; inset:auto !important; box-shadow:none; }
+
+/* ✅ fixed24：工具列導覽（◀ 2/19 ▶）強制同排，避免被排成直欄 */
+.navInline{
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  margin-left:auto;
+  flex-shrink:0;
+}
+.navInline .toolbtn.mini{
+  width:44px;
+  height:44px;
+  justify-content:center;
+  padding:0;
+}
+.navInline .navText{
+  min-width:72px;
+  text-align:center;
+  font-weight:800;
+  letter-spacing:.5px;
+  padding:.45rem .7rem;
+  border-radius:1rem;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.18);
+}
+
+/* ✅ fixed24：A2HS「知道了」按鈕確保點得到（文字區也可點） */
+#modal.a2hs .modalActions{ position:relative; z-index:10; }
+#modal.a2hs #a2hsOk{
+  position:relative;
+  z-index:11;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:auto;
+  touch-action:manipulation;
+}
+#modal.a2hs #a2hsOk *{ pointer-events:none; } /* 文字/子元素不吃事件，交給按鈕本體 */
+
+
+/* ✅ fixed24：兵書光暈再強一點（維持定稿兩層結構，提升亮度） */
+.toolbtn.book{
+  box-shadow:
+    0 0 1.15rem rgba(255,225,140,.78),
+    0 0 .9rem rgba(255,225,140,.42);
+}
+
 </style>
 </head>
 
@@ -1149,7 +1201,7 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
       <div class="helpBody">
         <div class="helpLine">• 這是一個背誦《孫子兵法》的練習工具。</div>
         <div class="helpLine">• 目標：讓你用最少摩擦，反覆進入記憶節奏。</div>
-        <div class="helpLine version">• 版本：fixed23（乾淨母版） (fixed10)</div>
+        <div class="helpLine version">• 版本：fixed24（乾淨母版） (fixed10)</div>
       </div>
     </details>
 
@@ -3995,6 +4047,10 @@ function bindFastTap(el, handler){
       activePointerId = ev && (ev.pointerId ?? 1);
       lastPointerDown = Date.now();
       try{ el.setPointerCapture && ev && el.setPointerCapture(ev.pointerId); }catch(_e){}
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.preventDefault();
+      ev.stopPropagation();
       fireOnce(ev);
     };
 
