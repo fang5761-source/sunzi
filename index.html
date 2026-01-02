@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：fixed29（乾淨母版・工具列收斂版）
+版本：fixed30（乾淨母版・工具列收斂版）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1138,6 +1138,47 @@ html, body{ overflow-x:hidden; }
 .tokensHead{ margin-top:2px; }
 /* restore hint label text style (no bulb) */
 .hintLabel{ font-weight:900; }
+/* ===== fixed30 微調：工具列同列、右側安全邊界、佈令板標題內縮、提示置中 ===== */
+.toolbarWrap{
+  padding-right: calc(12px + env(safe-area-inset-right));
+  box-sizing: border-box;
+}
+.toolbar.singleRow.toolbarOneLine{
+  gap: .26rem;
+  flex-wrap: nowrap;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.iconOnly{
+  min-width: 40px;
+  padding: .42rem .52rem;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.mini{
+  width: 40px;
+  min-width: 40px;
+  padding: .42rem 0;
+}
+.toolbar.singleRow.toolbarOneLine .navText{
+  min-width: 56px;
+  padding: .42rem .52rem;
+}
+.navInline{
+  padding-right: calc(8px + env(safe-area-inset-right));
+  box-sizing: border-box;
+}
+
+/* 佈令板標題列：偏左、但不要貼框 */
+.boardHead{ padding-left: 14px; padding-right: 12px; }
+.boardTitle{ gap: 10px; }
+#boardTitle{ margin-left: 2px; }
+
+/* 橢圓框提示文字置中 */
+.slotHint{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 12px;
+}
+
 </style>
 </head>
 
