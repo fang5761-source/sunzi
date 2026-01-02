@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：fixed26（乾淨母版・工具列收斂版）
+版本：fixed28（乾淨母版・工具列收斂版）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1072,6 +1072,57 @@ html, body{ overflow-x:hidden; }
 /* 首頁按鈕點擊區保護（iOS 非捷徑偶發點擊偏移） */
 .homeActions .btn{ position:relative; z-index:2; touch-action:manipulation; -webkit-tap-highlight-color: transparent; }
 
+
+/* ===== fixed28: 一行工具列鎖寬（不漂移/不出界） ===== */
+.toolbar.singleRow.toolbarOneLine{
+  flex-wrap: nowrap !important;
+  justify-content: flex-start;
+  width: 100%;
+  overflow: hidden;        /* ✅ 斬掉水平捲動，避免畫面「游來游去」 */
+  gap: .35rem;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn{ flex:0 0 auto; }
+.toolbar.singleRow.toolbarOneLine .navInline{
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 4px;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.iconOnly{
+  padding: .42rem .52rem;
+  min-width: 38px;
+  justify-content: center;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.mini{
+  min-width: 34px;
+  padding: .42rem .48rem;
+}
+.toolbar.singleRow.toolbarOneLine .navText{
+  min-width: 52px;
+  padding: .42rem .52rem;
+}
+
+/* ===== fixed28: 學習提示回歸文字 + 點擊穩定 ===== */
+.hintLabel{ font-weight: 900; letter-spacing: .08em; }
+.hintLabel, .switch, .switch *{ pointer-events:auto; }
+.hintLabel{ margin-right: 8px; }
+
+/* ===== fixed28: 令牌區完整落在綠框內（含標題） ===== */
+.tokensPanel{
+  border: 1px solid rgba(46,125,50,.38) !important;
+  box-shadow: 0 0 0 1px rgba(46,125,50,.10) inset;
+}
+.tokensHead{ margin: 2px 2px 10px 2px; }
+.tokensTitle{ font-size: 18px; font-weight: 900; letter-spacing: .14em; }
+
+/* 小螢幕再縮一點，確保 ▶ 不會出界 */
+@media (max-width: 390px){
+  .toolbar.singleRow.toolbarOneLine{ gap: .28rem; }
+  .toolbar.singleRow.toolbarOneLine .toolbtn.iconOnly{ min-width: 36px; padding: .40rem .48rem; }
+  .toolbar.singleRow.toolbarOneLine .toolbtn.mini{ min-width: 32px; padding: .40rem .44rem; }
+  .toolbar.singleRow.toolbarOneLine .navText{ min-width: 50px; padding: .40rem .48rem; }
+}
+
 </style>
 </head>
 
@@ -1143,10 +1194,10 @@ html, body{ overflow-x:hidden; }
             </div>
             
             <div class="toolbarWrap">
-              <div class="toolbar singleRow">
-                <button class="toolbtn" id="btnSegRead" title="朗讀" aria-label="朗讀"><span class="icon">🔊</span></button>
-                <button class="toolbtn" id="btnReset" title="重整" aria-label="重整"><span class="icon">♻</span></button>
-                <button class="toolbtn book pulseStrong" id="btnBook" title="兵書" aria-label="兵書"><span class="icon">📜</span></button>
+              <div class="toolbar singleRow toolbarOneLine">
+                <button class="toolbtn iconOnly" id="btnSegRead" title="朗讀" aria-label="朗讀"><span class="icon">🔊</span></button>
+                <button class="toolbtn iconOnly" id="btnReset" title="重整" aria-label="重整"><span class="icon">♻</span></button>
+                <button class="toolbtn iconOnly book pulseStrong" id="btnBook" title="兵書" aria-label="兵書"><span class="icon">📜</span></button>
 
                 <div class="navInline" aria-label="關卡導覽">
                   <button class="toolbtn mini" id="btnPrev" title="上一關">◀</button>
@@ -1166,7 +1217,7 @@ html, body{ overflow-x:hidden; }
               </div>
               <div class="boardRight">
                 <div class="toggle" id="hintToggleWrap">
-                  <span aria-label="學習提示" title="學習提示">💡</span>
+                  <span class="hintLabel" aria-label="學習提示" title="學習提示">學習提示</span>
                   <div class="switch on" id="hintSwitch"><div class="knob"></div></div>
                 </div>
               </div>
