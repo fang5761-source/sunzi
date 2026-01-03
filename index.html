@@ -77,6 +77,8 @@
   font-size:13px;
 }
 .toolbtn .icon{font-size:15px; line-height:1;}
+/* ✅金色喇叭圖示加大 */
+#btnSegRead .icon{ font-size:20px; color: var(--gold); }
 .toolbtn.mini{padding:.45rem .6rem; min-width:44px; justify-content:center;}
 .navMini{display:flex; align-items:center; gap:.5rem; justify-content:flex-end;}
 .navText{
@@ -967,6 +969,37 @@ body{ height:100%; }
       font-size: 13px;
       line-height: 1.55;
     }
+
+    .helpFold .helpSteps{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .helpFold .helpStep{
+      display:grid;
+      grid-template-columns: 132px 1fr;
+      gap:10px;
+      align-items:start;
+      padding:10px 12px;
+      border-radius:12px;
+      background: rgba(15,20,16,.28);
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .helpFold .helpPlatform{
+      font-weight:1000;
+      color: rgba(233,239,233,.95);
+      white-space:nowrap;
+    }
+    .helpFold .helpAction{
+      color: rgba(170,182,170,.92);
+      font-weight:900;
+      line-height:1.45;
+    }
+    @media (max-width: 390px){
+      .helpFold .helpStep{ grid-template-columns: 1fr; }
+      .helpFold .helpPlatform{ opacity:.95; }
+    }
     .helpFold .helpLine{ margin-top:6px; }
     .helpLine.version{ font-size:11px; opacity:.85; }
 
@@ -1387,7 +1420,7 @@ html, body { overflow-x: hidden; }
 .toolbar.singleRow.toolbarOneLine{ overflow: visible !important; padding-right: calc(10px + env(safe-area-inset-right)) !important; }
 .toolbar.singleRow.toolbarOneLine .navInline{ grid-template-columns: 34px minmax(56px,1fr) 34px !important; }
 .toolbtn.mini{ min-width:34px !important; width:34px !important; }
-.icoSpeak{ width:22px; height:22px; }
+.icoSpeak{ width:26px; height:26px; }
 .icoSpeak path{ fill: var(--gold); }
 .miniBtn.readHome{ display:inline-flex; align-items:center; justify-content:center; gap:8px; }
 .helpBody .healingList{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
@@ -1403,7 +1436,7 @@ html, body { overflow-x: hidden; }
 .toolbar.singleRow.toolbarOneLine .navInline{ display:grid !important; grid-template-columns: 34px minmax(60px,1fr) 34px !important; gap:8px !important; max-width: 180px !important; }
 .toolbtn.mini{ width:34px !important; height:34px !important; }
 .icoSpeak{ width:22px; height:22px; fill: var(--gold); }
-#btnHomeRead .icoSpeak{ width:20px; height:20px; }
+#btnHomeRead .icoSpeak{ width:24px; height:24px; }
 .readHome{ display:flex; align-items:center; justify-content:center; }
 .helpBody .healingList{ margin:0; padding-left: 1.1em; }
 .helpBody .healingList li{ margin: .35em 0; line-height:1.55; }
@@ -1586,20 +1619,30 @@ html, body { overflow-x: hidden; }
       </div>
       <button class="pillBtn" id="btnGuide">重看教學</button>
     </div>
-<details class="helpFold">
-  <summary>ⓘ 使用說明</summary>
-  <div class="helpBox">
-    <ul class="helpList">
-      <li>佈令：點下方令牌，依正確順序排入空格。</li>
-      <li>放錯會提示：紅框閃一下，並顯示「請再想一想」。（排對才會消失）</li>
-      <li>兵書：段落完成後會亮起呼吸燈，點進去看原文與白話。</li>
-      <li>重整：可選擇重整本段落或重整本篇章。</li>
-      <li>建議加入主畫面：全螢幕、比較不會亂跳。（設定可隨時重看教學）</li>
-    </ul>
-  </div>
-</details>
 
     <details class="helpFold">
+      <summary>ⓘ 使用說明</summary>
+      <div class="helpBody">
+        <div class="helpLine">• 佈令時：點令牌依正確順序排入空格。</div>
+        <div class="helpLine">• 放錯也會提示：紅框閃一下 + 下方顯示「請再想一想」（排對才會消失）。</div>
+        <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</div>
+        <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
+
+        <div class="helpLine" style="margin-top:.55rem;">• 建議加入手機主畫面使用（全畫面體驗更像 App）：</div>
+
+        <div class="helpSteps">
+          <div class="helpStep">
+            <div class="helpPlatform">iPhone（Safari）</div>
+            <div class="helpAction">分享 → 加入主畫面</div>
+          </div>
+          <div class="helpStep">
+            <div class="helpPlatform">Android（Chrome）</div>
+            <div class="helpAction">右上「⋮」→ 加入主畫面／安裝應用程式</div>
+          </div>
+        </div>
+      </div>
+    </details>
+<details class="helpFold">
   <summary>關於本系統</summary>
   <div class="helpBody">
     <ul class="healingList">
@@ -4132,10 +4175,23 @@ const btnClear = document.getElementById("btnClear");
    * AUDIO（beep）
    ***********************/
   let audioCtx = null;
+
+  // ✅iOS/PWA：先解鎖 AudioContext，避免「有時候沒聲音」
+  function unlockAudio(){
+    try{
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state==="suspended") audioCtx.resume();
+    }catch(e){}
+  }
+  // 任何一次使用者點擊/觸碰都算「手勢」，用一次就好
+  window.addEventListener("pointerdown", unlockAudio, { once:true, passive:true });
+  window.addEventListener("touchstart", unlockAudio, { once:true, passive:true });
+
   function beep(type="ok"){
     if(!PROG.soundOn) return;
     try{
       audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      try{ if(audioCtx.state==='suspended') audioCtx.resume(); }catch(_e){}
       const o = audioCtx.createOscillator();
       const g = audioCtx.createGain();
       o.type = "sine";
@@ -4433,6 +4489,7 @@ const btnClear = document.getElementById("btnClear");
     selection = [];
     pool = shuffle(seg.tokens);
     renderBoard();
+    updateBoardMeta();
     try{ setOrderError(false); }catch(_e){}
   }
 
@@ -4570,6 +4627,7 @@ function bindFastTap(el, handler){
     });
 
     applyHint();
+    updateBoardMeta();
   }
 
   function applyHint(){
