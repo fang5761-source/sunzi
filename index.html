@@ -1382,6 +1382,33 @@ html, body { overflow-x: hidden; }
 .a2hModal li{ margin: .35rem 0; }
 
 
+
+/* ===== fixed38 UI polish ===== */
+.toolbar.singleRow.toolbarOneLine{ overflow: visible !important; padding-right: calc(10px + env(safe-area-inset-right)) !important; }
+.toolbar.singleRow.toolbarOneLine .navInline{ grid-template-columns: 34px minmax(56px,1fr) 34px !important; }
+.toolbtn.mini{ min-width:34px !important; width:34px !important; }
+.icoSpeak{ width:22px; height:22px; }
+.icoSpeak path{ fill: var(--gold); }
+.miniBtn.readHome{ display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.helpBody .healingList{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+.helpBody .healingList li{ position:relative; padding-left:18px; line-height:1.55; }
+.helpBody .healingList li::before{ content:'•'; position:absolute; left:0; top:0; color: rgba(214,178,94,.9); }
+.helpStepsGrid{ display:grid; gap:12px; }
+.helpStepsCard{ border:1px solid rgba(214,178,94,.18); border-radius:16px; padding:14px 14px 12px; background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); }
+.helpStepsCard h3{ margin:0 0 10px; font-size:16px; color: rgba(233,239,233,.95); }
+.helpSteps{ margin:0; padding-left:18px; line-height:1.6; color: rgba(233,239,233,.92); }
+
+/* ===== FIXED38 — layout & icons ===== */
+.toolbar.singleRow.toolbarOneLine{ overflow: visible !important; padding-right: calc(10px + env(safe-area-inset-right)) !important; }
+.toolbar.singleRow.toolbarOneLine .navInline{ display:grid !important; grid-template-columns: 34px minmax(60px,1fr) 34px !important; gap:8px !important; max-width: 180px !important; }
+.toolbtn.mini{ width:34px !important; height:34px !important; }
+.icoSpeak{ width:22px; height:22px; fill: var(--gold); }
+#btnHomeRead .icoSpeak{ width:20px; height:20px; }
+.readHome{ display:flex; align-items:center; justify-content:center; }
+.helpBody .healingList{ margin:0; padding-left: 1.1em; }
+.helpBody .healingList li{ margin: .35em 0; line-height:1.55; }
+.helpBody .healingList li.muted{ color: var(--muted); }
+
 </style>
 
 </head>
@@ -1393,7 +1420,7 @@ html, body { overflow-x: hidden; }
         <div class="titleWrap">
           <div class="title" id="topTitle">孫子兵法</div>
           <div class="subtitle" id="topSub">原書順序</div>
-          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed37</div>
+          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed38</div>
         </div>
         <div class="topActions">
                     <button class="pillBtn" id="floatTestBtn">測驗</button>
@@ -1425,7 +1452,7 @@ html, body { overflow-x: hidden; }
               <div class="homeReadDesc">可暫停、續播</div>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
-              <button class="miniBtn" id="btnHomeRead">朗讀</button>
+              <button class="miniBtn readHome" id="btnHomeRead" title="朗讀" aria-label="朗讀"><svg class="icoSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
               <button class="miniBtn" id="btnHomeStop">停止</button>
             </div>
           </div>
@@ -1455,7 +1482,7 @@ html, body { overflow-x: hidden; }
             
             <div class="toolbarWrap">
               <div class="toolbar singleRow toolbarOneLine">
-                <button class="toolbtn iconOnly" id="btnSegRead" title="朗讀" aria-label="朗讀"><svg class="icoSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4c0 1.1.9 2 2 2h2l4 3V5L7 8H5c-1.1 0-2 .9-2 2zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zm2.5 0c0 3.04-1.72 5.64-4.25 6.94v-1.92c1.54-1.09 2.55-2.88 2.55-5.02s-1.01-3.93-2.55-5.02V5.06C17.28 6.36 19 8.96 19 12z"/></svg></button>
+                <button class="toolbtn iconOnly" id="btnSegRead" title="朗讀" aria-label="朗讀"><svg class="icoSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
                 <button class="toolbtn iconOnly" id="btnReset" title="重整" aria-label="重整"><span class="icon">♻</span></button>
                 <button class="toolbtn iconOnly book pulseStrong" id="btnBook" title="兵書" aria-label="兵書"><span class="icon">📜</span></button>
 
@@ -1573,13 +1600,15 @@ html, body { overflow-x: hidden; }
 </details>
 
     <details class="helpFold">
-      <summary>關於本系統</summary>
-      <div class="helpBody">
-        <div class="helpLine">• 這是一個背誦《孫子兵法》的練習工具。</div>
-        <div class="helpLine">• 目標：讓你用最少摩擦，反覆進入記憶節奏。</div>
-        <div class="helpLine version">• 版本：fixed37</div>
-      </div>
-    </details>
+  <summary>關於本系統</summary>
+  <div class="helpBody">
+    <ul class="healingList">
+      <li>這是一個背誦《孫子兵法》的練習工具。</li>
+      <li>目標：讓你用最少摩擦，反覆進入記憶節奏。</li>
+      <li class="muted">版本：fixed38</li>
+    </ul>
+  </div>
+</details>
 
 
     <details class="helpFold">
@@ -1608,7 +1637,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed37";
+const APP_VERSION = "fixed38";
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
@@ -4141,7 +4170,7 @@ const btnClear = document.getElementById("btnClear");
   function stopReading(){
     try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
     ttsState = { playing:false, kind:"none", queue:[], idx:0, boundaryChar:0, currentText:"", paused:false };
-    btnHomeRead.textContent = "🗣️";
+    btnHomeRead.innerHTML = (document.getElementById("btnSegRead") ? document.getElementById("btnSegRead").innerHTML : "🗣️");
   }
 
   function speakFrom(text, kind){
@@ -4185,7 +4214,7 @@ const btnClear = document.getElementById("btnClear");
     ttsState.playing = true;
     ttsState.paused = false;
 
-    btnHomeRead.textContent = "🗣️";
+    btnHomeRead.innerHTML = (document.getElementById("btnSegRead") ? document.getElementById("btnSegRead").innerHTML : "🗣️");
 
     playNextUtterance();
   }
@@ -4207,7 +4236,7 @@ const btnClear = document.getElementById("btnClear");
       try{ window.speechSynthesis.cancel(); }catch(e){}
       ttsState.paused = true;
 
-    btnHomeRead.textContent = "🗣️";
+    btnHomeRead.innerHTML = (document.getElementById("btnSegRead") ? document.getElementById("btnSegRead").innerHTML : "🗣️");
       return;
     }
 
@@ -4215,7 +4244,7 @@ const btnClear = document.getElementById("btnClear");
       const remain = (ttsState.currentText || "").slice(Math.max(0, ttsState.boundaryChar));
       ttsState.paused = false;
 
-    btnHomeRead.textContent = "🗣️";
+    btnHomeRead.innerHTML = (document.getElementById("btnSegRead") ? document.getElementById("btnSegRead").innerHTML : "🗣️");
 
       if(remain.trim().length < 2){
         ttsState.idx += 1;
@@ -5150,19 +5179,30 @@ if (typeof btnNext !== "undefined" && btnNext) {
     try{
       const okDismiss = () => { try{ localStorage.setItem(KEY,'yes'); }catch(_e){} };
       const html = `
-        <div class="plain" style="line-height:1.8">
-          加入後會「全畫面」開啟，字更清楚、像 App 一樣一點就進來。<br>
-          這只是建立「捷徑」，不是安裝程式，請放心。<br><br>
-          <b>iPhone（Safari）</b><br>
-          (1) 點下方「分享」按鈕（方框上箭頭）<br>
-          (2) 往下滑找「加入主畫面」<br>
-          (3) 右上角按「加入」<br><br>
-          <b>Android（Chrome）</b><br>
-          (1) 點右上角「⋮」<br>
-          (2) 選「加入主畫面」或「安裝應用程式」<br>
-          (3) 依提示按「新增／加入」<br><br>
-          之後若想再看步驟：到「設定」→「加入主畫面（捷徑）」即可。
-        </div>`;
+<div class="helpModalHead">
+  <div class="helpModalTitle">加入主畫面（捷徑）</div>
+  <div class="helpModalSub">建議加入主畫面：全螢幕、比較不會亂跳（也不會一直跳出安裝提示）</div>
+</div>
+<div class="helpStepsGrid">
+  <section class="helpStepsCard">
+    <h3>iPhone / iPad（Safari）</h3>
+    <ol class="helpSteps">
+      <li>用 Safari 開啟本頁</li>
+      <li>點下方「分享」按鈕（方框 + 上箭頭）</li>
+      <li>選「加入主畫面」</li>
+      <li>從主畫面打開，就像 App</li>
+    </ol>
+  </section>
+  <section class="helpStepsCard">
+    <h3>Android（Chrome）</h3>
+    <ol class="helpSteps">
+      <li>用 Chrome 開啟本頁</li>
+      <li>點右上角「⋮」選單</li>
+      <li>選「加入主畫面」或「安裝應用程式」</li>
+      <li>從主畫面打開，就像 App</li>
+    </ol>
+  </section>
+</div>`;
       openModal("加入主畫面（捷徑）", html, `
         <button class="btn primary" id="a2hsOk">我知道了</button>
       `);
