@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：fixed39
+版本：fixed37
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1303,7 +1303,7 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== fixed39：箭頭完整露出 + 字體放大不溢出 + 圖示金色 + 說明療癒排版 ====== */
+/* ====== fixed37：箭頭完整露出 + 字體放大不溢出 + 圖示金色 + 說明療癒排版 ====== */
 .toolbar.toolbarOneLine{
   /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
   padding-right: calc(16px + env(safe-area-inset-right)) !important;
@@ -1382,26 +1382,6 @@ html, body { overflow-x: hidden; }
 .a2hModal li{ margin: .35rem 0; }
 
 
-
-  /* ===== PATCH fixed39 ===== */
-  .nowrap{ white-space:nowrap; }
-  .helpList li{ margin:.45rem 0; line-height:1.7; }
-  .helpList li.version{ color:var(--muted); font-size:.95em; opacity:.9; }
-  .guideList li{ margin:.45rem 0; line-height:1.7; }
-  .guideList .tip{ margin-top:.65rem; padding:.55rem .7rem; border-radius:.75rem; border:1px solid rgba(214,178,94,.18); background: rgba(20,28,22,.55); }
-  #btnHomeRead{
-    display:flex; align-items:center; justify-content:center;
-    width:3.15rem; height:3.15rem; min-width:3.15rem;
-    border-radius:999px;
-    border:1px solid rgba(214,178,94,.55);
-    background: radial-gradient(70% 70% at 50% 40%, rgba(214,178,94,.20), rgba(0,0,0,0));
-    box-shadow: 0 0 1.1rem rgba(214,178,94,.18);
-  }
-  #btnHomeRead .homeSpeak{ width:1.65rem; height:1.65rem; }
-  /* 右箭頭留呼吸邊距 */
-  .singleRow{ padding-right: .65rem !important; }
-  .singleRow .navInline{ padding-right: .55rem; }
-
 </style>
 
 </head>
@@ -1413,7 +1393,7 @@ html, body { overflow-x: hidden; }
         <div class="titleWrap">
           <div class="title" id="topTitle">孫子兵法</div>
           <div class="subtitle" id="topSub">原書順序</div>
-          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed39</div>
+          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed37</div>
         </div>
         <div class="topActions">
                     <button class="pillBtn" id="floatTestBtn">測驗</button>
@@ -1592,18 +1572,17 @@ html, body { overflow-x: hidden; }
   </div>
 </details>
 
-    <details class="helpBox">
+    <details class="helpFold">
       <summary>關於本系統</summary>
       <div class="helpBody">
-        <ul class="helpList">
-          <li>這是一個背誦《孫子兵法》的練習工具。</li>
-          <li>目標：讓你用最少摩擦，反覆進入記憶節奏。</li>
-          <li class="version">版本：fixed39</li>
-        </ul>
+        <div class="helpLine">• 這是一個背誦《孫子兵法》的練習工具。</div>
+        <div class="helpLine">• 目標：讓你用最少摩擦，反覆進入記憶節奏。</div>
+        <div class="helpLine version">• 版本：fixed37</div>
       </div>
     </details>
 
-<details class="helpFold">
+
+    <details class="helpFold">
       <summary>設計者</summary>
       <div class="helpBody">
         <div class="helpLine">設計／企劃：散木團隊(朵朵)</div>
@@ -1629,7 +1608,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed39";
+const APP_VERSION = "fixed37";
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
@@ -4162,8 +4141,7 @@ const btnClear = document.getElementById("btnClear");
   function stopReading(){
     try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
     ttsState = { playing:false, kind:"none", queue:[], idx:0, boundaryChar:0, currentText:"", paused:false };
-    btnHomeRead.innerHTML = `<svg class="icoSpeak homeSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4c0 1.1.9 2 2 2h2l4 3V5L7 8H5c-1.1 0-2 .9-2 2zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zm2.5 0c0 3.04-1.72 5.64-4.25 6.94v-1.92c1.54-1.09 2.55-2.88 2.55-5.02s-1.01-3.93-2.55-5.02V5.06C17.28 6.36 19 8.96 19 12z"/></svg>`;
-    btnHomeRead.title = "朗讀";
+    btnHomeRead.textContent = "🗣️";
   }
 
   function speakFrom(text, kind){
@@ -4207,8 +4185,7 @@ const btnClear = document.getElementById("btnClear");
     ttsState.playing = true;
     ttsState.paused = false;
 
-    btnHomeRead.innerHTML = `<svg class="icoSpeak homeSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4c0 1.1.9 2 2 2h2l4 3V5L7 8H5c-1.1 0-2 .9-2 2zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zm2.5 0c0 3.04-1.72 5.64-4.25 6.94v-1.92c1.54-1.09 2.55-2.88 2.55-5.02s-1.01-3.93-2.55-5.02V5.06C17.28 6.36 19 8.96 19 12z"/></svg>`;
-    btnHomeRead.title = "朗讀";
+    btnHomeRead.textContent = "🗣️";
 
     playNextUtterance();
   }
@@ -4230,8 +4207,7 @@ const btnClear = document.getElementById("btnClear");
       try{ window.speechSynthesis.cancel(); }catch(e){}
       ttsState.paused = true;
 
-    btnHomeRead.innerHTML = `<svg class="icoSpeak homeSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4c0 1.1.9 2 2 2h2l4 3V5L7 8H5c-1.1 0-2 .9-2 2zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zm2.5 0c0 3.04-1.72 5.64-4.25 6.94v-1.92c1.54-1.09 2.55-2.88 2.55-5.02s-1.01-3.93-2.55-5.02V5.06C17.28 6.36 19 8.96 19 12z"/></svg>`;
-    btnHomeRead.title = "朗讀";
+    btnHomeRead.textContent = "🗣️";
       return;
     }
 
@@ -4239,8 +4215,7 @@ const btnClear = document.getElementById("btnClear");
       const remain = (ttsState.currentText || "").slice(Math.max(0, ttsState.boundaryChar));
       ttsState.paused = false;
 
-    btnHomeRead.innerHTML = `<svg class="icoSpeak homeSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4c0 1.1.9 2 2 2h2l4 3V5L7 8H5c-1.1 0-2 .9-2 2zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zm2.5 0c0 3.04-1.72 5.64-4.25 6.94v-1.92c1.54-1.09 2.55-2.88 2.55-5.02s-1.01-3.93-2.55-5.02V5.06C17.28 6.36 19 8.96 19 12z"/></svg>`;
-    btnHomeRead.title = "朗讀";
+    btnHomeRead.textContent = "🗣️";
 
       if(remain.trim().length < 2){
         ttsState.idx += 1;
@@ -4566,7 +4541,6 @@ function bindFastTap(el, handler){
     });
 
     applyHint();
-    updateBoardMeta();
   }
 
   function applyHint(){
