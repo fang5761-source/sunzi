@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：fixed31（乾淨母版・工具列收斂版）
+版本：fixed33（乾淨母版・工具列收斂版）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -15,7 +15,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-title" content="孫子兵法背誦" />
+  
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+<meta name="apple-mobile-web-app-title" content="孫子兵法背誦" />
   <meta name="application-name" content="孫子兵法背誦" />
 
   <link rel="manifest" href="manifest.webmanifest" />
@@ -1033,7 +1037,7 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 /* fixed25: 佈令板 vs 令牌區 更好辨識 */
 .board{ background: rgba(21,27,22,.92); border:1px solid rgba(214,178,94,.25); }
 .tokensPanel{ margin-top:14px; padding:12px; border-radius:18px; background: rgba(15,20,16,.92); border:1px solid rgba(46,125,50,.28); }
-.tokensHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.tokensHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;  padding-left:.35rem;}
 .tokensTitle{ font-weight:800; color: var(--muted); letter-spacing:.06em; }
 .tokensRemain{ font-size:12px; color: var(--muted); opacity:.95; }
 .tokensPanel .orderError{ margin-top:10px; }
@@ -1239,6 +1243,41 @@ html, body{ overflow-x:hidden; }
 .toolbar.singleRow.toolbarOneLine .navInline .navText{
   padding: .40rem .36rem !important;
 }
+
+
+/* fixed34：設定頁排版更舒服 */
+.helpBox{ padding: .9rem .95rem !important; }
+.helpList{ margin: .15rem 0 0 1.1rem; padding: 0; line-height: 1.65; }
+.helpList li{ margin: .55rem 0; }
+.rowDesc{ max-width: 18.5rem; }
+
+/* ===== fixed34：右箭頭/進度在最大字體也不被裁切；避免右側遮罩與橫向漂移 ===== */
+html, body { overflow-x: hidden; }
+.toolbarWrap { padding-right: calc(10px + env(safe-area-inset-right)); box-sizing: border-box; }
+.toolbar.singleRow.toolbarOneLine{
+  padding-right: calc(18px + env(safe-area-inset-right)) !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline{
+  grid-template-columns: 44px minmax(68px, 1fr) 44px !important;
+  max-width: 220px !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
+  width: 44px !important;
+  min-width: 44px !important;
+  padding: .42rem 0 !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .navText{
+  padding: .36rem .40rem !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
 </style>
 
 </head>
@@ -1250,6 +1289,7 @@ html, body{ overflow-x:hidden; }
         <div class="titleWrap">
           <div class="title" id="topTitle">孫子兵法</div>
           <div class="subtitle" id="topSub">原書順序</div>
+          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed33</div>
         </div>
         <div class="topActions">
                     <button class="pillBtn" id="floatTestBtn">測驗</button>
@@ -1392,12 +1432,9 @@ html, body{ overflow-x:hidden; }
 <div class="row">
       <div class="rowLeft">
         <div class="rowTitle">自由瀏覽下一關</div>
-        <div class="rowDesc">開啟後可直接前往下一段，不受完成度限制</div>
+        <div class="rowDesc">可直接前往下一段（不檢查完成度）</div>
       </div>
-      <label class="switch">
-        <input type="checkbox" id="freeNavSwitch" />
-        <span class="slider"></span>
-      </label>
+      <div class="switch" id="freeNavSwitch" role="switch" aria-checked="false"><div class="knob"></div></div>
     </div>
 
     <div class="row dangerRow">
@@ -1421,11 +1458,13 @@ html, body{ overflow-x:hidden; }
 <details class="helpFold">
   <summary>ⓘ 使用說明</summary>
   <div class="helpBox">
-    <div class="helpLine">• 佈令時：點令牌依正確順序排入空格。</div>
-    <div class="helpLine">• 放錯也會提示：紅框閃一下 + 下方顯示「請再想一想」（排對才會消失）。</div>
-    <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</div>
-    <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
-    <div class="helpLine" style="margin-top:.55rem;">• 想要像 App 一樣全螢幕：請點上方「加入主畫面教學 → 重看教學」。</div>
+    <ul class="helpList">
+      <li>佈令：點下方令牌，依正確順序排入空格。</li>
+      <li>放錯會提示：紅框閃一下，並顯示「請再想一想」。（排對才會消失）</li>
+      <li>兵書：段落完成後會亮起呼吸燈，點進去看原文與白話。</li>
+      <li>重整：可選擇重整本段落或重整本篇章。</li>
+      <li>建議加入主畫面：全螢幕、比較不會亂跳。（設定可隨時重看教學）</li>
+    </ul>
   </div>
 </details>
 
@@ -1463,6 +1502,23 @@ html, body{ overflow-x:hidden; }
   </div>
 
 <script>
+
+// ===== 固定版號（用來辨識是否還在看舊快取） =====
+const APP_VERSION = "fixed33";
+// ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
+(async ()=>{
+  try{
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for(const r of regs){ await r.unregister(); }
+    }
+    if('caches' in window){
+      const keys = await caches.keys();
+      for(const k of keys){ await caches.delete(k); }
+    }
+  }catch(e){}
+})();
+
 (() => {
   /***********************
    * ✅自動拆段規則（完全自動）
@@ -4178,13 +4234,19 @@ const btnClear = document.getElementById("btnClear");
     }
     renderHintSwitch();
 
-  if(freeNavSwitch) freeNavSwitch.onchange = () => {
-    PROG.freeNav = !!freeNavSwitch.checked;
-    saveProgress();
-    try{ showToast('已更新：自由瀏覽 ' + (PROG.freeNav ? '開啟' : '關閉')); }catch(_e){}
-    // refresh nav lock state
-    try{ renderSegment(); }catch(_e){}
-  };
+  if(freeNavSwitch){
+    const syncFreeNav = () => {
+      freeNavSwitch.classList.toggle('on', !!PROG.freeNav);
+      freeNavSwitch.setAttribute('aria-checked', PROG.freeNav ? 'true' : 'false');
+    };
+    syncFreeNav();
+    freeNavSwitch.addEventListener('click', () => {
+      PROG.freeNav = !PROG.freeNav;
+      syncFreeNav();
+      saveProgress();
+      try{ showToast('已更新：自由瀏覽 ' + (PROG.freeNav ? '開啟' : '關閉')); }catch(_e){}
+    });
+  }
 
     setNpcOriginal(seg.quote);
     updateBoardMeta();
@@ -4705,7 +4767,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
    * SETTINGS
    ***********************/
   function syncSettingsUI(){
-    if(freeNavSwitch) freeNavSwitch.checked = !!PROG.freeNav;
+    if(freeNavSwitch) /* freeNavSwitch UI sync handled in click binder */
     fontRange.value = String(PROG.fontScale);
     soundSwitch.classList.toggle("on", !!PROG.soundOn);
     ttsSwitch.classList.toggle("on", !!PROG.ttsOn);
@@ -5017,6 +5079,14 @@ if (typeof btnNext !== "undefined" && btnNext) {
     if(isStandalone) return false;
     try{ return localStorage.getItem(KEY) !== 'yes'; }catch(_e){ return true; }
   }
+
+  // fixed34：首次進入（非捷徑/非安裝）自動提示「加入主畫面」；只跳一次
+  window.addEventListener('load', () => {
+    try{
+      if(shouldPrompt()) setTimeout(() => { try{ showGuide(); }catch(_e){} }, 380);
+    }catch(_e){}
+  });
+
 
   // 設定頁入口（強制顯示，不管是否已關閉）
   window.addEventListener('load', ()=>{
