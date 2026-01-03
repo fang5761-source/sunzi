@@ -1302,6 +1302,47 @@ html, body { overflow-x: hidden; }
   white-space: nowrap !important;
 }
 
+
+/* ====== fixed36 : 右箭頭不再被裁切 + 朗讀改🗣️(更清楚) ====== */
+/* 工具列右側多留安全邊距，避免 Chrome/iOS 把最後一顆按鈕切掉 */
+.toolbarWrap{ padding-right: calc(22px + env(safe-area-inset-right)) !important; }
+
+/* 單行工具列：固定一行；內容不游移，同時避免被裁切 */
+.toolbar.singleRow.toolbarOneLine{ overflow: hidden !important; }
+
+/* 右側導覽（三欄：◀ / 進度 / ▶）縮小，留出呼吸 */
+.toolbar.singleRow.toolbarOneLine .navInline{
+  margin-left: auto !important;
+  display: grid !important;
+  grid-template-columns: 36px minmax(52px, 1fr) 36px !important;
+  gap: 4px !important;
+  align-items: center;
+  justify-items: stretch;
+  max-width: 168px !important;
+  min-width: 0 !important;
+}
+
+.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
+  width: 36px !important;
+  min-width: 36px !important;
+  padding: .40rem 0 !important;
+}
+
+.toolbar.singleRow.toolbarOneLine .navInline .navText{
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: .40rem .42rem !important;
+}
+
+/* 左右箭頭稍微小一點（看起來不那麼擠） */
+#btnPrev, #btnNext{ font-size: 18px !important; }
+
+/* 朗讀 icon：讓它在深底上更立體清楚 */
+#btnSegRead .icon{
+  font-size: 22px !important;
+  text-shadow: 0 0 8px rgba(0,0,0,.85), 0 0 10px rgba(214,178,94,.35);
+}
+
 </style>
 
 </head>
@@ -1375,7 +1416,7 @@ html, body { overflow-x: hidden; }
             
             <div class="toolbarWrap">
               <div class="toolbar singleRow toolbarOneLine">
-                <button class="toolbtn iconOnly" id="btnSegRead" title="朗讀" aria-label="朗讀"><span class="icon">🔊</span></button>
+                <button class="toolbtn iconOnly" id="btnSegRead" title="朗讀" aria-label="朗讀"><span class="icon">🗣️</span></button>
                 <button class="toolbtn iconOnly" id="btnReset" title="重整" aria-label="重整"><span class="icon">♻</span></button>
                 <button class="toolbtn iconOnly book pulseStrong" id="btnBook" title="兵書" aria-label="兵書"><span class="icon">📜</span></button>
 
@@ -4061,7 +4102,7 @@ const btnClear = document.getElementById("btnClear");
   function stopReading(){
     try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
     ttsState = { playing:false, kind:"none", queue:[], idx:0, boundaryChar:0, currentText:"", paused:false };
-    btnHomeRead.textContent = "🔊";
+    btnHomeRead.textContent = "🗣️";
   }
 
   function speakFrom(text, kind){
@@ -4105,7 +4146,7 @@ const btnClear = document.getElementById("btnClear");
     ttsState.playing = true;
     ttsState.paused = false;
 
-    btnHomeRead.textContent = "🔊";
+    btnHomeRead.textContent = "🗣️";
 
     playNextUtterance();
   }
@@ -4127,7 +4168,7 @@ const btnClear = document.getElementById("btnClear");
       try{ window.speechSynthesis.cancel(); }catch(e){}
       ttsState.paused = true;
 
-    btnHomeRead.textContent = "🔊";
+    btnHomeRead.textContent = "🗣️";
       return;
     }
 
@@ -4135,7 +4176,7 @@ const btnClear = document.getElementById("btnClear");
       const remain = (ttsState.currentText || "").slice(Math.max(0, ttsState.boundaryChar));
       ttsState.paused = false;
 
-    btnHomeRead.textContent = "🔊";
+    btnHomeRead.textContent = "🗣️";
 
       if(remain.trim().length < 2){
         ttsState.idx += 1;
