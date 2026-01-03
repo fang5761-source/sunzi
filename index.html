@@ -52,6 +52,8 @@
 .singleRow .navInline{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
 .singleRow .navInline .toolbtn.mini{ min-width:40px; padding:8px 10px; }
 .singleRow .navText{ min-width:64px; text-align:center; padding:8px 10px; border-radius:999px; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
 
 /* ===== v5.4 toolbar + sheet ===== */
 .toolbarWrap{display:flex; flex-direction:column; gap:.45rem; align-items:stretch; width:100%;}
@@ -78,6 +80,8 @@
 .toolbtn.mini{padding:.45rem .6rem; min-width:44px; justify-content:center;}
 .navMini{display:flex; align-items:center; gap:.5rem; justify-content:flex-end;}
 .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
   font-weight:1000;
   letter-spacing:.02em;
   padding:.42rem .6rem;
@@ -884,7 +888,7 @@ body{ height:100%; }
       .homeText{ max-height: 36vh; }
     }
 
-    @media (max-width: 390px){
+    @media  (max-width: 390px){
       .statusLine > div:last-child{
         width:100%;
         display:flex;
@@ -992,6 +996,8 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
   padding:0;
 }
 .navInline .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
   min-width:72px;
   text-align:center;
   font-weight:800;
@@ -1031,6 +1037,8 @@ button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
 .toolbar
 .navInline{ display:flex; align-items:center; gap:10px; margin-left:auto; flex-wrap:nowrap; }
 .navInline .navText{ min-width:64px; text-align:center; font-weight:800; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
 .navInline .toolbtn.mini{ width:44px; padding:10px 0; }
 
 
@@ -1064,6 +1072,8 @@ html, body{ overflow-x:hidden; }
 .toolbar.singleRow .toolbtn .icon{ font-size:20px; }
 .navInline{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
 .navInline .navText{ min-width:62px; padding:8px 10px; border-radius:999px; font-weight:900; text-align:center; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
 .navInline .toolbtn.mini{ width:52px; padding:10px 0; }
 
 /* 佈令板/令牌區辨識再加強 */
@@ -1102,6 +1112,8 @@ html, body{ overflow-x:hidden; }
   padding: .42rem .48rem;
 }
 .toolbar.singleRow.toolbarOneLine .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
   min-width: 52px;
   padding: .42rem .52rem;
 }
@@ -1117,11 +1129,13 @@ html, body{ overflow-x:hidden; }
 .tokensTitle{ font-size: 18px; font-weight: 900; letter-spacing: .14em; }
 
 /* 小螢幕再縮一點，確保 ▶ 不會出界 */
-@media (max-width: 390px){
+@media  (max-width: 390px){
   .toolbar.singleRow.toolbarOneLine{ gap: .28rem; }
   .toolbar.singleRow.toolbarOneLine .toolbtn.iconOnly{ min-width: 36px; padding: .40rem .48rem; }
   .toolbar.singleRow.toolbarOneLine .toolbtn.mini{ min-width: 32px; padding: .40rem .44rem; }
   .toolbar.singleRow.toolbarOneLine .navText{ min-width: 50px; padding: .40rem .48rem; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
 }
 
 
@@ -1132,6 +1146,8 @@ html, body{ overflow-x:hidden; }
 .toolbar.toolbarOneLine > *{ flex:0 0 auto; }
 .navInline{ flex:0 0 auto; }
 .navText{ min-width:56px; padding:.4rem .55rem; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
 .toolbtn.mini{ width:38px; height:38px; min-width:38px; font-size:17px; line-height:38px; }
 .toolbtn.mini.primary{ font-size:17px; }
 /* keep right arrow inside */
@@ -1161,6 +1177,8 @@ html, body{ overflow-x:hidden; }
   padding: .42rem 0;
 }
 .toolbar.singleRow.toolbarOneLine .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
   min-width: 56px;
   padding: .42rem .52rem;
 }
@@ -1209,11 +1227,13 @@ html, body{ overflow-x:hidden; }
   font-size: 16px !important;
 }
 .toolbar.singleRow.toolbarOneLine .navInline .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
   min-width: 0 !important;
   width: 100% !important;
   padding: .40rem .46rem !important;
 }
- (max-width: 390px){
+  (max-width: 390px){
   .toolbar.singleRow.toolbarOneLine .navInline{
     max-width: 168px !important;
     width: 168px !important;
@@ -1241,6 +1261,8 @@ html, body{ overflow-x:hidden; }
   padding: .40rem 0 !important;
 }
 .toolbar.singleRow.toolbarOneLine .navInline .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
   padding: .40rem .36rem !important;
 }
 
@@ -1260,17 +1282,19 @@ html, body { overflow-x: hidden; }
   overflow: visible !important;
 }
 .toolbar.singleRow.toolbarOneLine .navInline{
-  grid-template-columns: 44px minmax(68px, 1fr) 44px !important;
-  max-width: 220px !important;
+  grid-template-columns: 40px minmax(72px, 1fr) 40px !important;
+  max-width: 210px !important;
   min-width: 0 !important;
   box-sizing: border-box !important;
 }
 .toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
-  width: 44px !important;
-  min-width: 44px !important;
+  width: 40px !important;
+  min-width: 40px !important;
   padding: .42rem 0 !important;
 }
 .toolbar.singleRow.toolbarOneLine .navInline .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
   padding: .36rem .40rem !important;
   min-width: 0 !important;
   width: 100% !important;
@@ -1289,7 +1313,7 @@ html, body { overflow-x: hidden; }
         <div class="titleWrap">
           <div class="title" id="topTitle">孫子兵法</div>
           <div class="subtitle" id="topSub">原書順序</div>
-          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed33</div>
+          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed35</div>
         </div>
         <div class="topActions">
                     <button class="pillBtn" id="floatTestBtn">測驗</button>
