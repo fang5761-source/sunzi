@@ -14,6 +14,10 @@ v1.0 首次公開穩定封存版
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-title" content="孫子兵法背誦" />
   <meta name="application-name" content="孫子兵法背誦" />
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
 
   <title>孫子兵法｜佈令背誦 v1.0（fixed43）</title>
   <style>
@@ -1134,6 +1138,32 @@ v1.0 首次公開穩定封存版
 
 <script>
 (() => {
+// --- Safety net: show clear error instead of blank screen (especially on iOS standalone) ---
+  window.addEventListener("error", (ev) => {
+    try{
+      const box = document.createElement("div");
+      box.style.position="fixed";
+      box.style.inset="0";
+      box.style.zIndex="999999";
+      box.style.background="rgba(0,0,0,.82)";
+      box.style.color="#fff";
+      box.style.padding="16px";
+      box.style.fontFamily="ui-sans-serif, system-ui, -apple-system";
+      box.style.overflow="auto";
+      box.innerHTML = `
+        <div style="max-width:720px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;">
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px;">⚠️ 這頁面遇到一個錯誤</div>
+          <div style="opacity:.9;line-height:1.5;margin-bottom:10px;">
+            若你是從「主畫面 icon」進來，請先用 Safari 打開同一網址後按一次重新整理，再回到主畫面開啟。<br/>
+            若仍出現，請把下面訊息截圖給小樂。
+          </div>
+          <pre style="white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);padding:10px;border-radius:10px;margin:0;">${(ev && (ev.error && ev.error.stack)) ? ev.error.stack : (ev && ev.message ? ev.message : String(ev))}</pre>
+        </div>
+      `;
+      document.body.appendChild(box);
+    }catch(_){}
+  }, {capture:true});
+
   /***********************
    * ✅自動拆段規則（完全自動）
    ***********************/
@@ -1882,6 +1912,32 @@ const btnShortcutGuide = document.getElementById("btnShortcutGuide");
 
     // 綁定一次性按鈕
     setTimeout(() => {
+// --- Safety net: show clear error instead of blank screen (especially on iOS standalone) ---
+  window.addEventListener("error", (ev) => {
+    try{
+      const box = document.createElement("div");
+      box.style.position="fixed";
+      box.style.inset="0";
+      box.style.zIndex="999999";
+      box.style.background="rgba(0,0,0,.82)";
+      box.style.color="#fff";
+      box.style.padding="16px";
+      box.style.fontFamily="ui-sans-serif, system-ui, -apple-system";
+      box.style.overflow="auto";
+      box.innerHTML = `
+        <div style="max-width:720px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;">
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px;">⚠️ 這頁面遇到一個錯誤</div>
+          <div style="opacity:.9;line-height:1.5;margin-bottom:10px;">
+            若你是從「主畫面 icon」進來，請先用 Safari 打開同一網址後按一次重新整理，再回到主畫面開啟。<br/>
+            若仍出現，請把下面訊息截圖給小樂。
+          </div>
+          <pre style="white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);padding:10px;border-radius:10px;margin:0;">${(ev && (ev.error && ev.error.stack)) ? ev.error.stack : (ev && ev.message ? ev.message : String(ev))}</pre>
+        </div>
+      `;
+      document.body.appendChild(box);
+    }catch(_){}
+  }, {capture:true});
+
       const a = document.getElementById("resetSegBtn");
       const b = document.getElementById("resetChBtn");
       if(a) a.onclick = () => {
@@ -2100,6 +2156,32 @@ btnPrev.disabled = (testCursor <= testRange.start);
           <button class="btn primary" id="btnBackHome">回到篇章首頁</button>
         `);
         setTimeout(() => {
+// --- Safety net: show clear error instead of blank screen (especially on iOS standalone) ---
+  window.addEventListener("error", (ev) => {
+    try{
+      const box = document.createElement("div");
+      box.style.position="fixed";
+      box.style.inset="0";
+      box.style.zIndex="999999";
+      box.style.background="rgba(0,0,0,.82)";
+      box.style.color="#fff";
+      box.style.padding="16px";
+      box.style.fontFamily="ui-sans-serif, system-ui, -apple-system";
+      box.style.overflow="auto";
+      box.innerHTML = `
+        <div style="max-width:720px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;">
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px;">⚠️ 這頁面遇到一個錯誤</div>
+          <div style="opacity:.9;line-height:1.5;margin-bottom:10px;">
+            若你是從「主畫面 icon」進來，請先用 Safari 打開同一網址後按一次重新整理，再回到主畫面開啟。<br/>
+            若仍出現，請把下面訊息截圖給小樂。
+          </div>
+          <pre style="white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);padding:10px;border-radius:10px;margin:0;">${(ev && (ev.error && ev.error.stack)) ? ev.error.stack : (ev && ev.message ? ev.message : String(ev))}</pre>
+        </div>
+      `;
+      document.body.appendChild(box);
+    }catch(_){}
+  }, {capture:true});
+
           const a = document.getElementById("btnBackToLearn");
           const b = document.getElementById("btnBackHome");
           if(a) a.onclick = () => { modalClose.click(); mode="learn"; startLearnSegment(currentSegIndex, { firstEntry:false }); };
@@ -2115,6 +2197,32 @@ btnPrev.disabled = (testCursor <= testRange.start);
         <button class="btn primary" id="btnPauseLater">先放下</button>
       `);
       setTimeout(() => {
+// --- Safety net: show clear error instead of blank screen (especially on iOS standalone) ---
+  window.addEventListener("error", (ev) => {
+    try{
+      const box = document.createElement("div");
+      box.style.position="fixed";
+      box.style.inset="0";
+      box.style.zIndex="999999";
+      box.style.background="rgba(0,0,0,.82)";
+      box.style.color="#fff";
+      box.style.padding="16px";
+      box.style.fontFamily="ui-sans-serif, system-ui, -apple-system";
+      box.style.overflow="auto";
+      box.innerHTML = `
+        <div style="max-width:720px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;">
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px;">⚠️ 這頁面遇到一個錯誤</div>
+          <div style="opacity:.9;line-height:1.5;margin-bottom:10px;">
+            若你是從「主畫面 icon」進來，請先用 Safari 打開同一網址後按一次重新整理，再回到主畫面開啟。<br/>
+            若仍出現，請把下面訊息截圖給小樂。
+          </div>
+          <pre style="white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);padding:10px;border-radius:10px;margin:0;">${(ev && (ev.error && ev.error.stack)) ? ev.error.stack : (ev && ev.message ? ev.message : String(ev))}</pre>
+        </div>
+      `;
+      document.body.appendChild(box);
+    }catch(_){}
+  }, {capture:true});
+
         const r = document.getElementById("btnRetryTest");
         const g = document.getElementById("btnPauseLater");
         if(r) r.onclick = () => { modalClose.click(); restartCurrent(); if(PROG.hintOn) flashHintTimes(1); };
@@ -2395,6 +2503,32 @@ btnClear.onclick = () => {
       <button class="btn primary" id="btnConfirmClear">確定清空</button>
     `);
     setTimeout(() => {
+// --- Safety net: show clear error instead of blank screen (especially on iOS standalone) ---
+  window.addEventListener("error", (ev) => {
+    try{
+      const box = document.createElement("div");
+      box.style.position="fixed";
+      box.style.inset="0";
+      box.style.zIndex="999999";
+      box.style.background="rgba(0,0,0,.82)";
+      box.style.color="#fff";
+      box.style.padding="16px";
+      box.style.fontFamily="ui-sans-serif, system-ui, -apple-system";
+      box.style.overflow="auto";
+      box.innerHTML = `
+        <div style="max-width:720px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;">
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px;">⚠️ 這頁面遇到一個錯誤</div>
+          <div style="opacity:.9;line-height:1.5;margin-bottom:10px;">
+            若你是從「主畫面 icon」進來，請先用 Safari 打開同一網址後按一次重新整理，再回到主畫面開啟。<br/>
+            若仍出現，請把下面訊息截圖給小樂。
+          </div>
+          <pre style="white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);padding:10px;border-radius:10px;margin:0;">${(ev && (ev.error && ev.error.stack)) ? ev.error.stack : (ev && ev.message ? ev.message : String(ev))}</pre>
+        </div>
+      `;
+      document.body.appendChild(box);
+    }catch(_){}
+  }, {capture:true});
+
       const c = document.getElementById("btnCancelClear");
       const y = document.getElementById("btnConfirmClear");
       if(c) c.onclick = () => modalClose.click();
@@ -2422,6 +2556,32 @@ btnClear.onclick = () => {
       <button class="btn primary" id="btnConfirmResetCh">確定重置</button>
     `);
     setTimeout(() => {
+// --- Safety net: show clear error instead of blank screen (especially on iOS standalone) ---
+  window.addEventListener("error", (ev) => {
+    try{
+      const box = document.createElement("div");
+      box.style.position="fixed";
+      box.style.inset="0";
+      box.style.zIndex="999999";
+      box.style.background="rgba(0,0,0,.82)";
+      box.style.color="#fff";
+      box.style.padding="16px";
+      box.style.fontFamily="ui-sans-serif, system-ui, -apple-system";
+      box.style.overflow="auto";
+      box.innerHTML = `
+        <div style="max-width:720px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;">
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px;">⚠️ 這頁面遇到一個錯誤</div>
+          <div style="opacity:.9;line-height:1.5;margin-bottom:10px;">
+            若你是從「主畫面 icon」進來，請先用 Safari 打開同一網址後按一次重新整理，再回到主畫面開啟。<br/>
+            若仍出現，請把下面訊息截圖給小樂。
+          </div>
+          <pre style="white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);padding:10px;border-radius:10px;margin:0;">${(ev && (ev.error && ev.error.stack)) ? ev.error.stack : (ev && ev.message ? ev.message : String(ev))}</pre>
+        </div>
+      `;
+      document.body.appendChild(box);
+    }catch(_){}
+  }, {capture:true});
+
       const c = document.getElementById("btnCancelResetCh");
       const y = document.getElementById("btnConfirmResetCh");
       if(c) c.onclick = () => modalClose.click();
@@ -2528,6 +2688,32 @@ if (typeof btnNext !== "undefined" && btnNext) {
         <button class="btn primary" id="btnBackOverview2">回到總覽</button>
       `);
       setTimeout(() => {
+// --- Safety net: show clear error instead of blank screen (especially on iOS standalone) ---
+  window.addEventListener("error", (ev) => {
+    try{
+      const box = document.createElement("div");
+      box.style.position="fixed";
+      box.style.inset="0";
+      box.style.zIndex="999999";
+      box.style.background="rgba(0,0,0,.82)";
+      box.style.color="#fff";
+      box.style.padding="16px";
+      box.style.fontFamily="ui-sans-serif, system-ui, -apple-system";
+      box.style.overflow="auto";
+      box.innerHTML = `
+        <div style="max-width:720px;margin:0 auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:14px;">
+          <div style="font-size:18px;font-weight:700;margin-bottom:6px;">⚠️ 這頁面遇到一個錯誤</div>
+          <div style="opacity:.9;line-height:1.5;margin-bottom:10px;">
+            若你是從「主畫面 icon」進來，請先用 Safari 打開同一網址後按一次重新整理，再回到主畫面開啟。<br/>
+            若仍出現，請把下面訊息截圖給小樂。
+          </div>
+          <pre style="white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);padding:10px;border-radius:10px;margin:0;">${(ev && (ev.error && ev.error.stack)) ? ev.error.stack : (ev && ev.message ? ev.message : String(ev))}</pre>
+        </div>
+      `;
+      document.body.appendChild(box);
+    }catch(_){}
+  }, {capture:true});
+
         const a = document.getElementById("btnBackHome2");
         const b = document.getElementById("btnBackOverview2");
         if (a) a.onclick = () => { modalClose.click(); openChapterHome(); };
@@ -2588,183 +2774,6 @@ if (typeof btnNext !== "undefined" && btnNext) {
 
   init();
 })();
-</script>
-
-
-
-<script>
-/* v5.4.5 hotfix: make Settings -> 本篇重置 always work */
-(function(){
-  function bind(){
-    const b = document.getElementById("btnResetChapter");
-    if(!b) return;
-    b.addEventListener("click", function(e){
-      try{ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }catch(_){}
-      const ok = confirm("確定要重置【本篇】進度嗎？\n（只會把本篇完成數歸零，不影響其他篇）");
-      if(!ok) return;
-      try{ stopReading && stopReading(); }catch(_){}
-      try{
-        if(typeof PROG !== "undefined" && typeof currentChapterId !== "undefined"){
-          PROG.chapters[currentChapterId] = { stars:0 };
-          saveProgress && saveProgress();
-        }
-        if(typeof currentSegIndex !== "undefined") currentSegIndex = 0;
-        // 回到本篇首頁（第1段）
-        if(typeof openChapterHome === "function") openChapterHome();
-        try{ showToast && showToast("✅ 已重置本篇進度"); }catch(_e){ alert("已重置本篇進度"); }
-      }catch(err){
-        alert("重置失敗，請告訴小樂："+err);
-      }
-    }, true); // capture = true, avoid parent click handlers
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bind);
-  else bind();
-})();
-
-  },0);
-    }
-  }, true);
-
-
-
-  // Bind reset buttons (settings + more sheet) with capture to avoid parent handlers
-  function bindResetButtons(){
-    const a = document.getElementById("btnResetChapter");
-    const handler = (ev)=>{
-      if(ev){ ev.preventDefault(); ev.stopPropagation(); try{ ev.stopImmediatePropagation(); }catch(_e){} }
-      // confirm to avoid mis-tap
-      const ok = confirm("確定要「本篇重置」嗎？\n只會把目前篇章的完成數歸零。");
-      if(!ok) return;
-      resetChapterProgress();
-    };
-    if(a) a.addEventListener("click", handler, true);
-
-    // fallback delegation
-    document.addEventListener("click", (ev)=>{
-      const t = ev.target;
-      if(!t) return;
-      if(t.id==="btnResetChapter" ){
-        handler(ev);
-      }
-    }, true);
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", bindResetButtons);
-  else bindResetButtons();
-
-
-  /***********************
-   * CAPTURE_RESET_CHAPTER_V57
-   * - Reset should live in chapter-level "更多", not global settings.
-   * - Handle btnResetChapter defensively.
-   ***********************/
-  function __resetCurrentChapter(){
-    try{
-      const chId = currentChapterId;
-      const ch = (CHAPTERS || []).find(x => x.id === chId);
-      const name = ch ? (ch.title || ch.top || chId) : chId;
-      const ok = confirm(`確定要重置「${name}」本篇進度嗎？\n（只會影響本篇，不影響其他篇章）`);
-      if(!ok) return;
-      const p = getChapterProg(chId);
-      p.stars = 0;
-      saveProgress();
-      try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){ alert(`已重置：${name}`); }
-      currentSegIndex = 0;
-      openChapterHome();
-    }catch(e){
-      try{ alert("重置失敗：請將錯誤畫面截圖給小樂"); }catch(_e){}
-      console.error(e);
-    }
-  }
-
-  document.addEventListener("click", function(ev){
-    const t = ev.target;
-    if(!t) return;
-    const isBtnResetChapter = (t.id === "btnResetChapter");
-
-    if(isBtnResetChapter){
-      ev.preventDefault();
-      ev.stopPropagation();
-      try{ ev.stopImmediatePropagation(); }catch(_e){}
-      __resetCurrentChapter();
-    }
-  }, true);
-
-
-
-/***********************
- * v5.8 robust actions
- ***********************/
-function __getChapterName(){
-  try{
-    const ch = (CHAPTERS||[]).find(x=>x.id===currentChapterId);
-    return ch ? (ch.title || ch.top || currentChapterId) : currentChapterId;
-  }catch(_e){ return currentChapterId; }
-}
-
-function __resetCurrentChapterHard(){
-  const name = __getChapterName();
-  const ok = confirm(`確定要重置「${name}」本篇進度嗎？\n（只影響本篇，不影響其他篇章）`);
-  if(!ok) return;
-  const p = getChapterProg(currentChapterId);
-  p.stars = 0;
-  saveProgress();
-  try{ showToast && showToast(`✅ 已重置：${name}`); }catch(_e){ alert(`已重置：${name}`); }
-  currentSegIndex = 0;
-  openChapterHome();
-}
-
-function __clearAllProgressHard(){
-  const ok = confirm("確定要清空所有篇章的足跡紀錄嗎？\n（此動作不可復原）");
-  if(!ok) return;
-  try{
-    localStorage.removeItem(STORE_KEY);
-  }catch(_e){}
-  try{
-    // reset in-memory
-    PROG = JSON.parse(JSON.stringify(defaultProgress));
-  }catch(_e){}
-  saveProgress();
-  try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){ alert("已清空全部足跡"); }
-  showOverview();
-}
-
-function __applyFreeNavOverride(){
-  try{
-    if(!PROG || !PROG.freeNav) return;
-    // Only relevant in game view
-    if(viewGame && viewGame.classList.contains("hidden")===false){
-      const isLast = (segIndex >= currentSegs.length-1);
-      if(btnNext) btnNext.disabled = isLast ? true : false;
-      if(btnBook) btnBook.disabled = false;
-    }
-  }catch(_e){}
-}
-
-document.addEventListener("click", function(ev){
-  const t = ev.target;
-  if(!t) return;
-
-  // Global clear
-  if(t.id==="btnClear" || (t.closest && t.closest("#btnClear"))){
-    ev.preventDefault(); ev.stopPropagation();
-    try{ ev.stopImmediatePropagation(); }catch(_e){}
-    __clearAllProgressHard();
-    return;
-  }
-}, true);
-
-// FreeNav switch wiring (ensure works even if other handlers fail)
-document.addEventListener("change", function(ev){
-  const t = ev.target;
-  if(t && t.id==="freeNavSwitch"){
-    PROG.freeNav = !!t.checked;
-    saveProgress();
-    try{ showToast && showToast("已更新：自由瀏覽 " + (PROG.freeNav ? "開啟" : "關閉")); }catch(_e){}
-    try{ renderSegment(); }catch(_e){}
-    __applyFreeNavOverride();
-  }
-}, true);
-
 </script>
 
 </body>
