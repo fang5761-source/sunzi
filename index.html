@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：fixed33（乾淨母版・工具列收斂版）
+版本：fixed37
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1303,45 +1303,84 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== fixed36 : 右箭頭不再被裁切 + 朗讀改🗣️(更清楚) ====== */
-/* 工具列右側多留安全邊距，避免 Chrome/iOS 把最後一顆按鈕切掉 */
-.toolbarWrap{ padding-right: calc(22px + env(safe-area-inset-right)) !important; }
+/* ====== fixed37：箭頭完整露出 + 字體放大不溢出 + 圖示金色 + 說明療癒排版 ====== */
+.toolbar.toolbarOneLine{
+  /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
+  padding-right: calc(16px + env(safe-area-inset-right)) !important;
+}
+.toolbar.singleRow.toolbarOneLine{ overflow: visible !important; }
+.toolbarWrap{ overflow: visible !important; }
 
-/* 單行工具列：固定一行；內容不游移，同時避免被裁切 */
-.toolbar.singleRow.toolbarOneLine{ overflow: hidden !important; }
-
-/* 右側導覽（三欄：◀ / 進度 / ▶）縮小，留出呼吸 */
-.toolbar.singleRow.toolbarOneLine .navInline{
+/* 右側導覽：固定三欄（◀ / 進度 / ▶），縮瘦箭頭，讓右箭頭完整露出 */
+.navInline{
   margin-left: auto !important;
   display: grid !important;
-  grid-template-columns: 36px minmax(52px, 1fr) 36px !important;
+  grid-template-columns: 36px minmax(64px, 1fr) 36px !important;
   gap: 4px !important;
-  align-items: center;
-  justify-items: stretch;
-  max-width: 168px !important;
+  align-items: center !important;
+  justify-items: stretch !important;
+  max-width: 200px !important;
   min-width: 0 !important;
+  overflow: visible !important;
 }
-
-.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
+.navInline .toolbtn.mini{
   width: 36px !important;
   min-width: 36px !important;
-  padding: .40rem 0 !important;
+  padding: .38rem 0 !important;
 }
-
-.toolbar.singleRow.toolbarOneLine .navInline .navText{
+.navInline .navText{
   min-width: 0 !important;
   width: 100% !important;
-  padding: .40rem .42rem !important;
+  padding: .38rem .36rem !important;
+  text-align: center !important;
+  letter-spacing: -0.02em;
+  font-size: min(calc(14px * var(--fontScale)), 18px) !important; /* 字體放大也不爆框 */
+  font-variant-numeric: tabular-nums;
 }
 
-/* 左右箭頭稍微小一點（看起來不那麼擠） */
-#btnPrev, #btnNext{ font-size: 18px !important; }
+/* 工具列 icon 文字大小微調 */
+.toolbtn .icon, .toolbtn .iconEmoji{ font-size: 1.06rem !important; }
 
-/* 朗讀 icon：讓它在深底上更立體清楚 */
-#btnSegRead .icon{
-  font-size: 22px !important;
-  text-shadow: 0 0 8px rgba(0,0,0,.85), 0 0 10px rgba(214,178,94,.35);
+/* 朗讀 icon：改金色、再大一點點 */
+.icoSpeak{
+  width: 22px;
+  height: 22px;
+  fill: var(--gold);
+  filter: drop-shadow(0 0 .55rem rgba(214,178,94,.55));
 }
+#btnSegRead{ padding-left: .52rem !important; padding-right: .52rem !important; }
+
+/* 設定頁：療癒列表排版（更好讀、比較整齊） */
+.helpBox{ line-height: 1.7; }
+.helpList{
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: .4rem 0 0 0 !important;
+}
+.helpList li{
+  position: relative;
+  margin: .38rem 0 !important;
+  padding: .52rem .7rem .52rem 1.55rem !important;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  background: rgba(10,14,10,.22);
+}
+.helpList li::before{
+  content: "•";
+  position: absolute;
+  left: .72rem;
+  top: .45rem;
+  color: rgba(233,239,233,.75);
+}
+
+/* 加入主畫面教學（彈窗）：更清楚、比較像小卡片 */
+.a2hModal .a2hCard{ line-height: 1.75; }
+.a2hModal ol{
+  margin: .4rem 0 0 0;
+  padding-left: 1.2rem;
+}
+.a2hModal li{ margin: .35rem 0; }
+
 
 </style>
 
@@ -1354,7 +1393,7 @@ html, body { overflow-x: hidden; }
         <div class="titleWrap">
           <div class="title" id="topTitle">孫子兵法</div>
           <div class="subtitle" id="topSub">原書順序</div>
-          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed35</div>
+          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed37</div>
         </div>
         <div class="topActions">
                     <button class="pillBtn" id="floatTestBtn">測驗</button>
@@ -1416,7 +1455,7 @@ html, body { overflow-x: hidden; }
             
             <div class="toolbarWrap">
               <div class="toolbar singleRow toolbarOneLine">
-                <button class="toolbtn iconOnly" id="btnSegRead" title="朗讀" aria-label="朗讀"><span class="icon">🗣️</span></button>
+                <button class="toolbtn iconOnly" id="btnSegRead" title="朗讀" aria-label="朗讀"><svg class="icoSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4c0 1.1.9 2 2 2h2l4 3V5L7 8H5c-1.1 0-2 .9-2 2zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zm2.5 0c0 3.04-1.72 5.64-4.25 6.94v-1.92c1.54-1.09 2.55-2.88 2.55-5.02s-1.01-3.93-2.55-5.02V5.06C17.28 6.36 19 8.96 19 12z"/></svg></button>
                 <button class="toolbtn iconOnly" id="btnReset" title="重整" aria-label="重整"><span class="icon">♻</span></button>
                 <button class="toolbtn iconOnly book pulseStrong" id="btnBook" title="兵書" aria-label="兵書"><span class="icon">📜</span></button>
 
@@ -1538,7 +1577,7 @@ html, body { overflow-x: hidden; }
       <div class="helpBody">
         <div class="helpLine">• 這是一個背誦《孫子兵法》的練習工具。</div>
         <div class="helpLine">• 目標：讓你用最少摩擦，反覆進入記憶節奏。</div>
-        <div class="helpLine version">• 版本：fixed24（乾淨母版） (fixed10)</div>
+        <div class="helpLine version">• 版本：fixed37</div>
       </div>
     </details>
 
@@ -1569,7 +1608,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed33";
+const APP_VERSION = "fixed37";
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
