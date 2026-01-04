@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：fixed37
+版本：v1.0（fixed56）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1336,7 +1336,7 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== fixed37：箭頭完整露出 + 字體放大不溢出 + 圖示金色 + 說明療癒排版 ====== */
+/* ====== v1.0（fixed56）首次公開穩定封存版 ====== */
 .toolbar.toolbarOneLine{
   /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
   padding-right: calc(16px + env(safe-area-inset-right)) !important;
@@ -1631,14 +1631,7 @@ html, body { overflow-x: hidden; }
         <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</div>
         <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
 
-        <div class="helpLine" style="margin-top:.55rem;">• 如需將本系統「捷徑」加入主畫面，請在本頁最上方開啟「捷徑加入主畫面教學」。</div>
-            <div class="helpAction">分享 → 加入主畫面</div>
-          </div>
-          <div class="helpStep">
-            <div class="helpPlatform">Android（Chrome）</div>
-            <div class="helpAction">右上「⋮」→ 加入主畫面／安裝應用程式</div>
-          </div>
-        </div>
+
       </div>
     </details>
 <details class="helpFold">
@@ -1679,7 +1672,9 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed55";
+const APP_VERSION = "fixed56";
+
+try{ const av=document.getElementById("aboutVersion"); if(av) av.textContent = "v1.0（"+APP_VERSION+"）"; }catch(_e){}
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
@@ -5312,6 +5307,17 @@ if (typeof btnNext !== "undefined" && btnNext) {
   }
 
   window.addEventListener('load', ()=>{
+    // 讓「設定 → 捷徑加入主畫面教學」在 iOS/捷徑模式也必定可點
+    try{
+      const row = document.getElementById('btnA2HSOpen');
+      if(row){
+        const open = (ev)=>{ try{ ev && ev.preventDefault && ev.preventDefault(); }catch(_e){} openTutorial(); };
+        row.addEventListener('click', open, {passive:false});
+        row.addEventListener('pointerup', open, {passive:false});
+        row.addEventListener('touchend', open, {passive:false});
+      }
+    }catch(_e){}
+
     try{
       if(shouldPrompt()) setTimeout(openFirstPrompt, 420);
     }catch(_e){}
