@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誝遊戲｜佈令背誦
-v1.0（fixed46）首次公開穩定封存版
+v1.0（fixed47）首次公開穩定封存版
 （行為／文案／排版：穩定封存，供公開使用）
 -->
 
@@ -26,7 +26,7 @@ v1.0（fixed46）首次公開穩定封存版
   <link rel="apple-touch-icon" href="icon-180.png" />
 
 
-  <title>孫子兵法｜佈令背誦 v1.0（fixed46）</title>
+  <title>孫子兵法｜佈令背誦 v1.0（fixed47）</title>
   <style>
 
 /* Settings UX: pointer + no I-beam */
@@ -1650,7 +1650,7 @@ html, body { overflow-x: hidden; }
     <ul class="healingList">
       <li>這是一個背誦《孫子兵法》的練習工具。</li>
       <li>目標：讓你用最少摩擦，反覆進入記憶節奏。</li>
-      <li class="muted">版本：v1.0（fixed46）</li>
+      <li class="muted">版本：v1.0（fixed47）</li>
     </ul>
   </div>
 </details>
@@ -1682,7 +1682,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed46";
+const APP_VERSION = "fixed47";
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
@@ -5313,5 +5313,30 @@ if (typeof btnNext !== "undefined" && btnNext) {
     // ✅ 設定頁第一項：捷徑將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
 
 
+
+<script>
+/* SAFE_INIT_WRAPPER — fixed47 保命初始化 */
+(function () {
+  function safeInit() {
+    try {
+      if (typeof initApp === 'function') {
+        initApp();
+      } else {
+        console.warn('initApp not ready, retrying…');
+        setTimeout(safeInit, 50);
+      }
+    } catch (e) {
+      document.body.innerHTML = '<div style="padding:16px;font-family:sans-serif;">⚠ 系統啟動時發生錯誤，請重新整理或回到設定頁。<br><small>' + e + '</small></div>';
+      console.error(e);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', safeInit);
+  } else {
+    safeInit();
+  }
+})();
+</script>
 </body>
+
 </html>
