@@ -1442,6 +1442,9 @@ html, body { overflow-x: hidden; }
 .helpBody .healingList li{ margin: .35em 0; line-height:1.55; }
 .helpBody .healingList li.muted{ color: var(--muted); }
 
+
+.miniTag{font-size:.78rem;opacity:.8;border:1px solid var(--line);padding:.28rem .55rem;border-radius:999px;}
+.row.clickable:active{transform:translateY(1px);}
 </style>
 
 </head>
@@ -1453,7 +1456,8 @@ html, body { overflow-x: hidden; }
         <div class="titleWrap">
           <div class="title" id="topTitle">孫子兵法</div>
           <div class="subtitle" id="topSub">原書順序</div>
-          <div class="subtitle" style="opacity:.55;font-size:.78rem;margin-top:.15rem">v fixed38</div>
+          <div class="subtitle" id="topVer" style="opacity:.55;font-size:.78rem;margin-top:.15rem;display:none;"></div>
+          
         </div>
         <div class="topActions">
                     <button class="pillBtn" id="floatTestBtn">測驗</button>
@@ -1562,6 +1566,15 @@ html, body { overflow-x: hidden; }
 
       <div class="view panel scroll" id="viewSettings">
   <div class="settings">
+    
+<div class="row clickable" id="btnA2HSOpen" style="cursor:pointer;">
+  <div class="rowLeft">
+    <div class="rowTitle">捷徑加入主畫面教學</div>
+    <div class="rowDesc">全螢幕顯示、介面友好、系統穩定</div>
+  </div>
+  <div class="miniTag">開啟</div>
+</div>
+
     <div class="row">
       <div class="rowLeft">
         <div class="rowTitle">字體大小</div>
@@ -1628,11 +1641,7 @@ html, body { overflow-x: hidden; }
         <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</div>
         <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
 
-        <div class="helpLine" style="margin-top:.55rem;">• 建議加入手機主畫面使用（全畫面體驗更像 App）：</div>
-
-        <div class="helpSteps">
-          <div class="helpStep">
-            <div class="helpPlatform">iPhone（Safari）</div>
+        <div class="helpLine" style="margin-top:.55rem;">• 如需將本系統「捷徑」加入主畫面，請在本頁最上方開啟「捷徑加入主畫面教學」。</div>
             <div class="helpAction">分享 → 加入主畫面</div>
           </div>
           <div class="helpStep">
@@ -1648,8 +1657,7 @@ html, body { overflow-x: hidden; }
     <ul class="healingList">
       <li>這是一個背誦《孫子兵法》的練習工具。</li>
       <li>目標：讓你用最少摩擦，反覆進入記憶節奏。</li>
-      <li class="muted">版本：fixed38</li>
-    </ul>
+</ul>
   </div>
 </details>
 
@@ -1680,7 +1688,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed52";
+const APP_VERSION = "fixed53";
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
@@ -3885,7 +3893,16 @@ freeNav: false,
   const topTitle = document.getElementById("topTitle");
   const topSub = document.getElementById("topSub");
 
-  const btnOverview = document.getElementById("btnOverview");
+  
+  const topVer = document.getElementById("topVer");
+  function setTopVer(show){
+    try{
+      if(!topVer) return;
+      topVer.textContent = `v1.0（${APP_VERSION}）`;
+      topVer.style.display = show ? "" : "none";
+    }catch(_e){}
+  }
+const btnOverview = document.getElementById("btnOverview");
   const btnBackOrSettings = document.getElementById("btnBackOrSettings");
 
   const overviewList = document.getElementById("overviewList");
@@ -4004,7 +4021,8 @@ const btnClear = document.getElementById("btnClear");
     if(target==="overview"){
       renderOverview();
       topTitle.textContent = "孫子兵法";
-      topSub.textContent = `原書順序｜v1.0（${APP_VERSION}）`;
+      topSub.textContent = "原書順序";
+    setTopVer(true);
       showView(viewOverview);
       return;
     }
@@ -4023,7 +4041,8 @@ const btnClear = document.getElementById("btnClear");
     rememberNonSettingsView();
     renderOverview();
     topTitle.textContent = "孫子兵法";
-    topSub.textContent = `原書順序｜v1.0（${APP_VERSION}）`;
+    topSub.textContent = "原書順序";
+    setTopVer(true);
     showView(viewOverview);
   };
 
@@ -4036,6 +4055,7 @@ const btnClear = document.getElementById("btnClear");
     rememberNonSettingsView();
     topTitle.textContent = "設定";
     topSub.textContent = "調整你的學習手感";
+    setTopVer(false);
     syncSettingsUI();
     showView(viewSettings);
   };
@@ -4134,6 +4154,7 @@ const btnClear = document.getElementById("btnClear");
 
     topTitle.textContent = ch.name;
     topSub.textContent = "篇章首頁";
+    setTopVer(false);
     showView(viewChapterHome);
   }
 
@@ -4415,6 +4436,7 @@ const btnClear = document.getElementById("btnClear");
 
     topTitle.textContent = ch.name;
     topSub.textContent = "佈令背誦";
+    setTopVer(false);
     showView(viewGame);
 
     if(opts.firstEntry){
@@ -5071,7 +5093,8 @@ btnPrev.disabled = (testCursor <= testRange.start);
 
       // 同步 UI 並跳回總覽
       try{ currentChapterId = 1; currentSegIndex = 0; }catch(_e){}
-      try{ topTitle.textContent = "孫子兵法"; topSub.textContent = `原書順序｜v1.0（${APP_VERSION}）`; }catch(_e){}
+      try{ topTitle.textContent = "孫子兵法"; topSub.textContent = "原書順序";
+    setTopVer(true); }catch(_e){}
       try{ renderOverview(); }catch(_e){}
       try{ showView(viewOverview); }catch(_e){}
       try{ nav.lastNonSettingsView = "overview"; nav.chapterId = 1; nav.segIndex = 0; nav.mode = "learn"; }catch(_e){}
@@ -5218,7 +5241,8 @@ if (typeof btnNext !== "undefined" && btnNext) {
 
     renderOverview();
     topTitle.textContent = "孫子兵法";
-    topSub.textContent = `原書順序｜v1.0（${APP_VERSION}）`;
+    topSub.textContent = "原書順序";
+    setTopVer(true);
     showView(viewOverview);
   }
 
@@ -5226,83 +5250,86 @@ if (typeof btnNext !== "undefined" && btnNext) {
 })();
 </script>
 <script>
-/* ✅ 加入主畫面（捷徑）｜iPhone Safari 友善版（不再用全螢幕遮罩，避免 iOS 出現「看不到但擋住操作」） */
+/* ✅ 加入主畫面（捷徑）｜v1.0 fixed53 */
 (function(){
-  const KEY = 'sunzi_a2hs_dismissed_v2';
+  const KEY = 'sunzi_a2hs_dismissed_v1';
   const isStandalone =
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
     window.navigator.standalone === true;
 
-  function showGuide(force){
-    try{
-      const okDismiss = () => { try{ localStorage.setItem(KEY,'yes'); }catch(_e){} };
-      const html = `
-<div class="helpModalHead">
-  <div class="helpModalTitle">加入主畫面（捷徑）</div>
-  <div class="helpModalSub">建議加入主畫面：全螢幕、比較不會亂跳（也不會一直跳出安裝提示）</div>
-</div>
-<div class="helpStepsGrid">
-  <section class="helpStepsCard">
-    <h3>iPhone / iPad（Safari）</h3>
-    <ol class="helpSteps">
-      <li>用 Safari 開啟本頁</li>
-      <li>點下方「分享」按鈕（方框 + 上箭頭）</li>
-      <li>選「加入主畫面」</li>
-      <li>從主畫面打開，就像 App</li>
-    </ol>
-  </section>
-  <section class="helpStepsCard">
-    <h3>Android（Chrome）</h3>
-    <ol class="helpSteps">
-      <li>用 Chrome 開啟本頁</li>
-      <li>點右上角「⋮」選單</li>
-      <li>選「加入主畫面」或「安裝應用程式」</li>
-      <li>從主畫面打開，就像 App</li>
-    </ol>
-  </section>
-</div>`;
-      openModal("加入主畫面（捷徑）", html, `
-        <button class="btn primary" id="a2hsOk">我知道了</button>
-      `);
-      try{ const m=document.getElementById("modal"); if(m) m.classList.add("a2hs"); }catch(_e){}
-      setTimeout(()=>{
-        const later = document.getElementById('a2hsLater');
-        const ok = document.getElementById('a2hsOk');
-        if(later) later.onclick = ()=>{ okDismiss(); modalClose.click(); };
-        if(ok) ok.onclick = ()=>{ okDismiss(); modalClose.click(); };
-      },0);
-    }catch(e){
-      // fallback
-      try{ if(typeof openModal==="function"){ openModal("加入主畫面", `<div class="plain">請用 Safari：分享 → 加入主畫面</div>`, `<button class="btn primary" id="a2hsOk2">知道了</button>`); setTimeout(()=>{ const b=document.getElementById("a2hsOk2"); if(b) b.onclick=()=>{ try{ closeModal && closeModal(); }catch(_e){} }; },0); } }catch(_e){}
-    }
+  function markDismissed(){
+    try{ localStorage.setItem(KEY,'yes'); }catch(_e){}
   }
-
   function shouldPrompt(){
     if(isStandalone) return false;
     try{ return localStorage.getItem(KEY) !== 'yes'; }catch(_e){ return true; }
   }
 
-  // fixed34：首次進入（非捷徑/非安裝）自動提示「加入主畫面」；只跳一次
-  window.addEventListener('load', () => {
+  function openTutorial(){
+    const html = `
+<div class="helpModalHead">
+  <div class="helpModalTitle">捷徑加入主畫面教學</div>
+  <div class="helpModalSub">加入後可全螢幕顯示、操作更順暢，整體穩定度與使用體驗會更接近 App。</div>
+</div>
+
+<div class="helpStepsGrid">
+  <section class="helpStepsCard">
+    <h3>iPhone / iPad（Safari）</h3>
+    <ol>
+      <li>點下方「分享」按鈕（方框＋上箭頭）。</li>
+      <li>往下滑，選「加入主畫面」。</li>
+      <li>確認名稱後按「加入」。</li>
+    </ol>
+  </section>
+
+  <section class="helpStepsCard">
+    <h3>Android（Chrome）</h3>
+    <ol>
+      <li>點右上角「⋮」選單。</li>
+      <li>選「加到主畫面」或「安裝應用程式」（依機型顯示）。</li>
+      <li>確認後完成加入。</li>
+    </ol>
+  </section>
+</div>
+
+<div class="helpTips">
+  <div class="helpTipsTitle">溫馨小提醒</div>
+  <div class="helpLine">1. 本系統為網頁遊戲，加入主畫面捷徑不會佔用手機太多空間。</div>
+  <div class="helpLine">2. 若選擇稍後再加，可隨時到「設定」中重新開啟本教學。</div>
+</div>`;
+    openModal("捷徑加入主畫面教學", html, `<button class="btn primary" id="a2hsDone">知道了</button>`);
+    setTimeout(()=>{ const b=document.getElementById("a2hsDone"); if(b) b.onclick=()=>{ modalClose.click(); }; },0);
+  }
+
+  function openFirstPrompt(){
+    const html = `
+<div class="plain" style="line-height:1.75">
+  想把本背誦系統的捷徑加到主畫面嗎？<br/>
+  將捷徑加入主畫面的優點是全螢幕顯示、介面友好、系統穩定。<br/>
+  之後也可以到「設定」裡查看加入主畫面教學。
+</div>`;
+    openModal("溫柔小提示", html, `
+      <button class="btn" id="a2hsTeach">捷徑教學</button>
+      <button class="btn primary" id="a2hsLater">稍後再加</button>
+    `);
+    setTimeout(()=>{
+      const teach=document.getElementById("a2hsTeach");
+      const later=document.getElementById("a2hsLater");
+      if(teach) teach.onclick=()=>{ markDismissed(); modalClose.click(); setTimeout(openTutorial, 60); };
+      if(later) later.onclick=()=>{ markDismissed(); modalClose.click(); };
+    },0);
+  }
+
+  window.addEventListener('load', ()=>{
     try{
-      if(shouldPrompt()) setTimeout(() => { try{ showGuide(); }catch(_e){} }, 380);
+      if(shouldPrompt()) setTimeout(openFirstPrompt, 420);
     }catch(_e){}
   });
 
-
-  // 設定頁入口（強制顯示，不管是否已關閉）
-  window.addEventListener('load', ()=>{
+  // Settings entry
+  window.addEventListener('DOMContentLoaded', ()=>{
     const btn = document.getElementById('btnA2HSOpen');
-    if(btn){
-      btn.addEventListener('click', ()=> showGuide(true));
-    }
-    const btnR = document.getElementById('btnA2HSReset');
-    if(btnR){
-      btnR.addEventListener('click', ()=>{
-        try{ localStorage.removeItem(KEY); }catch(_e){}
-        showGuide(true);
-      });
-    }
+    if(btn) btn.addEventListener('click', ()=> openTutorial());
   });
 })();
 </script>
