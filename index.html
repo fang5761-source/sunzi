@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：v1.0（fixed58）
+版本：v1.0（fixed59）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1336,7 +1336,7 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== v1.0（fixed58）首次公開穩定封存版 ====== */
+/* ====== v1.0（fixed59）首次公開穩定封存版 ====== */
 .toolbar.toolbarOneLine{
   /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
   padding-right: calc(16px + env(safe-area-inset-right)) !important;
@@ -1567,11 +1567,6 @@ html, body { overflow-x: hidden; }
       <div class="view panel scroll" id="viewSettings">
   <div class="settings">
     
-    <div class="rowDesc">全螢幕顯示、介面友好、系統穩定</div>
-  </div>
-  <div class="miniTag">開啟</div>
-</div>
-
     <div class="row">
       <div class="rowLeft">
         <div class="rowTitle">字體大小</div>
@@ -1693,7 +1688,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed58";
+const APP_VERSION = "fixed59";
 
 try{ const av=document.getElementById("aboutVersion"); if(av) av.textContent = "v1.0（"+APP_VERSION+"）"; }catch(_e){}
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
@@ -4204,10 +4199,24 @@ const btnClear = document.getElementById("btnClear");
    ***********************/
   let audioCtx = null;
 
+  // ✅集中管理：確保 AudioContext 存在且已 resume（iOS/PWA 常會自動 suspend）
+  function ensureAudioCtx(){
+    try{
+      ensureAudioCtx();
+      if(audioCtx.state === "suspended"){
+        // resume 需要手勢；如果沒有手勢就先嘗試，失敗也沒關係
+        audioCtx.resume().catch(()=>{});
+      }
+      return audioCtx;
+    }catch(e){
+      return null;
+    }
+  }
+
   // ✅iOS/PWA：先解鎖 AudioContext，避免「有時候沒聲音」
   function unlockAudio(){
     try{
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      ensureAudioCtx();
       if(audioCtx.state==="suspended") audioCtx.resume();
     }catch(e){}
   }
@@ -4654,7 +4663,10 @@ function bindFastTap(el, handler){
           beep("tap");
           selection.splice(idx,1);
           pool.push(t);
-          renderBoard();
+          // 🔊點擊回饋：放對/放錯用不同音效
+        beep(prefixOk ? "tap" : "bad");
+
+        renderBoard();
           applyHint();
     try{ ensureBottomSafe(); }catch(_e){}
         });
@@ -4666,7 +4678,6 @@ function bindFastTap(el, handler){
     pool.forEach((t, idx) => {
       const el = makeToken(t);
       bindFastTap(el, () => {
-        beep("tap");
         selection.push(t);
         pool.splice(idx,1);
 
