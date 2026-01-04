@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誝遊戲｜佈令背誦
-v1.0（fixed43）首次公開穩定封存版
+v1.0（fixed46）首次公開穩定封存版
 （行為／文案／排版：穩定封存，供公開使用）
 -->
 
@@ -26,7 +26,7 @@ v1.0（fixed43）首次公開穩定封存版
   <link rel="apple-touch-icon" href="icon-180.png" />
 
 
-  <title>孫子兵法｜佈令背誦 v1.0（fixed43）</title>
+  <title>孫子兵法｜佈令背誦 v1.0（fixed46）</title>
   <style>
 
 /* Settings UX: pointer + no I-beam */
@@ -1409,18 +1409,7 @@ html, body { overflow-x: hidden; }
   color: rgba(233,239,233,.75);
 }
 
-/* 加入主畫面教學（彈窗）：更清楚、比較像小卡片 */
-.a2hModal .a2hCard{ line-height: 1.75; }
-.a2hModal ol{
-  margin: .4rem 0 0 0;
-  padding-left: 1.2rem;
-}
-.a2hModal li{ margin: .35rem 0; }
-
-
-
-/* ===== fixed38 UI polish ===== */
-.toolbar.singleRow.toolbarOneLine{ overflow: visible !important; padding-right: calc(10px + env(safe-area-inset-right)) !important; }
+/* 將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。oolbar.singleRow.toolbarOneLine{ overflow: visible !important; padding-right: calc(10px + env(safe-area-inset-right)) !important; }
 .toolbar.singleRow.toolbarOneLine .navInline{ grid-template-columns: 34px minmax(56px,1fr) 34px !important; }
 .toolbtn.mini{ min-width:34px !important; width:34px !important; }
 .icoSpeak{ width:26px; height:26px; }
@@ -1569,7 +1558,7 @@ html, body { overflow-x: hidden; }
   <div class="settings">
     <div class="row clickable" id="btnA2HSHelp">
       <div class="rowLeft">
-        <div class="rowTitle">捷徑加入主畫面教學</div>
+        <div class="rowTitle">捷徑將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
         <div class="rowDesc">（不是安裝程式）全螢幕、更像 App</div>
       </div>
       <div class="rowRight">›</div>
@@ -1627,7 +1616,7 @@ html, body { overflow-x: hidden; }
 
     <div class="settingRow">
       <div class="rowLeft">
-        <div class="rowTitle">加入主畫面教學</div>
+        <div class="rowTitle">將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
         <div class="rowDesc">需要時再查看（不會自動跳出）</div>
       </div>
       <button class="pillBtn" id="btnGuide">重看教學</button>
@@ -1641,16 +1630,16 @@ html, body { overflow-x: hidden; }
         <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</div>
         <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
 
-        <div class="helpLine" style="margin-top:.55rem;">• 建議加入主畫面捷徑使用（不是安裝程式，加入後全畫面更像 App）：</div>
+        <div class="helpLine" style="margin-top:.55rem;">• 建議將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
 
         <div class="helpSteps">
           <div class="helpStep">
             <div class="helpPlatform">iPhone（Safari）</div>
-            <div class="helpAction">分享 → 加入主畫面</div>
+            <div class="helpAction">分享 → 將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
           </div>
           <div class="helpStep">
             <div class="helpPlatform">Android（Chrome）</div>
-            <div class="helpAction">右上「⋮」→ 加入主畫面／安裝應用程式</div>
+            <div class="helpAction">右上「⋮」→ 將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
           </div>
         </div>
       </div>
@@ -1661,7 +1650,7 @@ html, body { overflow-x: hidden; }
     <ul class="healingList">
       <li>這是一個背誦《孫子兵法》的練習工具。</li>
       <li>目標：讓你用最少摩擦，反覆進入記憶節奏。</li>
-      <li class="muted">版本：v1.0（fixed43）</li>
+      <li class="muted">版本：v1.0（fixed46）</li>
     </ul>
   </div>
 </details>
@@ -1693,7 +1682,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed43";
+const APP_VERSION = "fixed46";
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
@@ -5008,13 +4997,13 @@ btnPrev.disabled = (testCursor <= testRange.start);
       }catch(_e){}
 
       const body = `
-        <div class="plain">想要像 App 一樣全螢幕、比較順暢（也比較不會被網址列擠壓），建議加入主畫面。</div>
+        <div class="plain">想要像 App 一樣全螢幕、比較順暢（也比較不會被網址列擠壓），建議將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
 
         <div class="helpBox" style="margin-top:10px">
           <div class="helpLine"><b>iPhone / iPad（Safari）</b></div>
           <div class="helpLine">1. 用 Safari 開啟本頁</div>
           <div class="helpLine">2. 點下方「分享」按鈕（方框＋上箭頭）</div>
-          <div class="helpLine">3. 選「加入主畫面」</div>
+          <div class="helpLine">3. 選「將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
           <div class="helpLine">4. 從主畫面打開，就像 App</div>
         </div>
 
@@ -5022,14 +5011,14 @@ btnPrev.disabled = (testCursor <= testRange.start);
           <div class="helpLine"><b>Android（Chrome）</b></div>
           <div class="helpLine">1. 用 Chrome 開啟本頁</div>
           <div class="helpLine">2. 點右上角「⋮」選單</div>
-          <div class="helpLine">3. 選「加入主畫面」或「安裝應用程式」</div>
+          <div class="helpLine">3. 選「將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
           <div class="helpLine">4. 從主畫面打開，就像 App</div>
         </div>
 
         <div class="plain muted" style="margin-top:10px">小提醒：若你是在 LINE/FB 內建瀏覽器，建議改用「在 Safari/Chrome 開啟」，操作會更穩。</div>
       `;
 
-      openModal("加入主畫面（捷徑）", body, `<button class="btn" id="btnGuideOK"><span class="btnLabel">知道了</span></button>`);
+      openModal("將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。知道了</span></button>`);
 
       const ok = document.getElementById("btnGuideOK");
       if(ok){
@@ -5221,13 +5210,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
 }
 
   /***********************
-   * ✅ 捷徑加入主畫面（不是安裝程式）｜v1.0 fixed43 封存版
-   ***********************/
-  const A2HS_NEVER_KEY = "sunzi_a2hs_never_v1_fixed43";
-
-  function isStandaloneMode(){
-    try{
-      return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+   * ✅ 捷徑將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。dia("(display-mode: standalone)").matches) ||
              (window.navigator.standalone === true);
     }catch(_e){ return false; }
   }
@@ -5236,7 +5219,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
     const html = `
 <div class="helpModal">
   <div class="helpModalHead">
-    <div class="helpModalTitle">捷徑加入主畫面教學</div>
+    <div class="helpModalTitle">捷徑將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
     <div class="helpModalSub">這是「把網站變成主畫面捷徑」，不是安裝程式。加入後全螢幕、比較不會跳動，體驗更像 App。</div>
   </div>
 
@@ -5246,7 +5229,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
       <ol class="helpSteps">
         <li>用 Safari 開啟這個網址</li>
         <li>按下分享 <b>（方框 + 上箭頭）</b></li>
-        <li>選 <b>「加入主畫面」</b></li>
+        <li>選 <b>「將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
         <li>回到主畫面點圖示開啟即可</li>
       </ol>
       <div class="helpTiny">小提醒：若你是用 LINE 內建瀏覽器開啟，請先改用 Safari。</div>
@@ -5257,7 +5240,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
       <ol class="helpSteps">
         <li>用 Chrome 開啟這個網址</li>
         <li>點右上角 <b>「⋮」</b> 選單</li>
-        <li>選 <b>「加入主畫面」</b>（有些手機會寫「安裝應用程式」，本質一樣是建立捷徑）</li>
+        <li>選 <b>「將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。（有些手機會寫「安裝應用程式」，本質一樣是建立捷徑）</li>
         <li>回到主畫面點圖示開啟即可</li>
       </ol>
     </section>
@@ -5272,7 +5255,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
     </section>
   </div>
 </div>`;
-    openModal("捷徑加入主畫面教學", html, `<button class="btn primary" id="a2hsGotIt">我知道了</button>`);
+    openModal("捷徑將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。我知道了</button>`);
     setTimeout(()=>{
       const b = document.getElementById("a2hsGotIt");
       if(b) b.onclick = closeModal;
@@ -5284,7 +5267,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
 <div class="helpModal">
   <div class="helpModalHead">
     <div class="helpModalTitle">想把它放到主畫面嗎？</div>
-    <div class="helpModalSub">加入主畫面後會是全螢幕，不容易亂跳；而且這不是安裝程式，只是建立捷徑。</div>
+    <div class="helpModalSub">將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
   </div>
   <div class="helpTiny">你也可以之後到「設定」再看教學。</div>
 </div>`;
@@ -5327,17 +5310,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
     topSub.textContent = "原書順序";
     showView(viewOverview);
 
-    // ✅ 設定頁第一項：捷徑加入主畫面教學
-    const a2 = document.getElementById('btnA2HSHelp');
-    if(a2) a2.onclick = openA2HSGuide;
-
-    // ✅ 首次登入溫柔提示（按「稍後再加」→ 永久不再提醒）
-    maybeShowA2HSOnce();
-  }
-
-  init();
-})();
-</script>
+    // ✅ 設定頁第一項：捷徑將本系統加入主畫面後，可全螢幕顯示、操作更順手，整體穩定度與體驗會更接近 App。
 
 
 </body>
