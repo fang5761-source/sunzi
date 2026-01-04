@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：v1.0（fixed56）
+版本：v1.0（fixed57）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1336,7 +1336,7 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== v1.0（fixed56）首次公開穩定封存版 ====== */
+/* ====== v1.0（fixed57）首次公開穩定封存版 ====== */
 .toolbar.toolbarOneLine{
   /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
   padding-right: calc(16px + env(safe-area-inset-right)) !important;
@@ -1567,7 +1567,7 @@ html, body { overflow-x: hidden; }
       <div class="view panel scroll" id="viewSettings">
   <div class="settings">
     
-<div class="row clickable" id="btnA2HSOpen" style="cursor:pointer;">
+<div class="row clickable" id="btnA2HSOpen" style="cursor:pointer;" onclick="openA2HGuide && openA2HGuide();">
   <div class="rowLeft">
     <div class="rowTitle">捷徑加入主畫面教學</div>
     <div class="rowDesc">全螢幕顯示、介面友好、系統穩定</div>
@@ -1626,13 +1626,13 @@ html, body { overflow-x: hidden; }
     <details class="helpFold">
       <summary>ⓘ 使用說明</summary>
       <div class="helpBody">
-        <div class="helpLine">• 佈令時：點令牌依正確順序排入空格。</div>
-        <div class="helpLine">• 放錯也會提示：紅框閃一下 + 下方顯示「請再想一想」（排對才會消失）。</div>
-        <div class="helpLine">• 兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</div>
-        <div class="helpLine">• 重整：可選擇重整本段落或重整本篇章。</div>
-
-
-      </div>
+    <ul class="healingList">
+      <li>佈令時：點令牌依正確順序排入空格。</li>
+      <li>放錯也會提示：紅框閃一下 + 下方顯示「請再想一想」（排對才會消失）。</li>
+      <li>兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</li>
+      <li>重整：可選擇重整本段落或重整本篇章。</li>
+    </ul>
+</div>
     </details>
 <details class="helpFold">
   <summary>關於本系統</summary>
@@ -1672,7 +1672,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed56";
+const APP_VERSION = "fixed57";
 
 try{ const av=document.getElementById("aboutVersion"); if(av) av.textContent = "v1.0（"+APP_VERSION+"）"; }catch(_e){}
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
@@ -4213,6 +4213,45 @@ const btnClear = document.getElementById("btnClear");
     }catch(e){}
   }
 
+  // === A2H 教學：保險開啟器（設定第一行） ===
+  function openA2HGuide(){
+    try{ unlockAudio(); }catch(_e){}
+    try{ showA2HGuide(); return; }catch(_e){}
+    // fallback：若 showA2HGuide 不存在，試著觸發既有的 modal
+    try{
+      const m = document.getElementById("a2hModal");
+      if(m){ m.classList.add("show"); document.body.classList.add("lock"); }
+    }catch(_e){}
+  }
+
+  // 進入設定頁後也要能點（避免某些 iOS/PWA 切換視圖後事件消失）
+  function bindA2HRow(){
+    const row = document.getElementById("btnA2HSOpen");
+    if(!row) return;
+    const handler = (ev)=>{ try{ ev.preventDefault(); ev.stopPropagation(); }catch(_e){} openA2HGuide(); };
+    row.onclick = handler;
+    row.addEventListener("pointerup", handler, {passive:false});
+    row.addEventListener("touchend", handler, {passive:false});
+  }
+
+  // === Token 音效：每次點令牌都有回饋；錯誤另有提示音 ===
+  window.__resultBeepAt = 0;
+  const _beep = beep;
+  beep = function(type="ok"){
+    window.__resultBeepAt = Date.now();
+    return _beep(type);
+  };
+
+  function tapBeepDeferred(){
+    if(!PROG.soundOn) return;
+    const t0 = Date.now();
+    setTimeout(()=>{
+      // 若剛剛已經播了 ok/bad，就不再補 tap，避免雙重音
+      if(Date.now() - (window.__resultBeepAt||0) < 80) return;
+      _beep("tap");
+    }, 0);
+  }
+
   /***********************
    * ✅TTS（iOS 穩定暫停：onboundary 記錄斷點）
    ***********************/
@@ -4535,6 +4574,7 @@ function bindFastTap(el, handler){
       lastFire = now;
       try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
       try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
+      tapBeepDeferred();
       handler();
       try{ ensureBottomSafe(); }catch(_e){}
     };
