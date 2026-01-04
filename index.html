@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：v1.0（fixed57）
+版本：v1.0（fixed58）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1336,7 +1336,7 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== v1.0（fixed57）首次公開穩定封存版 ====== */
+/* ====== v1.0（fixed58）首次公開穩定封存版 ====== */
 .toolbar.toolbarOneLine{
   /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
   padding-right: calc(16px + env(safe-area-inset-right)) !important;
@@ -1567,9 +1567,6 @@ html, body { overflow-x: hidden; }
       <div class="view panel scroll" id="viewSettings">
   <div class="settings">
     
-<div class="row clickable" id="btnA2HSOpen" style="cursor:pointer;" onclick="openA2HGuide && openA2HGuide();">
-  <div class="rowLeft">
-    <div class="rowTitle">捷徑加入主畫面教學</div>
     <div class="rowDesc">全螢幕顯示、介面友好、系統穩定</div>
   </div>
   <div class="miniTag">開啟</div>
@@ -1632,6 +1629,30 @@ html, body { overflow-x: hidden; }
       <li>兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</li>
       <li>重整：可選擇重整本段落或重整本篇章。</li>
     </ul>
+
+    <div class="divider" style="margin:14px 0 10px; opacity:.55;"></div>
+    <div class="plain" style="font-weight:700; margin:0 0 8px;">加入主畫面（捷徑）</div>
+    <div class="plain" style="line-height:1.75; margin-bottom:10px;">
+      把本系統以「捷徑」加入主畫面後，會以全螢幕顯示、操作更順手，也更穩定，體驗更像 APP。
+    </div>
+    <ul class="healingList">
+      <li><b>iPhone（Safari）</b><br/>
+        <span class="muted">1</span> 點下方「分享」按鈕（方框＋上箭頭）<br/>
+        <span class="muted">2</span> 選「加入主畫面」<br/>
+        <span class="muted">3</span> 右上角按「加入」完成
+      </li>
+      <li><b>Android（Chrome）</b><br/>
+        <span class="muted">1</span> 點右上角「⋯」或「︙」<br/>
+        <span class="muted">2</span> 選「加入主畫面」或「安裝應用程式」<br/>
+        <span class="muted">3</span> 依提示完成
+      </li>
+    </ul>
+    <div class="plain" style="font-weight:700; margin:12px 0 6px;">溫馨小提醒</div>
+    <ul class="healingList">
+      <li>這是網頁遊戲系統；加入「捷徑」不會佔用手機太多空間。</li>
+      <li>若你當下選「稍後再加」，之後仍可在「設定」→「使用說明」隨時查看本教學。</li>
+    </ul>
+
 </div>
     </details>
 <details class="helpFold">
@@ -1672,7 +1693,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed57";
+const APP_VERSION = "fixed58";
 
 try{ const av=document.getElementById("aboutVersion"); if(av) av.textContent = "v1.0（"+APP_VERSION+"）"; }catch(_e){}
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
@@ -4195,23 +4216,36 @@ const btnClear = document.getElementById("btnClear");
   window.addEventListener("touchstart", unlockAudio, { once:true, passive:true });
 
   function beep(type="ok"){
-    if(!PROG.soundOn) return;
-    try{
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      try{ if(audioCtx.state==='suspended') audioCtx.resume(); }catch(_e){}
-      const o = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      o.type = "sine";
-      const now = audioCtx.currentTime;
+  if(!PROG.soundOn) return;
+  try{
+    const ctx = ensureAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
 
-      if(type==="tap"){ o.frequency.setValueAtTime(520, now); g.gain.setValueAtTime(0.05, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.08); }
-      if(type==="ok"){  o.frequency.setValueAtTime(740, now); g.gain.setValueAtTime(0.06, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.18); }
-      if(type==="bad"){ o.frequency.setValueAtTime(220, now); g.gain.setValueAtTime(0.07, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.22); }
+    // 預設參數
+    let freq = 740;
+    let dur = 0.18;
+    let peak = 0.075;
 
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(now); o.stop(now + 0.25);
-    }catch(e){}
-  }
+    if(type==="tap"){ freq = 520; dur = 0.08; peak = 0.055; }
+    if(type==="ok"){  freq = 740; dur = 0.18; peak = 0.075; }
+    if(type==="bad"){ freq = 220; dur = 0.22; peak = 0.085; }
+
+    o.frequency.setValueAtTime(freq, now);
+
+    // 平滑包絡，避免爆音
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(peak, now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+    o.connect(g); g.connect(ctx.destination);
+    o.start(now);
+    o.stop(now + dur + 0.01);
+  }catch(_e){}
+}
 
   // === A2H 教學：保險開啟器（設定第一行） ===
   function openA2HGuide(){
@@ -4222,16 +4256,6 @@ const btnClear = document.getElementById("btnClear");
       const m = document.getElementById("a2hModal");
       if(m){ m.classList.add("show"); document.body.classList.add("lock"); }
     }catch(_e){}
-  }
-
-  // 進入設定頁後也要能點（避免某些 iOS/PWA 切換視圖後事件消失）
-  function bindA2HRow(){
-    const row = document.getElementById("btnA2HSOpen");
-    if(!row) return;
-    const handler = (ev)=>{ try{ ev.preventDefault(); ev.stopPropagation(); }catch(_e){} openA2HGuide(); };
-    row.onclick = handler;
-    row.addEventListener("pointerup", handler, {passive:false});
-    row.addEventListener("touchend", handler, {passive:false});
   }
 
   // === Token 音效：每次點令牌都有回饋；錯誤另有提示音 ===
@@ -5332,7 +5356,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
 <div class="plain" style="line-height:1.75">
   想把本背誦系統的捷徑加到主畫面嗎？<br/>
   將捷徑加入主畫面的優點是全螢幕顯示、介面友好、系統穩定。<br/>
-  之後也可以到「設定」裡查看加入主畫面教學。
+  之後也可以到「設定」→「使用說明」查看加入主畫面（捷徑）教學。
 </div>`;
     openModal("溫柔小提示", html, `
       <button class="btn" id="a2hsTeach">捷徑教學</button>
@@ -5345,23 +5369,6 @@ if (typeof btnNext !== "undefined" && btnNext) {
       if(later) later.onclick=()=>{ markDismissed(); closeModal(); };
     },0);
   }
-
-  window.addEventListener('load', ()=>{
-    // 讓「設定 → 捷徑加入主畫面教學」在 iOS/捷徑模式也必定可點
-    try{
-      const row = document.getElementById('btnA2HSOpen');
-      if(row){
-        const open = (ev)=>{ try{ ev && ev.preventDefault && ev.preventDefault(); }catch(_e){} openTutorial(); };
-        row.addEventListener('click', open, {passive:false});
-        row.addEventListener('pointerup', open, {passive:false});
-        row.addEventListener('touchend', open, {passive:false});
-      }
-    }catch(_e){}
-
-    try{
-      if(shouldPrompt()) setTimeout(openFirstPrompt, 420);
-    }catch(_e){}
-  });
   // Settings entry（保命：用事件委派，避免 iOS/PWA 偶發未綁定）
   document.addEventListener('click', (e)=>{
     const hit = e.target.closest ? e.target.closest('#btnA2HSOpen') : null;
