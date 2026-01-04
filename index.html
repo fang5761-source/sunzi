@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：v1.0（fixed59）
+版本：v1.0（fixed60）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1336,7 +1336,7 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== v1.0（fixed59）首次公開穩定封存版 ====== */
+/* ====== v1.0（fixed60）首次公開穩定封存版 ====== */
 .toolbar.toolbarOneLine{
   /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
   padding-right: calc(16px + env(safe-area-inset-right)) !important;
@@ -1688,7 +1688,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed59";
+const APP_VERSION = "fixed60";
 
 try{ const av=document.getElementById("aboutVersion"); if(av) av.textContent = "v1.0（"+APP_VERSION+"）"; }catch(_e){}
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
@@ -4202,10 +4202,10 @@ const btnClear = document.getElementById("btnClear");
   // ✅集中管理：確保 AudioContext 存在且已 resume（iOS/PWA 常會自動 suspend）
   function ensureAudioCtx(){
     try{
-      ensureAudioCtx();
-      if(audioCtx.state === "suspended"){
-        // resume 需要手勢；如果沒有手勢就先嘗試，失敗也沒關係
-        audioCtx.resume().catch(()=>{});
+      if(!audioCtx){
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return null;
+        audioCtx = new AC();
       }
       return audioCtx;
     }catch(e){
@@ -4213,14 +4213,27 @@ const btnClear = document.getElementById("btnClear");
     }
   }
 
-  // ✅iOS/PWA：先解鎖 AudioContext，避免「有時候沒聲音」
+  // ✅ iOS / PWA：用第一次手勢解鎖音效（避免「有時候沒聲音」）
   function unlockAudio(){
     try{
-      ensureAudioCtx();
-      if(audioCtx.state==="suspended") audioCtx.resume();
-    }catch(e){}
+      const ctx = ensureAudioCtx();
+      if(!ctx) return;
+      if(ctx.state === "suspended"){
+        ctx.resume().catch(()=>{});
+      }
+      // 播一個「靜音」buffer，讓 iOS 視為已解鎖（不會真的發聲）
+      try{
+        const b = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        const g = ctx.createGain();
+        g.gain.value = 0;
+        src.buffer = b;
+        src.connect(g);
+        g.connect(ctx.destination);
+        src.start(0);
+      }catch(_e){}
+    }catch(_e){}
   }
-  // 任何一次使用者點擊/觸碰都算「手勢」，用一次就好
   window.addEventListener("pointerdown", unlockAudio, { once:true, passive:true });
   window.addEventListener("touchstart", unlockAudio, { once:true, passive:true });
 
@@ -4607,7 +4620,7 @@ function bindFastTap(el, handler){
       lastFire = now;
       try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
       try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
-      tapBeepDeferred();
+      try{ unlockAudio(); }catch(_e){}
       handler();
       try{ ensureBottomSafe(); }catch(_e){}
     };
@@ -4663,9 +4676,6 @@ function bindFastTap(el, handler){
           beep("tap");
           selection.splice(idx,1);
           pool.push(t);
-          // 🔊點擊回饋：放對/放錯用不同音效
-        beep(prefixOk ? "tap" : "bad");
-
         renderBoard();
           applyHint();
     try{ ensureBottomSafe(); }catch(_e){}
@@ -4902,9 +4912,11 @@ btnPrev.disabled = (testCursor <= testRange.start);
   }
   // ✅ 統一關閉 Modal（避免未定義造成按鈕無反應）
   function closeModal(){
-    try{ closeModal(); }catch(_e){
-      try{ modal.classList.remove("show"); }catch(_e2){}
-    }
+    try{ modal.classList.remove("show"); }catch(_e){}
+    try{
+      modalActions.style.display = "none";
+      modalActions.innerHTML = "";
+    }catch(_e){}
   }
 
 
