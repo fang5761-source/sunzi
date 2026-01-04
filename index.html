@@ -1630,8 +1630,7 @@ html, body { overflow-x: hidden; }
         <div class="rowTitle">加入主畫面教學</div>
         <div class="rowDesc">需要時再查看（不會自動跳出）</div>
       </div>
-      <button class="pillBtn" id="btnGuide">重看教學</button>
-    </div>
+</div>
 
     <details class="helpFold">
       <summary>ⓘ 使用說明</summary>
@@ -1688,7 +1687,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed53";
+const APP_VERSION = "fixed54";
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
@@ -4762,8 +4761,8 @@ btnPrev.disabled = (testCursor <= testRange.start);
         setTimeout(() => {
           const a = document.getElementById("btnBackToLearn");
           const b = document.getElementById("btnBackHome");
-          if(a) a.onclick = () => { modalClose.click(); mode="learn"; startLearnSegment(currentSegIndex, { firstEntry:false }); };
-          if(b) b.onclick = () => { modalClose.click(); openChapterHome(); };
+          if(a) a.onclick = () => { closeModal(); mode="learn"; startLearnSegment(currentSegIndex, { firstEntry:false }); };
+          if(b) b.onclick = () => { closeModal(); openChapterHome(); };
         }, 0);
       }
     }else{
@@ -4777,8 +4776,8 @@ btnPrev.disabled = (testCursor <= testRange.start);
       setTimeout(() => {
         const r = document.getElementById("btnRetryTest");
         const g = document.getElementById("btnPauseLater");
-        if(r) r.onclick = () => { modalClose.click(); restartCurrent(); if(PROG.hintOn) flashHintTimes(1); };
-        if(g) g.onclick = () => { modalClose.click(); openChapterHome(); };
+        if(r) r.onclick = () => { closeModal(); restartCurrent(); if(PROG.hintOn) flashHintTimes(1); };
+        if(g) g.onclick = () => { closeModal(); openChapterHome(); };
       }, 0);
     }
   }
@@ -4841,7 +4840,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
   }
   // ✅ 統一關閉 Modal（避免未定義造成按鈕無反應）
   function closeModal(){
-    try{ modalClose.click(); }catch(_e){
+    try{ closeModal(); }catch(_e){
       try{ modal.classList.remove("show"); }catch(_e2){}
     }
   }
@@ -4866,7 +4865,7 @@ btnPrev.disabled = (testCursor <= testRange.start);
     }catch(_e){}
   };
 
-  modal.onclick = (e) => { if(e.target === modal) modalClose.click(); };
+  modal.onclick = (e) => { if(e.target === modal) closeModal(); };
 
   /***********************
    * ✅浮動測驗鈕（不佔空間）
@@ -4935,11 +4934,11 @@ btnPrev.disabled = (testCursor <= testRange.start);
       sEl.onchange = () => { if(Number(eEl.value) < Number(sEl.value)) eEl.value = sEl.value; };
       eEl.onchange = () => { if(Number(eEl.value) < Number(sEl.value)) sEl.value = eEl.value; };
 
-      cancel.onclick = () => modalClose.click();
+      cancel.onclick = () => closeModal();
       go.onclick = () => {
         const s = Number(sEl.value);
         const e = Number(eEl.value);
-        modalClose.click();
+        closeModal();
         beginTest(s,e);
       };
     },0);
@@ -5116,9 +5115,9 @@ btnPrev.disabled = (testCursor <= testRange.start);
     setTimeout(() => {
       const c = document.getElementById("btnCancelResetCh");
       const y = document.getElementById("btnConfirmResetCh");
-      if(c) c.onclick = () => modalClose.click();
+      if(c) c.onclick = () => closeModal();
       if(y) y.onclick = () => {
-        modalClose.click();
+        closeModal();
         stopReading();
         PROG.chapters[currentChapterId] = { stars:0 };
         saveProgress();
@@ -5223,8 +5222,8 @@ if (typeof btnNext !== "undefined" && btnNext) {
       setTimeout(() => {
         const a = document.getElementById("btnBackHome2");
         const b = document.getElementById("btnBackOverview2");
-        if (a) a.onclick = () => { modalClose.click(); openChapterHome(); };
-        if (b) b.onclick = () => { modalClose.click(); btnOverview.click(); };
+        if (a) a.onclick = () => { closeModal(); openChapterHome(); };
+        if (b) b.onclick = () => { closeModal(); btnOverview.click(); };
       }, 0);
     }
   };
@@ -5298,7 +5297,7 @@ if (typeof btnNext !== "undefined" && btnNext) {
   <div class="helpLine">2. 若選擇稍後再加，可隨時到「設定」中重新開啟本教學。</div>
 </div>`;
     openModal("捷徑加入主畫面教學", html, `<button class="btn primary" id="a2hsDone">知道了</button>`);
-    setTimeout(()=>{ const b=document.getElementById("a2hsDone"); if(b) b.onclick=()=>{ modalClose.click(); }; },0);
+    setTimeout(()=>{ const b=document.getElementById("a2hsDone"); if(b) b.onclick=()=>{ closeModal(); }; },0);
   }
 
   function openFirstPrompt(){
@@ -5315,8 +5314,8 @@ if (typeof btnNext !== "undefined" && btnNext) {
     setTimeout(()=>{
       const teach=document.getElementById("a2hsTeach");
       const later=document.getElementById("a2hsLater");
-      if(teach) teach.onclick=()=>{ markDismissed(); modalClose.click(); setTimeout(openTutorial, 60); };
-      if(later) later.onclick=()=>{ markDismissed(); modalClose.click(); };
+      if(teach) teach.onclick=()=>{ markDismissed(); closeModal(); setTimeout(openTutorial, 60); };
+      if(later) later.onclick=()=>{ markDismissed(); closeModal(); };
     },0);
   }
 
@@ -5327,9 +5326,11 @@ if (typeof btnNext !== "undefined" && btnNext) {
   });
 
   // Settings entry
-  window.addEventListener('DOMContentLoaded', ()=>{
+  (function(){
     const btn = document.getElementById('btnA2HSOpen');
     if(btn) btn.addEventListener('click', ()=> openTutorial());
+  })();
+if(btn) btn.addEventListener('click', ()=> openTutorial());
   });
 })();
 </script>
