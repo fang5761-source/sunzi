@@ -1555,7 +1555,7 @@ html, body { overflow-x: hidden; }
             <div class="tokensBox">
             <div class="tokensHead"><div class="tokensTitle">令牌區</div><div class="tokensRemain" id="tokensRemain"></div></div>
             <div class="tokens" id="tokens"></div>
-            <div class="orderError" id="orderError" aria-live="polite">請再想一想</div>
+            <div class="orderError" id="orderError" aria-live="polite">請再想一想（將錯誤令牌放回令牌區）</div>
           
             </div>
           </div>
@@ -1621,15 +1621,6 @@ html, body { overflow-x: hidden; }
       </div>
       <button class="pillBtn danger" id="btnClear">清空</button>
     </div>
-  
-
-    
-
-    <div class="settingRow">
-      <div class="rowLeft">
-        <div class="rowTitle">加入主畫面教學</div>
-        <div class="rowDesc">需要時再查看（不會自動跳出）</div>
-      </div>
 </div>
 
     <details class="helpFold">
@@ -1656,6 +1647,7 @@ html, body { overflow-x: hidden; }
     <ul class="healingList">
       <li>這是一個背誦《孫子兵法》的練習工具。</li>
       <li>目標：讓你用最少摩擦，反覆進入記憶節奏。</li>
+      <li>版本：<span id="aboutVersion"></span></li>
 </ul>
   </div>
 </details>
@@ -1687,7 +1679,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed54";
+const APP_VERSION = "fixed55";
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
 (async ()=>{
   try{
@@ -5324,15 +5316,15 @@ if (typeof btnNext !== "undefined" && btnNext) {
       if(shouldPrompt()) setTimeout(openFirstPrompt, 420);
     }catch(_e){}
   });
-
-  // Settings entry
-  (function(){
-    const btn = document.getElementById('btnA2HSOpen');
-    if(btn) btn.addEventListener('click', ()=> openTutorial());
-  })();
-if(btn) btn.addEventListener('click', ()=> openTutorial());
+  // Settings entry（保命：用事件委派，避免 iOS/PWA 偶發未綁定）
+  document.addEventListener('click', (e)=>{
+    const hit = e.target.closest ? e.target.closest('#btnA2HSOpen') : null;
+    if(hit){
+      e.preventDefault();
+      try{ openTutorial(); }catch(_e){}
+    }
   });
-})();
+
 </script>
 
 </body>
