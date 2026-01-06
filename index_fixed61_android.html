@@ -1,0 +1,5415 @@
+
+
+<!--
+孫子兵法背誦
+版本：v1.0.1（fixed61-android）
+狀態：功能穩定，下一關/上一關/測驗流程正常
+用途：對照、回溯、保險版本
+⚠️ 此檔請勿直接修改，請複製後再改
+-->
+
+
+
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+<meta name="apple-mobile-web-app-title" content="孫子兵法背誦" />
+  <meta name="application-name" content="孫子兵法背誦" />
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0f1410" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+
+
+  <title>孫子兵法背誦</title>
+  <style>
+
+/* Settings UX: pointer + no I-beam */
+.settings .row,
+.settings .switch,
+.settings .pillBtn,
+.toolbtn,
+.moreItem{ cursor:pointer; }
+.settings .rowTitle,
+.settings .rowDesc{ cursor:default; user-select:none; }
+.settings input.range{ cursor:pointer; }
+
+
+/* iOS scroll safety */
+#slots{ overflow:auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+
+
+.singleRow{ display:flex; align-items:center; gap:6px; flex-wrap:nowrap; width:100%; justify-content:space-between; }
+.singleRow .toolbtn{ padding:8px 10px; min-width:40px; }
+.singleRow .toolbtn .label{ display:none; }
+.singleRow .toolbtn .icon{ font-size:18px; line-height:1; }
+.singleRow .navInline{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+.singleRow .navInline .toolbtn.mini{ min-width:40px; padding:8px 10px; }
+.singleRow .navText{ min-width:64px; text-align:center; padding:8px 10px; border-radius:999px; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+
+/* ===== v5.4 toolbar + sheet ===== */
+.toolbarWrap{display:flex; flex-direction:column; gap:.45rem; align-items:stretch; width:100%;}
+.toolbar{display:flex; gap:.4rem; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
+
+/* ===== v5.8 toolbar one-line (icons) ===== */
+.toolbar.toolbarOneLine{ flex-wrap:nowrap; }
+.toolbtn.iconOnly{ gap:0; padding:.45rem .55rem; min-width:40px; justify-content:center; }
+.toolbtn.iconOnly:active{ transform: translateY(1px); }
+.toolSep{ width:1px; height:22px; background: var(--line); opacity:.75; margin:0 .1rem; border-radius:999px; }
+.navText.navInline{ min-width:60px; text-align:center; }
+
+.toolbtn{
+  display:flex; align-items:center; gap:.25rem;
+  padding:.45rem .65rem;
+  border-radius:1rem;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.18);
+  color:rgba(233,239,233,.95);
+  font-weight:900;
+  font-size:13px;
+}
+.toolbtn .icon{font-size:15px; line-height:1;}
+/* ✅金色喇叭圖示加大 */
+#btnSegRead .icon{ font-size:20px; color: var(--gold); }
+.toolbtn.mini{padding:.45rem .6rem; min-width:44px; justify-content:center;}
+.navMini{display:flex; align-items:center; gap:.5rem; justify-content:flex-end;}
+.navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+  font-weight:1000;
+  letter-spacing:.02em;
+  padding:.42rem .6rem;
+  border:1px solid var(--line);
+  border-radius:1rem;
+  background:rgba(0,0,0,.18);
+  color:rgba(233,239,233,.9);
+}
+/* Bottom sheet */
+#moreSheetBack{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.55);
+  opacity:0; pointer-events:none;
+  transition:.2s ease;
+  z-index:98;
+}
+#moreSheetBack.open{opacity:1; pointer-events:auto;}
+#moreSheet{
+  position:fixed;
+  left:0; right:0; bottom:0;
+  transform:translateY(110%);
+  transition:.25s ease;
+  background:var(--panel);
+  border-top-left-radius:1.25rem;
+  border-top-right-radius:1.25rem;
+  padding:1rem;
+  z-index:99;
+  box-shadow: 0 -12px 40px rgba(0,0,0,.35);
+}
+#moreSheet.open{transform:translateY(0);}
+.moreItem{
+  display:flex; align-items:center; gap:.5rem;
+  padding:.8rem .9rem;
+  border-radius:1rem;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.18);
+  font-weight:900;
+  margin-bottom:.6rem;
+}
+.moreItem .miIcon{font-size:18px; width:22px; text-align:center;}
+.moreTitle{font-weight:1000; font-size:14px;}
+
+    :root{
+      --bg:#0f1410;
+      --panel:#151b16;
+      --panel2:#1b241d;
+      --ink:#e9efe9;
+      --muted:#aab6aa;
+      --line:#2b3a2f;
+      --gold:#d6b25e;
+      --red:#b23a2f;
+      --green:#2e7d32;
+
+      --token:#212b23;
+      --token2:#1a221b;
+
+      --glowStrong: 0 0 1.15rem rgba(255,225,140,.95), 0 0 2.1rem rgba(255,225,140,.65);
+      --glowBook: 0 0 .80rem rgba(214,178,94,.58), 0 0 1.75rem rgba(214,178,94,.32);
+      --glowMid:    0 0 0.85rem rgba(255,225,140,.75), 0 0 1.45rem rgba(255,225,140,.45);
+      --glowWeak:   0 0 0.55rem rgba(255,225,140,.55), 0 0 0.95rem rgba(255,225,140,.30);
+
+      --tap: 46px;
+      --radius: 14px;
+
+      --overviewBaseTitle: 18px;
+      --overviewBaseBtn: 14px;
+      --overviewBaseHint: 13px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,html,body{overflow-x:hidden;}
+body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Serif CJK TC", serif;
+      background: radial-gradient(1200px 800px at 20% -10%, rgba(214,178,94,.18), transparent 55%),
+                  radial-gradient(900px 700px at 110% 30%, rgba(46,125,50,.18), transparent 55%),
+                  linear-gradient(180deg, #0c120e, #0f1410);
+      color: var(--ink);
+      overflow:visible;
+    }
+
+    .safeTop{ padding-top: env(safe-area-inset-top); }
+    .safeBottom{ padding-bottom: env(safe-area-inset-bottom); }
+
+    .app{
+      /* ✅ Mobile browser (含網址列) 使用動態視窗高度，避免底部內容被推到看不到 */
+      height: calc(var(--vh, 1vh) * 100);
+      display:flex;
+      flex-direction:column;
+      min-height: -webkit-fill-available;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:10;
+      background: linear-gradient(180deg, rgba(21,27,22,.96), rgba(21,27,22,.86));
+      border-bottom:1px solid rgba(255,255,255,.06);
+      padding: 10px 12px 10px;
+    }
+    .toprow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .titleWrap{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .title{
+      font-weight:800;
+      letter-spacing:.08em;
+      font-size:15px;
+      line-height:1.1;
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+    }
+    .subtitle{
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.1;
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+    }
+    .topActions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-shrink:0;
+    }
+    .pillBtn{
+      height:34px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(27,36,29,.78);
+      color: var(--ink);
+      font-weight:800;
+      font-size:13px;
+      letter-spacing:.02em;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+    }
+    .pillBtn:active{ transform: translateY(1px); }
+    .pillBtn.primary{
+      border-color: rgba(214,178,94,.35);
+      box-shadow: 0 0 0 1px rgba(214,178,94,.10) inset;
+    }
+    .pillBtn.danger{
+      border-color: rgba(155,95,70,.25);
+      box-shadow: 0 0 0 1px rgba(178,58,47,.10) inset;
+    }
+
+    .main{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      overflow:visible;
+      padding: 10px 12px;
+      gap:10px;
+    }
+
+    .panel{ overflow-x:hidden; 
+      background: linear-gradient(180deg, rgba(21,27,22,.88), rgba(21,27,22,.72));
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: 0 12px 30px rgba(0,0,0,.28);
+      overflow:visible;
+    }
+
+    .view{
+      display:none;
+      height:100%;
+      overflow:visible;
+      min-height:0;
+    }
+    .view.active{ display:flex; flex-direction:column; gap:10px; }
+
+    
+    /* ✅ 允許遊戲畫面在小螢幕/有網址列時可垂直捲動，避免令牌被遮住 */
+    #viewGame.view.active{ overflow:visible; }
+.scroll{
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain; /* ✅防止 iOS 捲動把整個頁面「鎖死」 */
+      min-height:0;
+    }
+
+    /* Overview list */
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:10px;
+    }
+    .chapterRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px;
+      border-radius:12px;
+      background: rgba(27,36,29,.72);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .chapterLeft{
+      min-width:0;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .chapterName{
+      font-weight:900;
+      font-size: calc(var(--overviewBaseTitle) * var(--fontScale));
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      min-width:0;
+    }
+    .chapterProg{
+      font-size: calc(13px * var(--fontScale));
+      color: rgba(170,182,170,.92);
+      font-weight:900;
+      flex-shrink:0;
+      white-space:nowrap;
+    }
+    .chapterHint{
+      color: rgba(170,182,170,.88);
+      font-weight:900;
+      font-size: calc(var(--overviewBaseHint) * var(--fontScale));
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+    }
+    .chapterGo{
+      flex-shrink:0;
+      height:36px;
+      padding:0 12px;
+      border-radius:10px;
+      background: rgba(15,20,16,.65);
+      border:1px solid rgba(255,255,255,.10);
+      color: var(--ink);
+      font-weight:900;
+      font-size: calc(var(--overviewBaseBtn) * var(--fontScale));
+    }
+    .chapterGo[disabled]{ opacity:.45; }
+
+    /* Chapter home */
+    .homeCard{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      overflow:visible;
+      min-height:0;
+    }
+    .homeTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .homeTitle{
+      font-weight:1000;
+      font-size:16px;
+      letter-spacing:.04em;
+    }
+    .homeMeta{
+      color: rgba(170,182,170,.92);
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
+      margin-left:auto;
+    }
+
+    .btn{
+      height:44px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(27,36,29,.80);
+      color: var(--ink);
+      font-weight:1000;
+      font-size:14px;
+      letter-spacing:.02em;
+      flex:1;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+    }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(214,178,94,.20), rgba(27,36,29,.80));
+      border-color: rgba(214,178,94,.35);
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .homeText{
+      padding:10px 12px;
+      border-radius:12px;
+      background: rgba(15,20,16,.35);
+      border:1px solid rgba(255,255,255,.08);
+      color: rgba(233,239,233,.96);
+      line-height:1.75;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      max-height: 42vh;
+      white-space: pre-wrap;
+      min-height:0;
+    }
+
+    .homeReadRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 10px;
+      border-radius:12px;
+      background: rgba(27,36,29,.55);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .homeReadLeft{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .homeReadTitle{
+      font-weight:1000;
+      font-size:13px;
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+    }
+    .homeReadDesc{
+      color: var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+    }
+
+    /* Game status line */
+    .statusLine{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-top:1px solid rgba(255,255,255,.06);
+      background: rgba(15,20,16,.22);
+      flex-wrap:wrap; /* ✅小螢幕不擠成直排 */
+    }
+    .npc{
+      min-width:0;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      flex:1;
+    }
+    .npcBadge{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(214,178,94,.14);
+      border:1px solid rgba(214,178,94,.22);
+      font-weight:1000;
+      color: var(--gold);
+      flex-shrink:0;
+    }
+    .npcText{
+      min-width:0;
+      font-size:13px;
+      line-height:1.35;
+      color: var(--ink);
+      overflow:visible;
+      display:-webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      writing-mode: horizontal-tb;
+      word-break: normal;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+    .npcMore{
+      color: rgba(214,178,94,.98);
+      font-weight:1000;
+      margin-left:6px;
+      white-space:nowrap;
+      cursor:pointer;
+    }
+
+    .miniBtn{
+      height:34px;
+      padding:0 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(27,36,29,.74);
+      color: var(--ink);
+      font-weight:1000;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .miniBtn:active{ transform: translateY(1px); }
+    .miniBtn.book{
+  border-color: rgba(214,178,94,.35);
+  box-shadow:
+    0 0 14px rgba(214,178,94,.52),
+    0 0 28px rgba(214,178,94,.26);
+}
+
+    .miniBtn.primary{
+      border-color: rgba(214,178,94,.35);
+      background: linear-gradient(180deg, rgba(214,178,94,.18), rgba(27,36,29,.74));
+    }
+    .miniBtn[disabled]{ opacity:.45; }
+
+    .miniBtn.book.pulseStrong,
+    .toolbtn.book.pulseStrong{
+      box-shadow: var(--glowBook);
+      animation: bookPulse 2.2s ease-in-out infinite;
+    }
+    @keyframes bookPulse{
+      0%{ transform: translateY(0); filter: brightness(1); }
+      50%{ transform: translateY(-1px); filter: brightness(1.04); }
+      100%{ transform: translateY(0); filter: brightness(1); }
+    }
+
+    /* Hint toggle */
+    .toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      color: var(--muted);
+      font-weight:900;
+      font-size:12px;
+      padding:0 8px;
+      height:34px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(27,36,29,.50);
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .switch{
+      width:38px;
+      height:22px;
+      border-radius:999px;
+      background: rgba(255,255,255,.12);
+      position:relative;
+      border:1px solid rgba(255,255,255,.10);
+      flex-shrink:0;
+    }
+    .knob{
+      width:18px; height:18px;
+      border-radius:50%;
+      background: rgba(233,239,233,.92);
+      position:absolute; top:1px; left:1px;
+      transition: .18s ease;
+      box-shadow: 0 6px 14px rgba(0,0,0,.35);
+    }
+    .switch.on{
+      background: rgba(214,178,94,.28);
+      border-color: rgba(214,178,94,.30);
+    }
+    .switch.on .knob{ left:18px; }
+
+    /* Board */
+    .gameWrap{ 
+      display:flex; 
+      flex-direction:column; 
+      gap:10px; 
+      flex:1;
+      overflow:auto; 
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      min-height:0; 
+          padding-bottom: calc(140px + env(safe-area-inset-bottom));
+    }
+    .boardHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .boardTitle{
+      font-weight:1000; font-size:14px; color: rgba(233,239,233,.95);
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+      min-width:0;
+    }
+    .boardMeta{
+      color: rgba(170,182,170,.92);
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+    .boardRight{ display:flex; gap:8px; align-items:center; flex-shrink:0; }
+
+    .slots{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      min-height: 106px;
+      padding:10px;
+      border-radius: 12px;
+      background: rgba(15,20,16,.40);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .slotHint{
+      color: rgba(170,182,170,.88);
+      font-weight:900;
+      font-size:12px;
+      padding:8px 10px;
+      border:1px dashed rgba(255,255,255,.12);
+      border-radius:999px;
+      background: rgba(27,36,29,.30);
+    }
+
+    /* Token zone */
+    .tokensPanel{ padding:10px 10px calc(10px + 160px + env(safe-area-inset-bottom)); overflow:visible; min-height:0; }
+    /* ✅ 取消令牌區「內部捲動」：避免 iPhone Safari 出現捲動鎖死/點擊失靈（改成整頁只用一個捲動容器） */
+    .tokens{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      overflow:visible;
+      max-height:none;
+      align-content:flex-start;
+      padding-bottom: 2px;
+      min-width: 0;
+      min-height:0;
+    }
+    .token{
+      position: relative;
+      z-index: 1;
+      pointer-events: auto;
+      display:inline-flex;
+      align-items:center;
+      cursor:pointer;
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(33,43,35,.92), rgba(26,34,27,.86));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 12px 22px rgba(0,0,0,.25);
+      color: var(--ink);
+      font-weight: 1000;
+      letter-spacing:.02em;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      text-rendering: geometricPrecision;
+      -webkit-font-smoothing: antialiased;
+      word-break: normal;
+      overflow-wrap: anywhere;
+      writing-mode: horizontal-tb;
+      max-width: 100%;
+    }
+    .token:active{ transform: translateY(1px) scale(.99); }
+
+    .token.hintStrong{ box-shadow: var(--glowStrong); }
+    .token.hintMid{ box-shadow: var(--glowMid); }
+    .token.hintWeak{ box-shadow: var(--glowWeak); }
+
+    .token.breath{
+      box-shadow: var(--glowWeak);
+      animation: breathe 1.65s ease-in-out infinite;
+    }
+    @keyframes breathe{
+      0%{ box-shadow: var(--glowWeak); opacity: 1; }
+      50%{ box-shadow: var(--glowStrong); opacity: 1; }
+      100%{ box-shadow: var(--glowWeak); opacity: 1; }
+    }
+
+    .token.hintFlash{
+      animation: hintFlash 1.9s ease-in-out 1;
+    }
+    @keyframes hintFlash{
+      0%   { box-shadow: var(--glowStrong); filter: brightness(1.10); }
+      14%  { box-shadow: var(--glowStrong); filter: brightness(1.14); }
+      28%  { box-shadow: var(--glowMid);    filter: brightness(1.08); }
+      42%  { box-shadow: var(--glowStrong); filter: brightness(1.12); }
+      56%  { box-shadow: var(--glowMid);    filter: brightness(1.06); }
+      70%  { box-shadow: var(--glowWeak);   filter: brightness(1.03); }
+      85%  { box-shadow: var(--glowWeak);   filter: brightness(1.01); }
+      100% { box-shadow: var(--glowWeak);   filter: brightness(1.00); }
+    }
+
+    .testBar{ display:none !important; }
+
+    .floatTestBtn{
+      position: fixed;
+      left: 12px;
+      right: auto;
+      bottom: calc(env(safe-area-inset-bottom) + 14px);
+      z-index: 50;
+      display:none;
+      height: 44px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border:1px solid rgba(214,178,94,.35);
+      background: linear-gradient(180deg, rgba(214,178,94,.18), rgba(27,36,29,.82));
+      color: var(--ink);
+      font-weight:1000;
+      font-size: 14px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.28);
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+    }
+    .floatTestBtn.show{ display:inline-flex; align-items:center; gap:8px; }
+    .floatTestBtn:active{ transform: translateY(1px); }
+
+    /* Modal */
+    .modal{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.74);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: calc(18px + env(safe-area-inset-top)) 12px calc(18px + env(safe-area-inset-bottom));
+      z-index:99;
+    }
+    .modal.show{ display:flex; }
+    .modalCard{
+      width:min(560px, 100%);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(21,27,22,.98), rgba(21,27,22,.92));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 24px 60px rgba(0,0,0,.55);
+      overflow:visible;
+
+      /* ✅ 讓彈窗永遠露出「標題列＋按鈕列」，內容再去捲動 */
+      max-height: calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      display:flex;
+      flex-direction:column;
+    }
+    .modalHead{
+      padding:12px 12px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .modalTitle{
+      font-weight: 1000;
+      letter-spacing:.06em;
+      font-size: 14px;
+      color: rgba(233,239,233,.95);
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+    }
+    .modalClose{
+      height:34px;
+      padding:0 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(27,36,29,.60);
+      color: var(--ink);
+      font-weight:1000;
+      font-size:13px;
+    }
+    .modalBody{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+
+      /* ✅ 改為由 modalCard 控制高度，body 佔滿剩餘並可捲動 */
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    .quote{
+      padding:10px 12px;
+      border-radius:12px;
+      background: rgba(15,20,16,.35);
+      border:1px solid rgba(255,255,255,.08);
+      font-weight: 1000;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+    .plain{
+      padding:10px 12px;
+      border-radius:12px;
+      background: rgba(27,36,29,.60);
+      border:1px solid rgba(255,255,255,.08);
+      color: rgba(233,239,233,.95);
+      font-size: 13px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+    }
+    .modalActions{
+      padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+      border-top:1px solid rgba(255,255,255,.06);
+      background: rgba(21,27,22,.88);
+    }
+
+    /* ✅ A2HS 教學視窗：讓「我知道了」更小、更靠右，避免擋視線 */
+    #modal.a2hs #a2hsOk{ padding:8px 12px; min-width:0; font-size:14px; }
+    .modalActions .btn{ height:42px; }
+
+    /* ✅select 樣式（避免某些瀏覽器套用奇怪字體/顏色） */
+    .select{
+      height:40px;
+      padding:0 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(15,20,16,.55);
+      color: var(--ink);
+      font-weight:900;
+      font-size:14px;
+      outline:none;
+      appearance:none;
+    }
+
+    /* Settings */
+    .settings{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:12px;
+      background: rgba(27,36,29,.55);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .rowLeft{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .rowTitle{
+      font-weight: 1000;
+      font-size: 13px;
+      letter-spacing:.02em;
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+    }
+    .rowDesc{
+      color: var(--muted);
+      font-size: 12px;
+      line-height:1.25;
+      white-space:nowrap;
+      overflow:visible;
+      text-overflow:ellipsis;
+    }
+    .range{ width: 180px; }
+
+    :root{ --fontScale: 1; }
+    body{ font-size: calc(16px * var(--fontScale)); }
+    .token{ font-size: calc(16px * var(--fontScale)); }
+    .npcText{ font-size: calc(13px * var(--fontScale)); }
+    .quote{ font-size: calc(16px * var(--fontScale)); }
+    .plain{ font-size: calc(13px * var(--fontScale)); }
+
+    @media (max-height: 740px){
+      .tokens{ max-height: none !important; }
+      .slots{ min-height: 96px; }
+      .homeText{ max-height: 36vh; }
+    }
+
+    @media  (max-width: 390px){
+      .statusLine > div:last-child{
+        width:100%;
+        display:flex;
+        gap:8px;
+        justify-content:flex-end;
+        flex-wrap:wrap;
+      }
+    }
+/* 測驗視窗文字放大（只影響測驗 modal） */
+.modal .plain{
+  font-size: 1rem;
+}
+/* ✅測驗視窗：下拉選單字體也一起放大 */
+.modal select, .modal option{
+  font-size: calc(14px * var(--fontScale));
+  font-weight: 900;
+}
+
+  
+    .orderError{
+      margin-top:8px;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.02em;
+      color: rgba(185,178,154,.88);
+      opacity:0;
+      transition: opacity .18s ease;
+      user-select:none;
+    }
+    .orderError.show{ opacity:1; }
+    .token.wrongFlash{
+      border-color: rgba(155,95,70,.75) !important;
+      box-shadow: 0 0 0 2px rgba(155,95,70,.25), 0 12px 22px rgba(0,0,0,.25) !important;
+      animation: wrongFlash .48s ease-in-out 1;
+    }
+    @keyframes wrongFlash{
+      0%{ transform: translateY(0); filter: brightness(1.0); }
+      40%{ transform: translateY(-1px); filter: brightness(1.08); }
+      100%{ transform: translateY(0); filter: brightness(1.0); }
+    }
+
+
+    .helpFold{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: rgba(255,255,255,.02);
+      overflow:visible;
+    }
+    .helpFold summary{
+      cursor:pointer;
+      padding:12px 14px;
+      font-weight:900;
+      color: var(--ink);
+      list-style:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .helpFold summary::after{
+      content:"▾";
+      opacity:.75;
+      transform: rotate(0deg);
+      transition: transform .18s ease, opacity .18s ease;
+      font-weight:1000;
+    }
+    .helpFold[open] summary::after{
+      transform: rotate(180deg);
+      opacity:.95;
+    }
+    .helpFold summary::-webkit-details-marker{ display:none; }
+    .helpFold .helpBody{
+      padding: 0 14px 12px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .helpFold .helpSteps{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .helpFold .helpStep{
+      display:grid;
+      grid-template-columns: 132px 1fr;
+      gap:10px;
+      align-items:start;
+      padding:10px 12px;
+      border-radius:12px;
+      background: rgba(15,20,16,.28);
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .helpFold .helpPlatform{
+      font-weight:1000;
+      color: rgba(233,239,233,.95);
+      white-space:nowrap;
+    }
+    .helpFold .helpAction{
+      color: rgba(170,182,170,.92);
+      font-weight:900;
+      line-height:1.45;
+    }
+    @media (max-width: 390px){
+      .helpFold .helpStep{ grid-template-columns: 1fr; }
+      .helpFold .helpPlatform{ opacity:.95; }
+    }
+    .helpFold .helpLine{ margin-top:6px; }
+    .helpLine.version{ font-size:11px; opacity:.85; }
+
+  
+/* iOS tap fix: 減少 Safari/LINE 內建瀏覽器點擊遲鈍 */
+button, .btn, .pillBtn, .toolbtn, .token, .chapterCard, .miniBtn{
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+
+    /* ✅ 測驗按鈕改放到上方工具列（不再浮動干擾令牌） */
+    .topActions #floatTestBtn{ position: static !important; inset:auto !important; box-shadow:none; }
+
+/* ✅ fixed24：工具列導覽（◀ 2/19 ▶）強制同排，避免被排成直欄 */
+.navInline{
+  display:flex;
+  align-items:center;
+  gap:.45rem;
+  margin-left:auto;
+  flex-shrink:0;
+}
+.navInline .toolbtn.mini{
+  width:44px;
+  height:44px;
+  justify-content:center;
+  padding:0;
+}
+.navInline .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+  min-width:72px;
+  text-align:center;
+  font-weight:800;
+  letter-spacing:.5px;
+  padding:.45rem .7rem;
+  border-radius:1rem;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.18);
+}
+
+/* ✅ fixed24：A2HS「知道了」按鈕確保點得到（文字區也可點） */
+#modal.a2hs .modalActions{ position:relative; z-index:10; }
+#modal.a2hs #a2hsOk{
+  position:relative;
+  z-index:11;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  pointer-events:auto;
+  touch-action:manipulation;
+}
+#modal.a2hs #a2hsOk *{ pointer-events:none; } /* 文字/子元素不吃事件，交給按鈕本體 */
+
+
+/* ✅ fixed24：兵書光暈再強一點（維持定稿兩層結構，提升亮度） */
+.toolbtn.book{
+  box-shadow:
+    0 0 1.15rem rgba(255,225,140,.78),
+    0 0 .9rem rgba(255,225,140,.42);
+}
+
+
+/* fixed25: 單排工具列（圖示版） */
+.toolbar
+.toolbar
+.toolbar /* 只留圖示，省空間 */
+.toolbar
+.navInline{ display:flex; align-items:center; gap:10px; margin-left:auto; flex-wrap:nowrap; }
+.navInline .navText{ min-width:64px; text-align:center; font-weight:800; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+.navInline .toolbtn.mini{ width:44px; padding:10px 0; }
+
+
+/* fixed25: 佈令板 vs 令牌區 更好辨識 */
+.board{ background: rgba(21,27,22,.92); border:1px solid rgba(214,178,94,.25); }
+.tokensPanel{ margin-top:14px; padding:12px; border-radius:18px; background: rgba(15,20,16,.92); border:1px solid rgba(46,125,50,.28); }
+.tokensHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;  padding-left:.35rem;}
+.tokensTitle{ font-weight:800; color: var(--muted); letter-spacing:.06em; }
+.tokensRemain{ font-size:12px; color: var(--muted); opacity:.95; }
+.tokensPanel .orderError{ margin-top:10px; }
+
+
+/* fixed25: 總覽提示行移除 */
+.chapterHint{ display:none !important; }
+
+
+/* fixed25: modal 按鈕文字不吃事件（點字也算按按鈕） */
+.btnLabel{ pointer-events:none; }
+
+
+/* fixed26: 強化佈令板金框辨識 */
+.board{ border-color: rgba(214,178,94,.55) !important; box-shadow: 0 0 0 1px rgba(214,178,94,.25), 0 0 18px rgba(214,178,94,.10); }
+.tokensPanel{ border-color: rgba(46,125,50,.55) !important; box-shadow: 0 0 0 1px rgba(46,125,50,.18), 0 0 14px rgba(46,125,50,.10); }
+
+
+/* === fixed27 patch: 工具列強制同一排、避免水平飄移 === */
+html, body{ overflow-x:hidden; }
+.toolbarWrap{ width:100%; }
+.toolbar.singleRow{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:nowrap; width:100%; }
+.toolbar.singleRow .toolbtn{ min-width:52px; padding:10px 0; display:flex; align-items:center; justify-content:center; }
+.toolbar.singleRow .toolbtn .icon{ font-size:20px; }
+.navInline{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+.navInline .navText{ min-width:62px; padding:8px 10px; border-radius:999px; font-weight:900; text-align:center; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+.navInline .toolbtn.mini{ width:52px; padding:10px 0; }
+
+/* 佈令板/令牌區辨識再加強 */
+.board{ border:1px solid rgba(214,178,94,.45) !important; box-shadow: 0 0 1px rgba(214,178,94,.22), 0 0 14px rgba(214,178,94,.12); }
+.tokensPanel{ margin-top:14px; padding:12px; border-radius:18px; background: rgba(12,18,14,.92); border:1px solid rgba(46,125,50,.55); box-shadow: 0 0 1px rgba(46,125,50,.18), 0 0 14px rgba(46,125,50,.10); }
+.tokensHead{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.tokensTitle{ font-weight:1000; opacity:.95; }
+.tokensRemain{ font-weight:900; color: rgba(170,182,170,.95); }
+
+/* 首頁按鈕點擊區保護（iOS 非捷徑偶發點擊偏移） */
+.homeActions .btn{ position:relative; z-index:2; touch-action:manipulation; -webkit-tap-highlight-color: transparent; }
+
+
+/* ===== fixed29: 一行工具列鎖寬（不漂移/不出界） ===== */
+.toolbar.singleRow.toolbarOneLine{
+  flex-wrap: nowrap !important;
+  justify-content: flex-start;
+  width: 100%;
+  overflow: hidden;        /* ✅ 斬掉水平捲動，避免畫面「游來游去」 */
+  gap: .35rem;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn{ flex:0 0 auto; }
+.toolbar.singleRow.toolbarOneLine .navInline{
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 4px;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.iconOnly{
+  padding: .42rem .52rem;
+  min-width: 38px;
+  justify-content: center;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.mini{
+  min-width: 34px;
+  padding: .42rem .48rem;
+}
+.toolbar.singleRow.toolbarOneLine .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+  min-width: 52px;
+  padding: .42rem .52rem;
+}
+
+/* ===== fixed29: 學習提示回歸文字 + 點擊穩定 ===== */
+.hintLabel{ font-weight: 900; letter-spacing: .08em; }
+.hintLabel, .switch, .switch *{ pointer-events:auto; }
+.hintLabel{ margin-right: 8px; }
+
+/* ===== fixed29: 令牌區完整落在綠框內（含標題） ===== */
+.tokensPanel{ border:none !important; box-shadow:none !important; }
+.tokensHead{ margin: 2px 2px 10px 2px; }
+.tokensTitle{ font-size: 18px; font-weight: 900; letter-spacing: .14em; }
+
+/* 小螢幕再縮一點，確保 ▶ 不會出界 */
+@media  (max-width: 390px){
+  .toolbar.singleRow.toolbarOneLine{ gap: .28rem; }
+  .toolbar.singleRow.toolbarOneLine .toolbtn.iconOnly{ min-width: 36px; padding: .40rem .48rem; }
+  .toolbar.singleRow.toolbarOneLine .toolbtn.mini{ min-width: 32px; padding: .40rem .44rem; }
+  .toolbar.singleRow.toolbarOneLine .navText{ min-width: 50px; padding: .40rem .48rem; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+}
+
+
+
+/* ===== fixed29 overrides ===== */
+.toolbarWrap{ padding-right: 8px; box-sizing:border-box; }
+.toolbar.toolbarOneLine{ width:100%; max-width:100%; box-sizing:border-box; display:flex; flex-wrap:nowrap; gap:10px; overflow:visible; padding-right:10px; }
+.toolbar.toolbarOneLine > *{ flex:0 0 auto; }
+.navInline{ flex:0 0 auto; }
+.navText{ min-width:56px; padding:.4rem .55rem; }
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+.toolbtn.mini{ width:38px; height:38px; min-width:38px; font-size:17px; line-height:38px; }
+.toolbtn.mini.primary{ font-size:17px; }
+/* keep right arrow inside */
+.navInline{ gap:6px; padding-right:6px; }
+/* tokens box border includes title */
+.tokensPanel{ padding:10px 10px calc(10px + 160px + env(safe-area-inset-bottom)); }
+.tokensBox{ border:2px solid rgba(46,125,50,.55); border-radius:18px; padding:12px; background: rgba(0,0,0,.10); box-shadow: inset 0 0 0 1px rgba(46,125,50,.14); }
+.tokensHead{ margin-top:2px; }
+/* restore hint label text style (no bulb) */
+.hintLabel{ font-weight:900; }
+/* ===== fixed30 微調：工具列同列、右側安全邊界、佈令板標題內縮、提示置中 ===== */
+.toolbarWrap{
+  padding-right: calc(12px + env(safe-area-inset-right));
+  box-sizing: border-box;
+}
+.toolbar.singleRow.toolbarOneLine{
+  gap: .26rem;
+  flex-wrap: nowrap;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.iconOnly{
+  min-width: 40px;
+  padding: .42rem .52rem;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.mini{
+  width: 40px;
+  min-width: 40px;
+  padding: .42rem 0;
+}
+.toolbar.singleRow.toolbarOneLine .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+  min-width: 56px;
+  padding: .42rem .52rem;
+}
+.navInline{
+  padding-right: calc(8px + env(safe-area-inset-right));
+  box-sizing: border-box;
+}
+
+/* 佈令板標題列：偏左、但不要貼框 */
+.boardHead{ padding-left: 14px; padding-right: 12px; }
+.boardTitle{ gap: 10px; }
+#boardTitle{ margin-left: 2px; }
+
+/* 橢圓框提示文字置中 */
+.slotHint{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 12px;
+}
+
+/* ===== fixed31：右箭頭保證露出（nav 改 grid + 更強 safe-area） ===== */
+.toolbar.singleRow.toolbarOneLine{
+  padding-right: calc(16px + env(safe-area-inset-right)) !important;
+  padding-left: 0 !important;
+  overflow: hidden !important;
+}
+.toolbar.singleRow.toolbarOneLine .toolbtn.iconOnly{
+  min-width: 38px !important;
+  padding: .40rem .48rem !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline{
+  display: grid !important;
+  grid-template-columns: 40px minmax(44px, 1fr) 40px !important;
+  gap: 4px !important;
+  align-items: center !important;
+  max-width: 180px !important;
+  width: 180px !important;
+  padding-right: 0 !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
+  width: 40px !important;
+  min-width: 40px !important;
+  padding: .40rem 0 !important;
+  font-size: 16px !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: .40rem .46rem !important;
+}
+  (max-width: 390px){
+  .toolbar.singleRow.toolbarOneLine .navInline{
+    max-width: 168px !important;
+    width: 168px !important;
+    grid-template-columns: 36px minmax(42px, 1fr) 36px !important;
+  }
+  .toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
+    width: 36px !important;
+    min-width: 36px !important;
+  }
+}
+
+
+
+/* ===== fixed32：更保守的右側安全區（Chrome iOS 也不裁切 ▶） ===== */
+.toolbar.singleRow.toolbarOneLine{
+  padding-right: calc(28px + env(safe-area-inset-right)) !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline{
+  max-width: 160px !important;
+  grid-template-columns: 36px minmax(48px, 1fr) 36px !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
+  width: 36px !important;
+  min-width: 36px !important;
+  padding: .40rem 0 !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+  padding: .40rem .36rem !important;
+}
+
+
+/* fixed34：設定頁排版更舒服 */
+.helpBox{ padding: .9rem .95rem !important; }
+.helpList{ margin: .15rem 0 0 1.1rem; padding: 0; line-height: 1.65; }
+.helpList li{ margin: .55rem 0; }
+.rowDesc{ max-width: 18.5rem; }
+
+/* ===== fixed34：右箭頭/進度在最大字體也不被裁切；避免右側遮罩與橫向漂移 ===== */
+html, body { overflow-x: hidden; }
+.toolbarWrap { padding-right: calc(10px + env(safe-area-inset-right)); box-sizing: border-box; }
+.toolbar.singleRow.toolbarOneLine{
+  padding-right: calc(18px + env(safe-area-inset-right)) !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline{
+  grid-template-columns: 40px minmax(72px, 1fr) 40px !important;
+  max-width: 210px !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .toolbtn.mini{
+  width: 40px !important;
+  min-width: 40px !important;
+  padding: .42rem 0 !important;
+}
+.toolbar.singleRow.toolbarOneLine .navInline .navText{
+.toolbar.singleRow.toolbarOneLine .navInline #btnPrev,
+.toolbar.singleRow.toolbarOneLine .navInline #btnNext{ font-size: 1.05rem !important; }
+  padding: .36rem .40rem !important;
+  min-width: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+}
+
+
+/* ====== v1.0.1（fixed61-android）首次公開穩定封存版 ====== */
+.toolbar.toolbarOneLine{
+  /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
+  padding-right: calc(16px + env(safe-area-inset-right)) !important;
+}
+.toolbar.singleRow.toolbarOneLine{ overflow: visible !important; }
+.toolbarWrap{ overflow: visible !important; }
+
+/* 右側導覽：固定三欄（◀ / 進度 / ▶），縮瘦箭頭，讓右箭頭完整露出 */
+.navInline{
+  margin-left: auto !important;
+  display: grid !important;
+  grid-template-columns: 36px minmax(64px, 1fr) 36px !important;
+  gap: 4px !important;
+  align-items: center !important;
+  justify-items: stretch !important;
+  max-width: 200px !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+.navInline .toolbtn.mini{
+  width: 36px !important;
+  min-width: 36px !important;
+  padding: .38rem 0 !important;
+}
+.navInline .navText{
+  min-width: 0 !important;
+  width: 100% !important;
+  padding: .38rem .36rem !important;
+  text-align: center !important;
+  letter-spacing: -0.02em;
+  font-size: min(calc(14px * var(--fontScale)), 18px) !important; /* 字體放大也不爆框 */
+  font-variant-numeric: tabular-nums;
+}
+
+/* 工具列 icon 文字大小微調 */
+.toolbtn .icon, .toolbtn .iconEmoji{ font-size: 1.06rem !important; }
+
+/* 朗讀 icon：改金色、再大一點點 */
+.icoSpeak{
+  width: 22px;
+  height: 22px;
+  fill: var(--gold);
+  filter: drop-shadow(0 0 .55rem rgba(214,178,94,.55));
+}
+#btnSegRead{ padding-left: .52rem !important; padding-right: .52rem !important; }
+
+/* 設定頁：療癒列表排版（更好讀、比較整齊） */
+.helpBox{ line-height: 1.7; }
+.helpList{
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin: .4rem 0 0 0 !important;
+}
+.helpList li{
+  position: relative;
+  margin: .38rem 0 !important;
+  padding: .52rem .7rem .52rem 1.55rem !important;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  background: rgba(10,14,10,.22);
+}
+.helpList li::before{
+  content: "•";
+  position: absolute;
+  left: .72rem;
+  top: .45rem;
+  color: rgba(233,239,233,.75);
+}
+
+/* 加入主畫面教學（彈窗）：更清楚、比較像小卡片 */
+.a2hModal .a2hCard{ line-height: 1.75; }
+.a2hModal ol{
+  margin: .4rem 0 0 0;
+  padding-left: 1.2rem;
+}
+.a2hModal li{ margin: .35rem 0; }
+
+
+
+/* ===== fixed38 UI polish ===== */
+.toolbar.singleRow.toolbarOneLine{ overflow: visible !important; padding-right: calc(10px + env(safe-area-inset-right)) !important; }
+.toolbar.singleRow.toolbarOneLine .navInline{ grid-template-columns: 34px minmax(56px,1fr) 34px !important; }
+.toolbtn.mini{ min-width:34px !important; width:34px !important; }
+.icoSpeak{ width:26px; height:26px; }
+.icoSpeak path{ fill: var(--gold); }
+.miniBtn.readHome{ display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+.helpBody .healingList{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+.helpBody .healingList li{ position:relative; padding-left:18px; line-height:1.55; }
+.helpBody .healingList li::before{ content:'•'; position:absolute; left:0; top:0; color: rgba(214,178,94,.9); }
+.helpStepsGrid{ display:grid; gap:12px; }
+.helpStepsCard{ border:1px solid rgba(214,178,94,.18); border-radius:16px; padding:14px 14px 12px; background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)); }
+.helpStepsCard h3{ margin:0 0 10px; font-size:16px; color: rgba(233,239,233,.95); }
+.helpSteps{ margin:0; padding-left:18px; line-height:1.6; color: rgba(233,239,233,.92); }
+
+/* ===== FIXED38 — layout & icons ===== */
+.toolbar.singleRow.toolbarOneLine{ overflow: visible !important; padding-right: calc(10px + env(safe-area-inset-right)) !important; }
+.toolbar.singleRow.toolbarOneLine .navInline{ display:grid !important; grid-template-columns: 34px minmax(60px,1fr) 34px !important; gap:8px !important; max-width: 180px !important; }
+.toolbtn.mini{ width:34px !important; height:34px !important; }
+.icoSpeak{ width:22px; height:22px; fill: var(--gold); }
+#btnHomeRead .icoSpeak{ width:24px; height:24px; }
+.readHome{ display:flex; align-items:center; justify-content:center; }
+.helpBody .healingList{ margin:0; padding-left: 1.1em; }
+.helpBody .healingList li{ margin: .35em 0; line-height:1.55; }
+.helpBody .healingList li.muted{ color: var(--muted); }
+
+
+.miniTag{font-size:.78rem;opacity:.8;border:1px solid var(--line);padding:.28rem .55rem;border-radius:999px;}
+.row.clickable:active{transform:translateY(1px);}
+</style>
+
+</head>
+<body style="--fontScale:1;">
+  <div class="app safeTop safeBottom">
+
+    <div class="topbar">
+      <div class="toprow">
+        <div class="titleWrap">
+          <div class="title" id="topTitle">孫子兵法</div>
+          <div class="subtitle" id="topSub">原書順序</div>
+          <div class="subtitle" id="topVer" style="opacity:.55;font-size:.78rem;margin-top:.15rem;display:none;"></div>
+          
+        </div>
+        <div class="topActions">
+                    <button class="pillBtn" id="floatTestBtn">測驗</button>
+<button class="pillBtn primary" id="btnOverview">總覽</button>
+          <button class="pillBtn" id="btnBackOrSettings">設定</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="view active panel scroll" id="viewOverview">
+        <div class="list" id="overviewList"></div>
+      </div>
+
+      <div class="view panel" id="viewChapterHome">
+        <div class="homeCard">
+          <div class="homeTop">
+            <div style="min-width:0">
+              <div class="homeTitle" id="homeTitle">第一篇 始計篇</div>
+            </div>
+            <div class="homeMeta" id="homeMeta">0/0</div>
+          </div>
+
+          <div class="homeText" id="homeFullText"></div>
+
+          <div class="homeReadRow">
+            <div class="homeReadLeft">
+              <div class="homeReadTitle">整篇朗讀</div>
+              <div class="homeReadDesc">可暫停、續播</div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+              <button class="miniBtn readHome" id="btnHomeRead" title="朗讀" aria-label="朗讀"><svg class="icoSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
+              <button class="miniBtn" id="btnHomeStop">停止</button>
+            </div>
+          </div>
+
+          <div class="homeReadRow">
+            <div class="homeReadLeft">
+              <div class="homeReadTitle">顯示白話</div>
+              <div class="homeReadDesc">在首頁內顯示原文＋白話</div>
+            </div>
+            <div class="switch on" id="showPlainSwitch"><div class="knob"></div></div>
+          </div>
+
+          <div class="homeActions" style="display:flex; gap:8px;">
+            <button class="btn primary" id="btnStart">開始佈令</button>
+            <button class="btn" id="btnFromStart">從頭重練</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="view panel" id="viewGame">
+        <div class="gameWrap">
+          <div class="statusLine">
+            <div class="npc">
+              <div class="npcBadge">孫</div>
+              <div class="npcText" id="npcLine"></div>
+            </div>
+            
+            <div class="toolbarWrap">
+              <div class="toolbar singleRow toolbarOneLine">
+                <button class="toolbtn iconOnly" id="btnSegRead" title="朗讀" aria-label="朗讀"><svg class="icoSpeak" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
+                <button class="toolbtn iconOnly" id="btnReset" title="重整" aria-label="重整"><span class="icon">♻</span></button>
+                <button class="toolbtn iconOnly book pulseStrong" id="btnBook" title="兵書" aria-label="兵書"><span class="icon">📜</span></button>
+
+                <div class="navInline" aria-label="關卡導覽">
+                  <button class="toolbtn mini" id="btnPrev" title="上一關">◀</button>
+                  <div class="navText" id="navText">1/1</div>
+                  <button class="toolbtn mini primary" id="btnNext" title="下一關" disabled>▶</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="board">
+            <div class="boardHead">
+              <div class="boardTitle">
+                <span id="boardTitle">佈令板</span>
+                <span class="boardMeta" id="boardMeta">完成 0/0</span>
+              </div>
+              <div class="boardRight">
+                <div class="toggle" id="hintToggleWrap">
+                  <span class="hintLabel" aria-label="學習提示" title="學習提示">學習提示</span>
+                  <div class="switch on" id="hintSwitch"><div class="knob"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="slots" id="slots">
+              <div class="slotHint" id="slotHint">點下方令牌，依順序放進佈令板</div>
+            </div>
+          </div>
+
+          <div class="tokensPanel">
+            <div class="tokensBox">
+            <div class="tokensHead"><div class="tokensTitle">令牌區</div><div class="tokensRemain" id="tokensRemain"></div></div>
+            <div class="tokens" id="tokens"></div>
+            <div class="orderError" id="orderError" aria-live="polite">請再想一想（將錯誤令牌放回令牌區）</div>
+          
+            </div>
+          </div>
+
+          <div class="testBar" id="testBar"></div>
+        </div>
+      </div>
+
+      <div class="view panel scroll" id="viewSettings">
+  <div class="settings">
+    
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">字體大小</div>
+        <div class="rowDesc">自由調整</div>
+      </div>
+      <input class="range" id="fontRange" type="range" min="0.85" max="1.25" step="0.01" />
+    </div>
+
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">音效</div>
+        <div class="rowDesc">點擊、成功提示</div>
+      </div>
+      <div class="switch on" id="soundSwitch"><div class="knob"></div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">語音</div>
+        <div class="rowDesc">朗讀提示音</div>
+      </div>
+      <div class="switch on" id="ttsSwitch"><div class="knob"></div></div>
+    </div>
+
+    <div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">學習提示預設開啟</div>
+        <div class="rowDesc">新進篇章時自動開啟提示</div>
+      </div>
+      <div class="switch on" id="hintDefaultSwitch"><div class="knob"></div></div>
+    </div>
+<div class="row">
+      <div class="rowLeft">
+        <div class="rowTitle">自由瀏覽下一關</div>
+        <div class="rowDesc">可直接前往下一段（不檢查完成度）</div>
+      </div>
+      <div class="switch" id="freeNavSwitch" role="switch" aria-checked="false"><div class="knob"></div></div>
+    </div>
+
+    <div class="row dangerRow">
+      <div class="rowLeft">
+        <div class="rowTitle">清空足跡紀錄</div>
+        <div class="rowDesc">所有篇章進度全部歸零</div>
+      </div>
+      <button class="pillBtn danger" id="btnClear">清空</button>
+    </div>
+</div>
+
+    <details class="helpFold">
+      <summary>ⓘ 使用說明</summary>
+      <div class="helpBody">
+    <ul class="healingList">
+      <li>佈令時：點令牌依正確順序排入空格。</li>
+      <li>放錯也會提示：紅框閃一下 + 下方顯示「請再想一想」（排對才會消失）。</li>
+      <li>兵書：段落完成後會亮起呼吸燈提示，點進去看原文與白話。</li>
+      <li>重整：可選擇重整本段落或重整本篇章。</li>
+    </ul>
+
+    <div class="divider" style="margin:14px 0 10px; opacity:.55;"></div>
+    <div class="plain" style="font-weight:700; margin:0 0 8px;">加入主畫面（捷徑）</div>
+    <div class="plain" style="line-height:1.75; margin-bottom:10px;">
+      把本系統以「捷徑」加入主畫面後，會以全螢幕顯示、操作更順手，也更穩定，體驗更像 APP。
+    </div>
+    <ul class="healingList">
+      <li><b>iPhone（Safari）</b><br/>
+        <span class="muted">1</span> 點下方「分享」按鈕（方框＋上箭頭）<br/>
+        <span class="muted">2</span> 選「加入主畫面」<br/>
+        <span class="muted">3</span> 右上角按「加入」完成
+      </li>
+      <li><b>Android（Chrome）</b><br/>
+        <span class="muted">1</span> 點右上角「⋯」或「︙」<br/>
+        <span class="muted">2</span> 選「加入主畫面」或「安裝應用程式」<br/>
+        <span class="muted">3</span> 依提示完成
+      </li>
+    </ul>
+    <div class="plain" style="font-weight:700; margin:12px 0 6px;">溫馨小提醒</div>
+    <ul class="healingList">
+      <li>這是網頁遊戲系統；加入「捷徑」不會佔用手機太多空間。</li>
+      <li>若你當下選「稍後再加」，之後仍可在「設定」→「使用說明」隨時查看本教學。</li>
+    </ul>
+
+</div>
+    </details>
+<details class="helpFold">
+  <summary>關於本系統</summary>
+  <div class="helpBody">
+    <ul class="healingList">
+      <li>這是一個背誦《孫子兵法》的練習工具。</li>
+      <li>目標：讓你用最少摩擦，反覆進入記憶節奏。</li>
+      <li>版本：<span id="aboutVersion"></span></li>
+</ul>
+  </div>
+</details>
+
+
+    <details class="helpFold">
+      <summary>設計者</summary>
+      <div class="helpBody">
+        <div class="helpLine">設計／企劃：散木團隊(朵朵)</div>
+        <div class="helpLine">協作：ChatGPT</div>
+      </div>
+    </details>
+
+  </div>
+</div>
+    <div class="modal" id="modal">
+      <div class="modalCard">
+        <div class="modalHead">
+          <div class="modalTitle" id="modalTitle">兵書</div>
+          <button class="modalClose" id="modalClose">關閉</button>
+        </div>
+        <div class="modalBody" id="modalBody"></div>
+        <div class="modalActions" id="modalActions" style="display:none;"></div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+
+// ===== 固定版號（用來辨識是否還在看舊快取） =====
+const APP_VERSION = "fixed61-android";
+
+try{ const av=document.getElementById("aboutVersion"); if(av) av.textContent = "v1.0（"+APP_VERSION+"）"; }catch(_e){}
+// ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
+(async ()=>{
+  try{
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for(const r of regs){ await r.unregister(); }
+    }
+    if('caches' in window){
+      const keys = await caches.keys();
+      for(const k of keys){ await caches.delete(k); }
+    }
+  }catch(e){}
+})();
+
+(() => {
+  /***********************
+   * ✅自動拆段規則（完全自動）
+   ***********************/
+  const AUTO_SPLIT = {
+    enabled: true,
+    MAX_TOKENS: 12,
+    MAX_QUOTE_CHARS: 70
+  };
+
+  function hasPunc(s){ return /[，。；：、]/.test(s || ""); }
+
+  function splitIndexSmart(tokens){
+    const n = tokens.length;
+    let mid = Math.floor(n/2);
+    let best = mid;
+    let bestDist = 999;
+
+    for(let i=1;i<n-1;i++){
+      if(hasPunc(tokens[i])){
+        const d = Math.abs(i-mid);
+        if(d < bestDist){ best = i; bestDist = d; }
+      }
+    }
+    return Math.max(1, Math.min(n-2, best+1));
+  }
+
+  function splitQuoteSmart(quote){
+    const s = quote || "";
+    if(s.length < 10) return [s, ""];
+    const candidates = [];
+    for(let i=0;i<s.length;i++){
+      if("，。；：、".includes(s[i])) candidates.push(i+1);
+    }
+    if(candidates.length===0){
+      const m = Math.floor(s.length/2);
+      return [s.slice(0,m), s.slice(m)];
+    }
+    const mid = Math.floor(s.length/2);
+    let best = candidates[0], bestDist = 999;
+    for(const idx of candidates){
+      const d = Math.abs(idx-mid);
+      if(d < bestDist){ best = idx; bestDist = d; }
+    }
+    return [s.slice(0,best).trim(), s.slice(best).trim()];
+  }
+
+  function autoSplitChapterSegments(ch){
+    if(!AUTO_SPLIT.enabled) return;
+    if(!ch || !Array.isArray(ch.segments)) return;
+
+    const out = [];
+    for(const seg of ch.segments){
+      const tokens = seg.tokens || [];
+      const quote = seg.quote || "";
+      const needSplit = (tokens.length > AUTO_SPLIT.MAX_TOKENS) || (quote.length > AUTO_SPLIT.MAX_QUOTE_CHARS);
+
+      if(!needSplit){
+        out.push(seg);
+        continue;
+      }
+
+      const cut = splitIndexSmart(tokens);
+      const [q1, q2] = splitQuoteSmart(quote);
+
+      out.push({ ...seg, quote: q1 || quote, tokens: tokens.slice(0, cut) });
+      out.push({ ...seg, quote: q2 || quote, tokens: tokens.slice(cut) });
+    }
+    ch.segments = out;
+  }
+
+  /***********************
+   * DATA（原文＋白話）
+   ***********************/
+  const CHAPTERS = [
+    {
+      id: 1,
+      name: "第一篇 始計篇",
+      segments: [
+        {
+          quote: "孫子曰：兵者，國之大事，死生之地，存亡之道，不可不察也。",
+          tokens: ["孫子曰","兵者","國之大事","死生之地","存亡之道","不可不察也"],
+          plain: "孫子說：打仗是國家最重大的事；它關係到生死存亡的關口與道路，不能不慎重考察。"
+        },
+        {
+          quote: "故經之以五事，校之以計，而索其情：一曰道，二曰天，三曰地，四曰將，五曰法。",
+          tokens: ["故經之以五事","校之以計","而索其情","一曰道","二曰天","三曰地","四曰將","五曰法"],
+          plain: "所以要用「五件大事」來衡量，再用各種計算去比對，查明真實情況：第一是道，第二是天，第三是地，第四是將，第五是法。"
+        },
+        {
+          quote: "道者，令民與上同意也，故可以與之死，可以與之生，而不畏危。",
+          tokens: ["道者","令民與上同意也","故可以與之死","可以與之生","而不畏危"],
+          plain: "所謂「道」，是讓百姓與統治者同心同德；因此可以同生共死，也不畏懼危險。"
+        },
+        {
+          quote: "天者，陰陽、寒暑、時制也。",
+          tokens: ["天者","陰陽","寒暑","時制也"],
+          plain: "所謂「天」，指陰陽變化、寒暑更迭與時令節奏。"
+        },
+        {
+          quote: "地者，遠近、險易、廣狹、死生也。",
+          tokens: ["地者","遠近","險易","廣狹","死生也"],
+          plain: "所謂「地」，指距離遠近、道路險易、地勢廣狹，以及利於生存或可能致命的條件。"
+        },
+        {
+          quote: "將者，智、信、仁、勇、嚴也。",
+          tokens: ["將者","智","信","仁","勇","嚴也"],
+          plain: "所謂「將」，就是統帥應具備：智慧、信用、仁愛、勇敢與嚴明。"
+        },
+        {
+          quote: "法者，曲制、官道、主用也。",
+          tokens: ["法者","曲制","官道","主用也"],
+          plain: "所謂「法」，是軍制編制、官員職責、後勤供給與資源運用等制度。"
+        },
+        {
+          quote: "凡此五者，將莫不聞，知之者勝，不知之者不勝。",
+          tokens: ["凡此五者","將莫不聞","知之者勝","不知之者不勝"],
+          plain: "這五項，將領沒有不聽過的；懂得並能用的就會勝，不懂的就不會勝。"
+        },
+        {
+          quote: "故校之以計，而索其情，曰：",
+          tokens: ["故校之以計","而索其情","曰"],
+          plain: "因此要用各種比較與計算來查清真相："
+        },
+        {
+          quote: "主孰有道？將孰有能？天地孰得？法令孰行？",
+          tokens: ["主孰有道","將孰有能","天地孰得","法令孰行"],
+          plain: "哪一方君主更得人心？哪一方將領更有才能？哪一方更得天時地利？哪一方法令更能落實？"
+        },
+        {
+          quote: "兵眾孰強？士卒孰練？賞罰孰明？吾以此知勝負矣。",
+          tokens: ["兵眾孰強","士卒孰練","賞罰孰明","吾以此知勝負矣"],
+          plain: "哪一方兵力更強？哪一方士卒更精訓？哪一方賞罰更分明？據此即可判斷勝負。"
+        },
+        {
+          quote: "將聽吾計，用之必勝，留之；將不聽吾計，用之必敗，去之。",
+          tokens: ["將聽吾計","用之必勝","留之","將不聽吾計","用之必敗","去之"],
+          plain: "若將領願意採納我的計策，照做必勝，就留用；若不採納，照做必敗，就不要用。"
+        },
+        {
+          quote: "計利以聽，乃為之勢，以佐其外。勢者，因利而制權也。",
+          tokens: ["計利以聽","乃為之勢","以佐其外","勢者","因利而制權也"],
+          plain: "評估計策可行有利後，就要創造形勢來支援外在行動；所謂「勢」，就是順著利益去掌握權變。"
+        },
+        {
+          quote: "兵者，詭道也。故能而示之不能，用而示之不用，近而示之遠，遠而示之近。",
+          tokens: ["兵者","詭道也","故能而示之不能","用而示之不用","近而示之遠","遠而示之近"],
+          plain: "用兵本質在於詭變：有能力卻示弱，準備用卻示不用；要打近處卻示遠處，要打遠處卻示近處。"
+        },
+        {
+          quote: "利而誘之，亂而取之，實而備之，強而避之。",
+          tokens: ["利而誘之","亂而取之","實而備之","強而避之"],
+          plain: "用利引誘敵人；敵亂則乘機奪取；敵軍充實則加以防備；敵軍強盛則先避其鋒芒。"
+        },
+        {
+          quote: "怒而撓之，卑而驕之，佚而勞之，親而離之。",
+          tokens: ["怒而撓之","卑而驕之","佚而勞之","親而離之"],
+          plain: "讓敵人動怒以擾亂他；示弱使他驕傲；敵安逸就讓他奔波疲勞；敵內部親近就設法離間。"
+        },
+        {
+          quote: "攻其無備，出其不意。此兵家之勝，不可先傳也。",
+          tokens: ["攻其無備","出其不意","此兵家之勝","不可先傳也"],
+          plain: "攻擊敵人沒有防備之處，出現在他意料之外；這是兵家致勝的要訣，無法事先固定傳授成一套死法。"
+        },
+        {
+          quote: "夫未戰而廟算勝者，得算多也；未戰而廟算不勝者，得算少也。",
+          tokens: ["夫未戰而廟算勝者","得算多也","未戰而廟算不勝者","得算少也"],
+          plain: "還沒開戰，在廟堂推算就判定能勝的，是因為勝算因素多；推算不勝的，是因為勝算因素少。"
+        },
+        {
+          quote: "多算勝，少算不勝，而況於無算乎？吾以此觀之，勝負見矣。",
+          tokens: ["多算勝","少算不勝","而況於無算乎","吾以此觀之","勝負見矣"],
+          plain: "勝算多就能勝，勝算少就不能勝；更何況完全不計算？我用這個道理來看，勝負就清楚了。"
+        }
+      ]
+    },
+  {
+  id: 2,
+  name: "第二篇 作戰篇",
+  segments: [
+    {
+      quote: "孫子曰：凡用兵之法：馳車千駟，革車千乘，帶甲十萬，千里饋糧，",
+      tokens: ["孫子曰","凡用兵之法","馳車千駟","革車千乘","帶甲十萬","千里饋糧"],
+      plain: "孫子說：凡是用兵作戰，大致的規模是動用大量戰車與兵力，並且要從千里之外運送糧草，這是一場極為龐大的國家行動。"
+    },
+    {
+      quote: "則內外之費，賓客之用，膠漆之材，車甲之奉，日費千金，然後十萬之師舉矣。",
+      tokens: ["則內外之費","賓客之用","膠漆之材","車甲之奉","日費千金","然後十萬之師舉矣"],
+      plain: "因此不論國內或前線，各種接待、物資、裝備與維修費用，每天都要耗費大量金錢，準備齊全後，大軍才能真正出動。"
+    },
+    {
+      quote: "其用戰也勝，久則鈍兵挫銳，攻城則力屈，久暴師則國用不足。",
+      tokens: ["其用戰也勝","久則鈍兵挫銳","攻城則力屈","久暴師則國用不足"],
+      plain: "即使作戰能夠取勝，但戰事一旦拖久，兵器會變鈍、士氣受挫；久攻城池會使戰力耗盡，軍隊長期在外，也會讓國家財用吃緊。"
+    },
+    {
+      quote: "夫鈍兵挫銳，屈力殫貨，則諸侯乘其弊而起，雖有智者，不能善其後矣。",
+      tokens: ["夫鈍兵挫銳","屈力殫貨","則諸侯乘其弊而起","雖有智者","不能善其後矣"],
+      plain: "當兵力疲弱、財力枯竭時，其他諸侯就會趁虛而入；即使再有智慧的人，也難以收拾後果。"
+    },
+    {
+      quote: "故兵聞拙速，未睹巧之久也。夫兵久而國利者，未之有也。",
+      tokens: ["故兵聞拙速","未睹巧之久也","夫兵久而國利者","未之有也"],
+      plain: "所以用兵只聽過行動迅速，即使不夠精巧，也沒聽過拖得長久還能有利的；戰爭一旦持久，國家從來不會因此得利。"
+    },
+    {
+      quote: "故不盡知用兵之害者，則不能盡知用兵之利也。",
+      tokens: ["故不盡知用兵之害者","則不能盡知用兵之利也"],
+      plain: "因此，如果不了解用兵帶來的傷害，就不可能真正懂得用兵所能帶來的好處。"
+    },
+    {
+      quote: "善用兵者，役不再籍，糧不三載。",
+      tokens: ["善用兵者","役不再籍","糧不三載"],
+      plain: "善於用兵的人，不會反覆徵調百姓，也不會多次從本國長途運送糧草。"
+    },
+    {
+      quote: "取用於國，因糧於敵，故軍食可足也。",
+      tokens: ["取用於國","因糧於敵","故軍食可足也"],
+      plain: "基本物資來自本國，但糧食盡量取自敵方，這樣軍隊的糧食供應才能充足。"
+    },
+    {
+      quote: "國之貧於師者遠輸，遠輸則百姓貧。",
+      tokens: ["國之貧於師者遠輸","遠輸則百姓貧"],
+      plain: "國家因為軍隊而貧困，多半是因為長途運輸；運輸距離一遠，百姓就會跟著變窮。"
+    },
+    {
+      quote: "近於師者貴賣，貴賣則百姓財竭，財竭則急於丘役。",
+      tokens: ["近於師者貴賣","貴賣則百姓財竭","財竭則急於丘役"],
+      plain: "靠近軍隊的地方物價會上漲，物價一高，百姓的財力就會被榨乾，最後被迫承擔沉重的勞役。"
+    },
+    {
+      quote: "力屈，財殫，中原內虛於家。百姓之費，十去其七。",
+      tokens: ["力屈","財殫","中原內虛於家","百姓之費","十去其七"],
+      plain: "當國力衰竭、財力耗盡時，國內家家戶戶都會變得空虛，百姓所付出的成本，往往十成去了七成。"
+    },
+    {
+      quote: "公家之費，破車罷馬，甲胄矢弩，戟楯蔽櫓，丘牛大車，十去其六。",
+      tokens: ["公家之費","破車罷馬","甲胄矢弩","戟楯蔽櫓","丘牛大車","十去其六"],
+      plain: "國家的支出同樣巨大，戰車損壞、馬匹疲敝、武器防具消耗殆盡，各項軍用物資大多損失過半。"
+    },
+    {
+      quote: "故智將務食於敵，食敵一鍾，當吾二十鍾，𦮼稈一石，當吾二十石。",
+      tokens: ["故智將務食於敵","食敵一鍾","當吾二十鍾","𦮼稈一石","當吾二十石"],
+      plain: "所以聰明的將領會設法取用敵人的糧食，吃敵方一份糧，等於省下自己二十份的消耗。"
+    },
+    {
+      quote: "故殺敵者，怒也；取敵之利者，貨也。",
+      tokens: ["故殺敵者","怒也","取敵之利者","貨也"],
+      plain: "能讓士兵奮力殺敵的是憤怒；能真正壯大軍隊實力的，是奪取敵人的物資。"
+    },
+    {
+      quote: "故車戰，得車十乘已上，賞其先得者，而更其旌旗。",
+      tokens: ["故車戰","得車十乘已上","賞其先得者","而更其旌旗"],
+      plain: "因此在戰車交戰中，若奪得多輛敵車，就要獎賞先奪得的人，並更換標誌，納為己用。"
+    },
+    {
+      quote: "車雜而乘之，卒善而養之，是謂勝敵而益強。",
+      tokens: ["車雜而乘之","卒善而養之","是謂勝敵而益強"],
+      plain: "把繳獲的戰車混編使用，善待俘獲的士兵，這樣才能在戰勝敵人的同時，使自己更加強大。"
+    },
+    {
+      quote: "故兵貴勝，不貴久。故知兵之將，生民之司命，國家安危之主也。",
+      tokens: ["故兵貴勝","不貴久","故知兵之將","生民之司命","國家安危之主也"],
+      plain: "所以用兵最重要的是迅速取勝，而不是拖久；真正懂兵的將領，掌握著百姓的性命，也是國家安危的關鍵人物。"
+    }
+  ]
+},
+
+
+    {
+  id: 3,
+  name: "第三篇 謀攻篇",
+  segments: [
+  {
+  quote: "孫子曰：凡用兵之法：全國為上，破國次之；全軍為上，破軍次之；",
+  tokens: [
+    "孫子曰",
+    "凡用兵之法",
+    "全國為上",
+    "破國次之",
+    "全軍為上",
+    "破軍次之"
+  ],
+  plain: "用兵的最高原則，是保全對方的國與軍，而不是急著破壞。"
+},
+{
+  quote: "全旅為上，破旅次之；全卒為上，破卒次之；全伍為上，破伍次之。",
+  tokens: [
+    "全旅為上",
+    "破旅次之",
+    "全卒為上",
+    "破卒次之",
+    "全伍為上",
+    "破伍次之"
+  ],
+  plain: "能完整掌控編制，就不要打散編制；層級越完整，代價越小。"
+},
+
+    {
+      quote: "是故百戰百勝，非善之善者也；不戰而屈人之兵，善之善者也。",
+      tokens: [
+        "百戰百勝",
+        "非善之善者",
+        "不戰而屈人之兵",
+        "善之善者"
+      ],
+      plain: "打很多仗、每一仗都贏，並不是最高明；不必開戰就讓對方屈服，才是真正的高明。"
+    },
+    {
+      quote: "故上兵伐謀，其次伐交，其次伐兵，其下攻城。",
+      tokens: [
+        "上兵伐謀",
+        "其次伐交",
+        "其次伐兵",
+        "其下攻城"
+      ],
+      plain: "最好的用兵方式，是先破壞對方的計畫；其次是破壞結盟；再來才是直接交戰；攻城是最下策。"
+    },
+    {
+      quote: "攻城之法，為不得已，修櫓轒轀，具器械，三月而後成；距閸，又三月而後已。",
+      tokens: [
+        "攻城之法",
+        "為不得已",
+        "修櫓轒轀",
+        "具器械",
+        "三月而後成",
+        "又三月而後已"
+      ],
+      plain: "攻城是萬不得已的選擇，光準備器械就要耗上半年，成本極高。"
+    },
+    {
+      quote: "將不勝其忿而蟻附之，殺士三分之一，而城不拔者，此攻之災也。",
+      tokens: [
+        "將不勝其忿",
+        "蟻附之",
+        "殺士三分之一",
+        "城不拔",
+        "此攻之災也"
+      ],
+      plain: "將領一時動怒，強攻城池，往往死傷慘重卻攻不下來，這就是攻城的災難。"
+    },
+    {
+      quote: "故善用兵者，屈人之兵而非戰也，拔人之城而非攻也，毀人之國而非久也。",
+      tokens: [
+        "善用兵者",
+        "屈人之兵而非戰",
+        "拔人之城而非攻",
+        "毀人之國而非久"
+      ],
+      plain: "真正善於用兵的人，是在不正面交戰、不長期消耗下，就解決對手。"
+    },
+    {
+      quote: "必以全爭於天下，故兵不頓而利可全，此謀攻之法也。",
+      tokens: [
+        "以全爭於天下",
+        "兵不頓",
+        "利可全",
+        "謀攻之法"
+      ],
+      plain: "追求的是完整的勝利，而不是慘勝；這就是謀略取勝的方法。"
+    },
+    {
+      quote: "故用兵之法：十則圍之，五則攻之，倍則分之，敵則能戰之，少則能逃之，不若則能避之。",
+      tokens: [
+        "十則圍之",
+        "五則攻之",
+        "倍則分之",
+        "敵則能戰之",
+        "少則能逃之",
+        "不若則能避之"
+      ],
+      plain: "兵力運用要有彈性，優勢就包圍，劣勢就避開，不是每一仗都要硬打。"
+    },
+    {
+      quote: "故小敵之堅，大敵之擒也。",
+      tokens: [
+        "小敵之堅",
+        "大敵之擒"
+      ],
+      plain: "弱小的一方若死撐不退，反而會被強敵完全吞掉。"
+    },
+    {
+      quote: "夫將者，國之輔也，輔周則國必強，輔隙則國必弱。",
+      tokens: [
+        "將者國之輔",
+        "輔周則國強",
+        "輔隙則國弱"
+      ],
+      plain: "將領是國家的支柱，支柱穩，國家就強；支柱裂，國家就弱。"
+    },
+    {
+      quote: "故君之所以患於軍者三：不知軍之不可以進，而謂之進；不知軍之不可以退，而謂之退，是謂縻軍。",
+      tokens: [
+        "君之患於軍者三",
+        "不可以進而謂之進",
+        "不可以退而謂之退",
+        "是謂縻軍"
+      ],
+      plain: "君主不懂軍情卻亂下命令，會把軍隊拖死。"
+    },
+    {
+      quote: "不知三軍之事，而同三軍之政者，則軍士惑矣。",
+      tokens: [
+        "不知三軍之事",
+        "同三軍之政",
+        "軍士惑矣"
+      ],
+      plain: "不懂軍事卻插手軍政，只會讓士兵無所適從。"
+    },
+    {
+      quote: "不知三軍之權，而同三軍之任，則軍士疑矣。",
+      tokens: [
+        "不知三軍之權",
+        "同三軍之任",
+        "軍士疑矣"
+      ],
+      plain: "不懂權變卻亂指揮，會讓整支部隊心生懷疑。"
+    },
+    {
+      quote: "三軍既惑且疑，則諸侯之難至矣，是謂亂軍引勝。",
+      tokens: [
+        "三軍既惑且疑",
+        "諸侯之難至",
+        "亂軍引勝"
+      ],
+      plain: "軍隊一亂，敵人就會上門，這是自招失敗。"
+    },
+    {
+      quote: "故知勝有五：知可以戰與不可以戰者勝；識眾寡之用者勝；上下同欲者勝；",
+      tokens: [
+        "知勝有五",
+        "可以戰與不可以戰",
+        "識眾寡之用",
+        "上下同欲"
+      ],
+      plain: "勝利的前提，在於判斷、配置與上下同心。"
+    },
+    {
+      quote: "以虞待不虞者勝；將能而君不御者勝。此五者，知勝之道也。",
+      tokens: [
+        "以虞待不虞",
+        "將能而君不御",
+        "知勝之道"
+      ],
+      plain: "能預備風險，又讓專業將領發揮，這就是勝利之道。"
+    },
+    {
+      quote: "故曰：知彼知己者，百戰不殆；不知彼而知己，一勝一負；不知彼，不知己，每戰必殆。",
+      tokens: [
+        "知彼知己",
+        "百戰不殆",
+        "不知彼而知己",
+        "一勝一負",
+        "不知彼不知己",
+        "每戰必殆"
+      ],
+      plain: "了解對方也了解自己，才站得穩；只懂自己或什麼都不懂，遲早會出事。"
+    }
+  ]
+},
+
+    {
+  id: 4,
+  name: "第四篇 形篇",
+  segments: [
+    {
+      quote: "孫子曰：昔之善戰者，先為不可勝，以待敵之可勝。",
+      tokens: ["孫子曰","昔之善戰者","先為不可勝","以待敵之可勝"],
+      plain: "過去真正善於作戰的人，會先讓自己立於不敗之地，再等待敵人露出可被擊敗的破綻。"
+    },
+    {
+      quote: "不可勝在己，可勝在敵。",
+      tokens: ["不可勝在己","可勝在敵"],
+      plain: "能不能不被打敗，取決於自己；能不能擊敗對方，取決於敵人是否犯錯。"
+    },
+    {
+      quote: "故善戰者，能為不可勝，不能使敵之可勝。",
+      tokens: ["善戰者","能為不可勝","不能使敵之可勝"],
+      plain: "善於作戰的人，只能確保自己不敗，卻不能強迫敵人一定會失誤。"
+    },
+    {
+      quote: "故曰：勝可知，而不可為。",
+      tokens: ["勝可知","而不可為"],
+      plain: "勝敗可以判斷，但不能強行製造。"
+    },
+    {
+      quote: "不可勝者，守也；可勝者，攻也。守則不足，攻則有餘。",
+      tokens: ["不可勝者守也","可勝者攻也","守則不足","攻則有餘"],
+      plain: "防守是為了不敗，進攻才有可能取得多餘的勝利。"
+    },
+    {
+      quote: "善守者，藏於九地之下；善攻者，動於九天之上，故能自保而全勝也。",
+      tokens: ["善守者","藏於九地之下","善攻者","動於九天之上","自保而全勝"],
+      plain: "真正會防守的人深藏不露，真正會進攻的人出手如雷，因此既能自保，又能徹底取勝。"
+    },
+    {
+      quote: "見勝不過眾人之所知，非善之善者也；戰勝而天下曰善，非善之善者也。",
+      tokens: ["見勝不過眾人所知","非善之善","戰勝而天下曰善","非善之善"],
+      plain: "人人看得出的勝利，或打完才被稱讚的勝利，都不是最高明的境界。"
+    },
+    {
+      quote: "故舉秋毫不為多力，見日月不為明目，聞雷霆不為聰耳。",
+      tokens: ["舉秋毫不為多力","見日月不為明目","聞雷霆不為聰耳"],
+      plain: "真正的高手，不會把明顯的事當成本事。"
+    },
+    {
+      quote: "古之所謂善戰者，勝於易勝者也。",
+      tokens: ["善戰者","勝於易勝者"],
+      plain: "真正善於作戰的人，只選擇必勝、容易勝的仗來打。"
+    },
+    {
+      quote: "故善戰者之勝也，無智名，無勇功。",
+      tokens: ["善戰者之勝","無智名","無勇功"],
+      plain: "最高明的勝利，往往沒有耀眼的名聲或英雄事蹟。"
+    },
+    {
+      quote: "故其戰勝不忒，不忒者，其所措必勝，勝已敗者也。",
+      tokens: ["戰勝不忒","所措必勝","勝已敗者"],
+      plain: "因為部署精準，所以一定能贏，勝利在交戰前就已經確定。"
+    },
+    {
+      quote: "故善戰者，立於不敗之地，而不失敵之敗也。",
+      tokens: ["立於不敗之地","不失敵之敗"],
+      plain: "先站穩不敗的位置，再把握敵人失敗的時機。"
+    },
+    {
+      quote: "是故勝兵先勝而後求戰，敗兵先戰而後求勝。",
+      tokens: ["勝兵先勝後戰","敗兵先戰後勝"],
+      plain: "能贏的軍隊，是先確定會贏才開打；會輸的軍隊，是先打了再祈求勝利。"
+    },
+    {
+      quote: "善用兵者，修道而保法，故能為勝敗之政。",
+      tokens: ["善用兵者","修道而保法","勝敗之政"],
+      plain: "真正會用兵的人，會把原則與制度先做好，勝敗自然能被掌握。"
+    },
+    {
+      quote: "兵法：一曰度，二曰量，三曰數，四曰稱，五曰勝。",
+      tokens: ["兵法","度","量","數","稱","勝"],
+      plain: "兵法的核心，是一連串精準的衡量與計算。"
+    },
+    {
+      quote: "地生度，度生量，量生數，數生稱，稱生勝。",
+      tokens: ["地生度","度生量","量生數","數生稱","稱生勝"],
+      plain: "從地形開始衡量，一步步推算，最後自然得出勝負。"
+    },
+    {
+      quote: "故勝兵若以鎰稱銖，敗兵若以銖稱鎰。",
+      tokens: ["勝兵若以鎰稱銖","敗兵若以銖稱鎰"],
+      plain: "能勝的軍隊，優勢大到像用重錘秤輕物；會敗的軍隊，卻反其道而行。"
+    },
+    {
+      quote: "勝者之戰民也，若決積水於千仞之溪者，形也。",
+      tokens: ["勝者之戰民","決積水於千仞之溪","形也"],
+      plain: "勝利的軍隊出手時，如同高處放水，一發不可阻擋，這就是「形」。"
+    }
+  ]
+},
+
+   {
+  id: 5,
+  name: "第五篇 勢篇",
+  segments: [
+    {
+      quote: "孫子曰：凡治眾如治寡，分數是也；鬥眾如鬥寡，形名是也；",
+      tokens: ["孫子曰","凡治眾如治寡","分數是也","鬥眾如鬥寡","形名是也"],
+      plain: "孫子說：管理大軍如同管理小隊，關鍵在於分工編制清楚；指揮多兵如同指揮少兵，關鍵在於隊形與號令名目清楚。"
+    },
+    {
+      quote: "三軍之眾，可使必受敵而無敗者，奇正是也；兵之所加，如以瑕投卵者，虛實是也。",
+      tokens: ["三軍之眾","可使必受敵而無敗者","奇正是也","兵之所加","如以瑕投卵者","虛實是也"],
+      plain: "要讓全軍迎敵而不敗，靠的是「奇兵、正兵」的配合；出兵能像石頭砸雞蛋一樣輕易奏效，靠的是抓準敵人的「虛實」。"
+    },
+    {
+      quote: "凡戰者，以正合，以奇勝。",
+      tokens: ["凡戰者","以正合","以奇勝"],
+      plain: "作戰要用正兵牽制對手，用奇兵取得勝利。"
+    },
+    {
+      quote: "故善出奇者，無窮如天地，不竭如江河。",
+      tokens: ["故善出奇者","無窮如天地","不竭如江河"],
+      plain: "善於出奇制勝的人，變化像天地一樣無窮，像江河一樣不竭。"
+    },
+    {
+      quote: "終而復始，日月是也；死而更生，四時是也。",
+      tokens: ["終而復始","日月是也","死而更生","四時是也"],
+      plain: "變化周而復始，如日月往復；舊局消退、新局再生，如四季更替。"
+    },
+    {
+      quote: "聲不過五，五聲之變，不可勝聽也；",
+      tokens: ["聲不過五","五聲之變","不可勝聽也"],
+      plain: "聲音基本只有五音，但組合變化多到聽不完。"
+    },
+    {
+      quote: "色不過五，五色之變，不可勝觀也；",
+      tokens: ["色不過五","五色之變","不可勝觀也"],
+      plain: "顏色基本只有五色，但變化多到看不完。"
+    },
+    {
+      quote: "味不過五，五味之變，不可勝嘗也。",
+      tokens: ["味不過五","五味之變","不可勝嘗也"],
+      plain: "味道基本只有五味，但變化多到嘗不盡。"
+    },
+    {
+      quote: "戰勢不過奇正，奇正之變，不可勝窮也。",
+      tokens: ["戰勢不過奇正","奇正之變","不可勝窮也"],
+      plain: "戰場的勢只有「奇、正」兩大類，但奇正互換的變化無窮無盡。"
+    },
+    {
+      quote: "奇正相生，如環之無端，孰能窮之？",
+      tokens: ["奇正相生","如環之無端","孰能窮之"],
+      plain: "奇與正互相生成，像圓環沒有起點終點，誰能把它用盡？"
+    },
+    {
+      quote: "激水之疾，至於漂石者，勢也；鷙鳥之疾，至於毀折者，節也。",
+      tokens: ["激水之疾","至於漂石者","勢也","鷙鳥之疾","至於毀折者","節也"],
+      plain: "急流快到能漂石，是「勢」；猛禽俯衝快到能折物，是「節」（出手的節點與爆發）。"
+    },
+    {
+      quote: "是故善戰者，其勢險，其節短。",
+      tokens: ["是故善戰者","其勢險","其節短"],
+      plain: "所以善戰的人，蓄勢深而危峻，出手的節點短促而俐落。"
+    },
+    {
+      quote: "勢如礦弩，節如發機。",
+      tokens: ["勢如礦弩","節如發機"],
+      plain: "勢像強弩上弦蓄力；節像扣機一放立刻發射。"
+    },
+    {
+      quote: "紛紛紜紜，鬥亂而不可亂也；渾渾沌沌，形圓而不可敗也。",
+      tokens: ["紛紛紜紜","鬥亂而不可亂也","渾渾沌沌","形圓而不可敗也"],
+      plain: "表面看似混戰紛亂，內部其實不亂；外形看似混沌圓融，反而不易被擊破。"
+    },
+    {
+      quote: "亂生於治，怯生於勇，弱生於強。",
+      tokens: ["亂生於治","怯生於勇","弱生於強"],
+      plain: "混亂可能從過度整齊中產生；膽怯可能從逞勇中產生；弱點往往出現在自認最強的地方。"
+    },
+    {
+      quote: "治亂，數也；勇怯，勢也；強弱，形也。",
+      tokens: ["治亂","數也","勇怯","勢也","強弱","形也"],
+      plain: "秩序與混亂看編制與調度；勇與怯看氣勢；強與弱看形勢與布局。"
+    },
+    {
+      quote: "故善動敵者，形之，敵必從之；予之，敵必取之。",
+      tokens: ["故善動敵者","形之","敵必從之","予之","敵必取之"],
+      plain: "善於牽動敵人的人：做出形勢，敵人就會跟著動；給出誘因，敵人就會去拿。"
+    },
+    {
+      quote: "以利動之，以卒待之。",
+      tokens: ["以利動之","以卒待之"],
+      plain: "用利益引他出動，再用主力兵卒守株待兔、趁勢收割。"
+    },
+    {
+      quote: "故善戰者，求之於勢，不責於人，故能擇人而任勢。",
+      tokens: ["故善戰者","求之於勢","不責於人","故能擇人而任勢"],
+      plain: "善戰的人追求的是形勢到位，不苛責個人硬扛；因此能選對人，並讓人順勢而為。"
+    },
+    {
+      quote: "任勢者，其戰人也，如轉木石。",
+      tokens: ["任勢者","其戰人也","如轉木石"],
+      plain: "懂得任勢的人用兵，就像推動木石一樣自然省力。"
+    },
+    {
+      quote: "木石之性：安則靜，危則動，方則止，圓則行。",
+      tokens: ["木石之性","安則靜","危則動","方則止","圓則行"],
+      plain: "木石的性質：放平就靜，置危就動；方的會停，圓的會滾。"
+    },
+    {
+      quote: "故善戰人之勢，如轉圓石於千仞之山者，勢也。",
+      tokens: ["故善戰人之勢","如轉圓石於千仞之山者","勢也"],
+      plain: "所以最高明的用勢，就像讓圓石從高山滾下，一發不可阻擋，這就是「勢」。"
+    }
+  ]
+},
+
+
+    {
+  id: 6,
+  name: "第六篇 虛實篇",
+  segments: [
+    {
+      quote: "孫子曰：凡先處戰地而待敵者佚，後處戰地而趨戰者勞。",
+      tokens: ["孫子曰", "凡先處戰地而待敵者佚", "後處戰地而趨戰者勞"],
+      plain: "先到戰場、從容等待的軍隊較輕鬆；被迫趕赴戰場的軍隊必然疲累。"
+    },
+    {
+      quote: "故善戰者，致人而不致於人。",
+      tokens: ["故善戰者", "致人而不致於人"],
+      plain: "高明的將領能主導敵人行動，而不被敵人牽著走。"
+    },
+    {
+      quote: "能使敵人自至者，利之也；能使敵人不得至者，害之也。",
+      tokens: ["能使敵人自至者", "利之也", "能使敵人不得至者", "害之也"],
+      plain: "用利益引誘敵人出動；用損害阻斷敵人行動。"
+    },
+    {
+      quote: "故敵佚能勞之，飽能饑之，安能動之。",
+      tokens: ["故敵佚能勞之", "飽能饑之", "安能動之"],
+      plain: "讓安逸的敵人疲勞、讓飽足的敵人挨餓、讓安定的敵人被迫行動。"
+    },
+    {
+      quote: "出其所不趨，趨其所不意。",
+      tokens: ["出其所不趨", "趨其所不意"],
+      plain: "避開敵人預期的路線，攻向敵人沒想到的地方。"
+    },
+    {
+      quote: "行千里而不勞者，行於無人之地也。",
+      tokens: ["行千里而不勞者", "行於無人之地也"],
+      plain: "能長途行軍而不疲累，是因為走的是敵人未設防的地方。"
+    },
+    {
+      quote: "攻而必取者，攻其所不守也；守而必固者，守其所不攻也。",
+      tokens: ["攻而必取者", "攻其所不守也", "守而必固者", "守其所不攻也"],
+      plain: "進攻一定成功，是因為打在敵人沒防守處；防守一定穩固，是因為守在敵人不會攻之處。"
+    },
+    {
+      quote: "故善攻者，敵不知其所守；善守者，敵不知其所攻。",
+      tokens: ["故善攻者", "敵不知其所守", "善守者", "敵不知其所攻"],
+      plain: "真正高明的攻與守，會讓敵人完全摸不清方向。"
+    },
+    {
+      quote: "微乎微乎，至於無形；神乎神乎，至於無聲。",
+      tokens: ["微乎微乎", "至於無形", "神乎神乎", "至於無聲"],
+      plain: "行動隱密到沒有形跡，變化神妙到沒有聲息。"
+    },
+    {
+      quote: "故能為敵之司命。",
+      tokens: ["故能為敵之司命"],
+      plain: "因此能掌控敵人的生死命運。"
+    },
+    {
+      quote: "進而不可禦者，衝其虛也；退而不可追者，速而不可及也。",
+      tokens: ["進而不可禦者", "衝其虛也", "退而不可追者", "速而不可及也"],
+      plain: "進攻無法阻擋，是因為打在敵人空虛處；撤退無法追擊，是因為行動太快。"
+    },
+    {
+      quote: "故我欲戰，敵雖高壘深溝，不得不與我戰者，攻其所必救也；",
+      tokens: ["故我欲戰", "敵雖高壘深溝", "不得不與我戰者", "攻其所必救也"],
+      plain: "想逼敵人交戰，就攻擊他非救不可的地方。"
+    },
+    {
+      quote: "我不欲戰，畫地而守之，敵不得與我戰者，乖其所之也。",
+      tokens: ["我不欲戰", "畫地而守之", "敵不得與我戰者", "乖其所之也"],
+      plain: "不想交戰時，就讓敵人無法對上你的方向與節奏。"
+    },
+    {
+      quote: "故形人而我無形，則我專而敵分。",
+      tokens: ["故形人而我無形", "則我專而敵分"],
+      plain: "讓敵人暴露形勢，而自己保持隱形，就能集中力量、迫使敵人分散。"
+    },
+    {
+      quote: "我專為一，敵分為十，是以十攻其一也，則我眾而敵寡。",
+      tokens: ["我專為一", "敵分為十", "是以十攻其一也", "則我眾而敵寡"],
+      plain: "集中打分散，就能以多擊少，取得局部優勢。"
+    },
+    {
+      quote: "能以眾擊寡者，則吾之所與戰者，約矣。",
+      tokens: ["能以眾擊寡者", "則吾之所與戰者", "約矣"],
+      plain: "只要掌握集中優勢，戰場就會變得單純、好處理。"
+    },
+    {
+      quote: "吾所與戰之地不可知，不可知，則敵所備者多；敵所備者多，則吾所與戰者，寡矣。",
+      tokens: ["吾所與戰之地不可知", "不可知", "則敵所備者多", "敵所備者多", "則吾所與戰者", "寡矣"],
+      plain: "讓敵人無法預測戰場，他就得全面防備；一全面防備就必然分散。"
+    },
+    {
+      quote: "故備前則後寡，備後則前寡；備左則右寡，備右則左寡。",
+      tokens: ["故備前則後寡", "備後則前寡", "備左則右寡", "備右則左寡"],
+      plain: "防守越全面，力量就越被切碎。"
+    },
+    {
+      quote: "無所不備，則無所不寡。",
+      tokens: ["無所不備", "則無所不寡"],
+      plain: "想全部防守，結果就是哪裡都薄弱。"
+    },
+    {
+      quote: "寡者，備人者也；眾者，使人備己者也。",
+      tokens: ["寡者", "備人者也", "眾者", "使人備己者也"],
+      plain: "被迫處處防守的人會變少；逼別人處處防守的人反而會變多。"
+    },
+    {
+      quote: "故知戰之地，知戰之日，則可千里而會戰。",
+      tokens: ["故知戰之地", "知戰之日", "則可千里而會戰"],
+      plain: "掌握時間與地點，就能長途奔襲而有效會戰。"
+    },
+    {
+      quote: "不知戰地，不知戰日，則左不能救右，右不能救左，前不能救後，後不能救前。",
+      tokens: ["不知戰地", "不知戰日", "則左不能救右", "右不能救左", "前不能救後", "後不能救前"],
+      plain: "若資訊混亂，部隊就會彼此無法支援。"
+    },
+    {
+      quote: "而況遠者數十里，近者數里乎？",
+      tokens: ["而況遠者數十里", "近者數里乎"],
+      plain: "距離越遠，失援的問題就越嚴重。"
+    },
+    {
+      quote: "以吾度之，越人之兵雖多，亦奚益於勝敗哉？",
+      tokens: ["以吾度之", "越人之兵雖多", "亦奚益於勝敗哉"],
+      plain: "兵多但無法發揮，其實對勝敗沒有幫助。"
+    },
+    {
+      quote: "故曰：勝可為也，敵雖眾，可使無鬥。",
+      tokens: ["故曰", "勝可為也", "敵雖眾", "可使無鬥"],
+      plain: "勝利是可以設計的；即使敵人再多，也能讓他們打不起來。"
+    },
+    {
+      quote: "故策之而知得失之計，作之而知動靜之理，形之而知死生之地，角之而知有餘不足之處。",
+      tokens: ["故策之而知得失之計", "作之而知動靜之理", "形之而知死生之地", "角之而知有餘不足之處"],
+      plain: "透過試探、行動與交鋒，摸清敵我得失、動靜、地勢與強弱。"
+    },
+    {
+      quote: "故形兵之極，至於無形；無形，則深間不能窺，智者不能謀。",
+      tokens: ["故形兵之極", "至於無形", "無形", "則深間不能窺", "智者不能謀"],
+      plain: "最高境界是讓敵人完全無從判斷：間諜看不出、智者也無法設謀。"
+    },
+    {
+      quote: "因形而錯勝於眾，眾不能知。",
+      tokens: ["因形而錯勝於眾", "眾不能知"],
+      plain: "順應形勢取勝，但不讓敵人看懂關鍵。"
+    },
+    {
+      quote: "人皆知我所以勝之形，而莫知吾所以致勝之形。",
+      tokens: ["人皆知我所以勝之形", "而莫知吾所以致勝之形"],
+      plain: "人人看到我怎麼贏，卻不知道我怎麼把勝利「做出來」。"
+    },
+    {
+      quote: "故其戰勝不復，而應形於無窮。",
+      tokens: ["故其戰勝不復", "而應形於無窮"],
+      plain: "每次勝利都不重複，隨形而變，無窮無盡。"
+    },
+    {
+      quote: "夫兵形像水，水之形，避高而趨下，兵之形，避實而擊虛。",
+      tokens: ["夫兵形像水", "水之形", "避高而趨下", "兵之形", "避實而擊虛"],
+      plain: "用兵像水：水避高就下；兵避實擊虛。"
+    },
+    {
+      quote: "水因地而制流，兵因敵而致勝。",
+      tokens: ["水因地而制流", "兵因敵而致勝"],
+      plain: "水順地勢而流；兵依敵情而勝。"
+    },
+    {
+      quote: "故兵無常勢，水無常形，能因敵變化而取勝者，謂之神。",
+      tokens: ["故兵無常勢", "水無常形", "能因敵變化而取勝者", "謂之神"],
+      plain: "沒有固定打法；能隨敵而變並取勝者，才稱得上神妙。"
+    },
+    {
+      quote: "故五行無常勝，四時無常位，日有短長，月有死生。",
+      tokens: ["故五行無常勝", "四時無常位", "日有短長", "月有死生"],
+      plain: "天地萬物皆在變化：五行、四時、日月都如此，用兵更必然如此。"
+    }
+  ]
+},
+
+
+    {
+  id: 7,
+  name: "第七篇 軍爭篇",
+  segments: [
+    {
+      quote: "孫子曰：凡用兵之法，將受命於君，合軍聚眾，交和而舍，其難於軍爭。",
+      tokens: ["孫子曰","凡用兵之法","將受命於君","合軍聚眾","交和而舍","其難於軍爭"],
+      plain: "孫子說：凡用兵的常法，是將領接受君命，集合軍隊、聚合人眾，與友軍協調而後安營。然其中最艱難者，在於「軍爭」：與敵爭先、爭利、爭勢之事。"
+    },
+    {
+      quote: "軍爭之難者，以迂為直，以患為利。",
+      tokens: ["軍爭之難者","以迂為直","以患為利"],
+      plain: "軍爭的困難，在於能將迂遠之路轉為捷徑，並將危患之處轉化為可用之利。此非徒憑勇氣可得，必有謀算與權變。"
+    },
+    {
+      quote: "故迂其途，而誘之以利，後人發，先人至，此知迂直之計者也。",
+      tokens: ["故迂其途","而誘之以利","後人發","先人至","此知迂直之計者也"],
+      plain: "所以可故意繞遠其途，並以利益引誘敵人，使敵先動而我後發。待其為利所牽、形勢已露，我方反能先至要地。這便是懂得「迂直之計」之人。"
+    },
+    {
+      quote: "故軍爭為利，軍爭為危。",
+      tokens: ["故軍爭為利","軍爭為危"],
+      plain: "因此，軍爭一方面能帶來利益，另一方面也伴隨高度風險。其成敗常繫於時機與取捨。"
+    },
+    {
+      quote: "舉軍而爭利，則不及；委軍而爭利，則輜重捐。",
+      tokens: ["舉軍而爭利","則不及","委軍而爭利","則輜重捐"],
+      plain: "若全軍攜輜重而爭利，行動遲緩，多半趕不上時機。若拋下部隊與輜重而爭利，又將失其後勤依憑。是以軍爭之利，往往與軍之承載相衝。"
+    },
+    {
+      quote: "是故卷甲而趨，日夜不處，倍道兼行，百里而爭利，則擒三軍將。",
+      tokens: ["是故卷甲而趨","日夜不處","倍道兼行","百里而爭利","則擒三軍將"],
+      plain: "因此若披甲疾趨，日夜不止，倍道兼行。若奔行百里以爭利，將帥多陷於危困，甚至有被擒之患。其因在於人馬疲敝、行伍離散而難自固。"
+    },
+    {
+      quote: "勁者先，疲者後，其法十一而至。",
+      tokens: ["勁者先","疲者後","其法十一而至"],
+      plain: "強健者先到，疲弱者落後，按其常勢，能到者僅十分之一。此言急行之下，部隊必然分裂，戰力難以成體。"
+    },
+    {
+      quote: "五十里而爭利，則蹶上將軍，其法半至。",
+      tokens: ["五十里而爭利","則蹶上將軍","其法半至"],
+      plain: "若奔行五十里以爭利，前鋒主將往往受挫，能到者約半。此示爭利之行，仍足以損其鋒銳與統御。"
+    },
+    {
+      quote: "三十里而爭利，則三分之二至。",
+      tokens: ["三十里而爭利","則三分之二至"],
+      plain: "若奔行三十里以爭利，能到者亦僅三分之二。即便路程較短，仍難免疲乏與掉隊。"
+    },
+    {
+      quote: "是故軍無輜重則亡，無糧食則亡，無委積則亡。",
+      tokens: ["是故軍無輜重則亡","無糧食則亡","無委積則亡"],
+      plain: "所以軍隊沒有輜重補給便難以存續，沒有糧食則必敗亡，沒有積蓄儲備亦同。用兵之本，在於供給與續戰之力，不可偏廢。"
+    },
+    {
+      quote: "故不知諸侯之謀者，不能豫交。",
+      tokens: ["故不知諸侯之謀者","不能豫交"],
+      plain: "因此，不了解諸侯各方的謀略與意圖，便不能預先結交與應對。外交與情報，亦屬用兵之要。"
+    },
+    {
+      quote: "不知山林、險阻、沮澤之形者，不能行軍。",
+      tokens: ["不知山林、險阻、沮澤之形者","不能行軍"],
+      plain: "不熟悉山林、險阻、沼澤等地形形勢者，便無法行軍布陣。地形不明，則進退失據，補給亦難繼。"
+    },
+    {
+      quote: "不用鄉導者，不能得地利。",
+      tokens: ["不用鄉導者","不能得地利"],
+      plain: "不用在地嚮導者，便不能取得地利。對路徑、關隘、水澤與民情之掌握，常賴熟地之人以成其功。"
+    },
+    {
+      quote: "故兵以詐立，以利動，以分合為變者也。",
+      tokens: ["故兵以詐立","以利動","以分合為變者也"],
+      plain: "所以用兵以詐立基，以利益推動行動，並以分散與合聚為其變化之常。此乃軍爭中運用權謀與機動之總綱。"
+    },
+    {
+      quote: "故其疾如風，其徐如林，侵掠如火，不動如山。",
+      tokens: ["故其疾如風","其徐如林","侵掠如火","不動如山"],
+      plain: "因此其行動迅疾時如風，徐緩整肅時如林；侵掠攻擊時如火，固守不動時如山。此述軍隊運動與氣勢之宜變，貴在得其時而用其勢。"
+    },
+    {
+      quote: "難知如陰，動如雷震。",
+      tokens: ["難知如陰","動如雷震"],
+      plain: "其深藏難測時如陰影不可見，一旦行動則如雷霆震動。此強調隱顯之機，貴在出其不意而制勝。"
+    },
+    {
+      quote: "掠鄉分眾，廓地分利，懸權而動。",
+      tokens: ["掠鄉分眾","廓地分利","懸權而動"],
+      plain: "掠取鄉邑之資後分配兵眾，開拓土地後分配利益，並衡量權變而後行動。此言軍爭之中，須能調度人力、安置利分，以維軍心與效率。"
+    },
+    {
+      quote: "先知迂直之計者勝，此軍爭之法也。",
+      tokens: ["先知迂直之計者勝","此軍爭之法也"],
+      plain: "能先明白迂直之計、並善於運用者，方能取勝。此即軍爭之法：以謀算奪先，以權變成勢。"
+    },
+    {
+      quote: "《軍政》曰：「言不相聞，故為之金鼓；視不相見，故為之旌旗。」",
+      tokens: ["《軍政》曰","「言不相聞","故為之金鼓","視不相見","故為之旌旗"],
+      plain: "《軍政》說：言語傳不相聞，便設金鼓以傳令；視線不能相見，便立旌旗以示指揮。此為統一眾人耳目之具，用以貫徹命令。"
+    },
+    {
+      quote: "夫金鼓旌旗者，所以一人之耳目也。",
+      tokens: ["夫金鼓旌旗者","所以一人之耳目也"],
+      plain: "金鼓與旌旗，是用來統一眾人的耳目，使其所聞所見歸於同一指令。若耳目不一，則群眾難以同進同止。"
+    },
+    {
+      quote: "人既專一，則勇者不得獨進，怯者不得獨退，此用眾之法也。",
+      tokens: ["人既專一","則勇者不得獨進","怯者不得獨退","此用眾之法也"],
+      plain: "眾人耳目既然專一，勇者便不能擅自前進，怯者也不能私自後退。如此方能使隊伍行止一致，達成用眾之法。"
+    },
+    {
+      quote: "故夜戰多火鼓，畫戰多旌旗，所以變人之耳目也。",
+      tokens: ["故夜戰多火鼓","畫戰多旌旗","所以變人之耳目也"],
+      plain: "因此夜戰多用火與鼓，白日作戰多用旌旗。其目的在於依環境變化而調整眾人的耳目，使指揮能被確實接收。"
+    },
+    {
+      quote: "故三軍可奪氣，將軍可奪心。",
+      tokens: ["故三軍可奪氣","將軍可奪心"],
+      plain: "所以三軍之氣勢可以被奪，將軍之決心亦可被奪。用兵之要，不唯在形勢，更在於氣與心的掌握。"
+    },
+    {
+      quote: "是故朝氣銳，晝氣惰，暮氣歸。",
+      tokens: ["是故朝氣銳","晝氣惰","暮氣歸"],
+      plain: "因此早晨氣勢最銳，中午氣勢轉惰，傍晚則歸於收斂。此言氣勢隨時而變，用兵者須審其時勢而應之。"
+    },
+    {
+      quote: "故善用兵者，避其銳氣，擊其惰歸，此治氣者也。",
+      tokens: ["故善用兵者","避其銳氣","擊其惰歸","此治氣者也"],
+      plain: "善於用兵的人，會避開敵方銳氣之時，轉而攻擊其惰弱回歸之際。此即治氣：不與其盛相抗，而取其衰以制勝。"
+    },
+    {
+      quote: "以治待亂，以靜待嘩，此治心者也；以近待遠，以佚待勞，以飽待饑，此治力者也。",
+      tokens: ["以治待亂","以靜待嘩","此治心者也","以近待遠","以佚待勞","以飽待饑","此治力者也"],
+      plain: "以有序對無序，以沉靜對喧嘩，是治心之法；以近對遠，以安佚對疲勞，以飽足對飢乏，是治力之法。其旨在於以己之整、靜、便、足，制敵之亂、躁、遠、乏。"
+    },
+    {
+      quote: "無邀正正之旗，勿擊堂堂之陳，此治變者也。",
+      tokens: ["無邀正正之旗","勿擊堂堂之陳","此治變者也"],
+      plain: "不要挑戰旗幟整肅、陣勢端正之敵，不要攻擊堂堂正正、氣勢完備之陣。此為治變之法：審勢而避其不可勝，待其可勝而後動。"
+    },
+    {
+  id: "C07-08",
+  quote: "故用兵之法：高陵勿向，背丘勿逆，",
+  tokens: ["故用兵之法", "高陵勿向", "背丘勿逆"],
+  plain: "因此用兵的基本原則是：面對高地不可正向強攻，背靠丘陵的敵軍不可逆勢迎擊；皆是在避免自陷不利地形。"
+},
+{
+  id: "C07-09",
+  quote: "佯北勿從，銳卒勿攻，",
+  tokens: ["佯北勿從", "銳卒勿攻"],
+  plain: "敵軍假裝敗退不可追擊，精銳之卒不可正面硬攻；此皆防止落入誘敵之計或正中其鋒。"
+},
+{
+  id: "C07-10",
+  quote: "餌兵勿食，歸師勿遏，圍師必闕，",
+  tokens: ["餌兵勿食", "歸師勿遏", "圍師必闕"],
+  plain: "敵所設之誘兵不可貪取，撤退之敵不可強行阻斷；包圍敵軍時必須留有生路，以防其死戰反噬。"
+},
+{
+  id: "C07-11",
+  quote: "窮寇勿迫。此用兵之法也。",
+  tokens: ["窮寇勿迫", "此用兵之法也"],
+  plain: "走投無路的敵軍不可逼迫；以上各項，皆為用兵時必須遵守的通則。"
+  }
+  ]
+},
+
+
+
+    {
+  id: 8,
+  name: "第八篇 九變篇",
+  segments: [
+    {
+      id: "W8-01",
+      quote: "孫子曰：凡用兵之法，將受命於君，合軍聚眾。",
+      tokens: ["孫子曰","凡用兵之法","將受命於君","合軍聚眾"],
+      plain: "孫子說：用兵的一般原則，是將領接受君主命令後，統合兵力、集結軍隊。這是一切軍事行動的起點。"
+    },
+    {
+      id: "W8-02",
+      quote: "圮地無舍，衢地交合，絕地無留。",
+      tokens: ["圮地無舍","衢地交合","絕地無留"],
+      plain: "在不同地形下，行軍方式不可一概而論。地勢破敗不宜久留，要道交會需謹慎協調，孤絕之地不可停滯不前。"
+    },
+    {
+      id: "W8-03",
+      quote: "圍地則謀，死地則戰。",
+      tokens: ["圍地則謀","死地則戰"],
+      plain: "身處包圍之地，應以謀略求生；陷入死地，則唯有決戰。形勢不同，應對手段也必須不同。"
+    },
+    {
+      id: "W8-04",
+      quote: "塗有所不由，軍有所不擊，城有所不攻，地有所不爭。",
+      tokens: ["塗有所不由","軍有所不擊","城有所不攻","地有所不爭"],
+      plain: "行軍之路並非必走，敵軍並非必擊，城池並非必攻，土地也未必一定要爭。懂得取捨，才能保存實力。"
+    },
+    {
+      id: "W8-05",
+      quote: "君命有所不受。",
+      tokens: ["君命有所不受"],
+      plain: "有些情況下，即使是君主的命令，也不可照單全收。將領必須依實際情勢判斷，才能避免全軍陷於危局。"
+    },
+    {
+      id: "W8-06",
+      quote: "故將通於九變之利者，知用兵矣。",
+      tokens: ["將通於九變之利者","知用兵矣"],
+      plain: "因此，能通曉各種變化與權衡之利的將領，才算真正懂得用兵之道。"
+    },
+    {
+      id: "W8-07",
+      quote: "將不通於九變之利者，雖知地形，不能得地之利矣。",
+      tokens: ["將不通於九變之利者","雖知地形","不能得地之利矣"],
+      plain: "若不懂得靈活變通，即使熟知地形，也無法真正發揮地形帶來的優勢。"
+    },
+    {
+      id: "W8-08",
+      quote: "治兵不知九變之術，雖知五利，不能得人之用矣。",
+      tokens: ["治兵不知九變之術","雖知五利","不能得人之用矣"],
+      plain: "治軍若不明白變通之術，即使知道各種有利條件，也無法善用士卒的人力。"
+    },
+    {
+      id: "W8-09",
+      quote: "是故智者之慮，必雜於利害。",
+      tokens: ["智者之慮","必雜於利害"],
+      plain: "因此，有智慧的人在思考時，必定同時考量利益與風險，而不偏向單一面向。"
+    },
+    {
+      id: "W8-10",
+      quote: "雜於利，而務可信也；",
+      tokens: ["雜於利","務可信也"],
+      plain: "在有利的情況中，也要考慮是否能夠長久信賴，以免因貪利而誤判。"
+    },
+    {
+      id: "W8-11",
+      quote: "雜於害，而患可解也。",
+      tokens: ["雜於害","患可解也"],
+      plain: "在不利之中，也要尋找轉圜的可能，如此才能化解危害，而不致陷入絕境。"
+    },
+    {
+      id: "W8-12",
+      quote: "是故屈諸侯者以害，役諸侯者以業，趨諸侯者以利。",
+      tokens: ["屈諸侯者以害","役諸侯者以業","趨諸侯者以利"],
+      plain: "因此，制約諸侯可利用其害處，使其為己效力可藉由事務，引導其行動則可用利益。這正是權衡利害的運用。"
+    },
+    {
+      id: "W8-13",
+      quote: "故用兵之法：無恃其不來，恃吾有以待也；",
+      tokens: ["無恃其不來","恃吾有以待也"],
+      plain: "用兵之道，不可僥倖敵人不來，而要依靠自身準備周全，以從容應對。"
+    },
+    {
+      id: "W8-14",
+      quote: "無恃其不攻，恃吾有所不可攻也。",
+      tokens: ["無恃其不攻","恃吾有所不可攻也"],
+      plain: "同樣不可指望敵人不攻，而應使自己立於難以被攻破的位置，才能確保安全。"
+    },
+    {
+      id: "W8-15",
+      quote: "故將有五危：",
+      tokens: ["將有五危"],
+      plain: "因此，將領本身有五種常見的危險性格與傾向，必須特別警惕。"
+    },
+    {
+      id: "W8-16",
+      quote: "必死，可殺也；",
+      tokens: ["必死","可殺也"],
+      plain: "一味求死、不知變通的將領，容易被敵人設計殺害。"
+    },
+    {
+      id: "W8-17",
+      quote: "必生，可虜也；",
+      tokens: ["必生","可虜也"],
+      plain: "過度求生、畏懼犧牲的將領，反而可能被俘虜。"
+    },
+    {
+      id: "W8-18",
+      quote: "忿速，可侮也；",
+      tokens: ["忿速","可侮也"],
+      plain: "性情急躁、易怒的將領，容易被敵人挑釁與利用。"
+    },
+    {
+      id: "W8-19",
+      quote: "廉潔，可辱也；",
+      tokens: ["廉潔","可辱也"],
+      plain: "過於標榜清廉而不知權變的將領，反而可能遭到羞辱與牽制。"
+    },
+    {
+      id: "W8-20",
+      quote: "愛民，可煩也。",
+      tokens: ["愛民","可煩也"],
+      plain: "過度溺愛士卒而失去紀律的將領，容易使軍隊疲於應付。"
+    },
+    {
+      id: "W8-21",
+      quote: "凡此五者，將之過也，用兵之災也。",
+      tokens: ["五者","將之過","用兵之災"],
+      plain: "以上五種，都是將領的過失，也是用兵時最容易招致災禍的原因。"
+    },
+    {
+      id: "W8-22",
+      quote: "覆軍殺將，必以五危，不可不察也。",
+      tokens: ["覆軍殺將","必以五危","不可不察也"],
+      plain: "軍隊覆滅、將領喪命，往往都源於這五種危險性格，不可不慎重察覺。"
+    }
+  ]
+},
+
+    {
+  id: 9,
+  name: "第九篇 行軍篇",
+  segments: [
+    {
+      quote: "孫子曰：凡處軍、相敵：絕山依谷，視生處高，戰隆無登，此處山之軍也。",
+      tokens: ["孫子曰","凡處軍、相敵","絕山依谷","視生處高","戰隆無登","此處山之軍也"],
+      plain: "孫子說：軍隊駐止與觀察敵情時，遇山地應依谷而行，擇高而居，面對高地作戰不貿然攀登；這是山地用兵的要領。"
+    },
+   {
+  id: "C07-12",
+  quote: "絕水必遠水；客絕水而來，勿迎之於水內，令半濟而擊之，利；",
+  tokens: [
+    "絕水必遠水",
+    "客絕水而來",
+    "勿迎之於水內",
+    "令半濟而擊之",
+    "利"
+  ],
+  plain: "行軍過水之後，必須迅速遠離水邊；若敵軍渡水而來，不可於水中迎戰，當待其半渡未成時擊之，則敵勢未整而我軍得利。"
+},
+{
+  id: "C07-13",
+  quote: "欲戰者，無附於水而迎客；",
+  tokens: [
+    "欲戰者",
+    "無附於水而迎客"
+  ],
+  plain: "凡欲交戰者，不可背水迎敵；附水而戰，退路受限，易為敵所制。"
+},
+{
+  id: "C07-14",
+  quote: "視生處高，無迎水流，此處水上之軍也。",
+  tokens: [
+    "視生處高",
+    "無迎水流",
+    "此處水上之軍也"
+  ],
+  plain: "駐軍宜選擇地勢較高之處，不可逆水迎敵；以上原則，皆為水上作戰時用兵之法。"
+},
+
+    {
+      quote: "絕斥澤，唯亟去無留；若交軍於斥澤之中，必依水草而背眾樹，此處斥澤之軍也。",
+      tokens: ["絕斥澤","唯亟去無留","若交軍於斥澤之中","必依水草","而背眾樹","此處斥澤之軍也"],
+      plain: "遇沼澤地帶，應迅速離開不可久留；若不得已在斥澤交戰，必須依傍水草並以樹叢為背，以求立足與遮蔽。"
+    },
+    {
+      quote: "平陸處易，而右背高，前死後生，此處平陸之軍也。",
+      tokens: ["平陸處易","而右背高","前死後生","此處平陸之軍也"],
+      plain: "在平原駐軍，宜取平易之地，右翼背靠高地，使前方形成「死地」以示必戰、後方留「生路」以便轉圜，這是平陸用兵之法。"
+    },
+    {
+      quote: "凡此四軍之利，黃帝之所以勝四帝也。",
+      tokens: ["凡此四軍之利","黃帝之所以勝四帝也"],
+      plain: "以上四種地形用兵之利，是古人取勝的重要依據，足以作為統兵者的基本準繩。"
+    },
+    {
+      quote: "凡軍好高而惡下，貴陽而賤陰，養生而處實，軍無百疾，是謂必勝。",
+      tokens: ["凡軍好高而惡下","貴陽而賤陰","養生而處實","軍無百疾","是謂必勝"],
+      plain: "軍隊宜居高而避低，取向陽而避陰濕，以保養士卒並占據堅實之處；如此可減少疫疾與耗損，勝勢自然可立。"
+    },
+    {
+      quote: "丘陵堤防，必處其陽，而右背之。此兵之利，地之助也。",
+      tokens: ["丘陵堤防","必處其陽","而右背之","此兵之利","地之助也"],
+      plain: "丘陵堤防等地形，必據其向陽面，並使右翼背靠其勢；這是地形對用兵的直接助益。"
+    },
+    {
+      quote: "上雨，水沫至，欲涉者，待其定也。",
+      tokens: ["上雨","水沫至","欲涉者","待其定也"],
+      plain: "大雨之後水勢湍急、浪沫翻湧，欲渡水者應先等待水流平定，切忌躁進。"
+    },
+    {
+      quote: "凡地，有絕澗、天井、天牢、天羅、天陷、天隙，必亟去之，勿近也。",
+      tokens: ["凡地","有絕澗","天井","天牢","天羅","天陷","天隙","必亟去之","勿近也"],
+      plain: "遇到各類險惡地形，必須迅速遠離不可逼近；此類地勢多生困陷伏擊之患。"
+    },
+    {
+      quote: "吾遠之，敵近之；吾迎之，敵背之。",
+      tokens: ["吾遠之","敵近之","吾迎之","敵背之"],
+      plain: "我方應遠離此類險地而使敵方貼近；我方迎向險地時，應使敵軍背對險地，以奪其退路與機動。"
+    },
+    {
+      quote: "軍行有險阻、潢井、葭葦、山林、蘙薈者，必謹覆索之，此伏奸之所處也。",
+      tokens: ["軍行有險阻","潢井","葭葦","山林","蘙薈者","必謹覆索之","此伏奸之所處也"],
+      plain: "行軍途經險阻坑洼、蘆葦叢林、蔽密草木之處，必須仔細搜索查驗；這些地方最易藏伏奸細與伏兵。"
+    },
+    {
+      quote: "敵近而靜者，恃其險也；遠而挑戰者，欲人之進也。",
+      tokens: ["敵近而靜者","恃其險也","遠而挑戰者","欲人之進也"],
+      plain: "敵軍近而不動，多倚仗險要地勢；敵軍遠而挑釁，是想誘使我軍前進入其設局。"
+    },
+    {
+      quote: "其所居易者，利也。",
+      tokens: ["其所居易者","利也"],
+      plain: "敵軍若居於平易便行之處，往往是其佔了地利，需格外審慎。"
+    },
+    {
+      quote: "眾樹動者，來也；眾草多障者，疑也。",
+      tokens: ["眾樹動者","來也","眾草多障者","疑也"],
+      plain: "樹叢大動，往往有兵來近；草叢刻意設障，多半藏有疑兵或伏勢。"
+    },
+    {
+      quote: "鳥起者，伏也；獸駭者，覆也。",
+      tokens: ["鳥起者","伏也","獸駭者","覆也"],
+      plain: "鳥驚而起，多有伏兵；獸群受驚亂竄，往往是大隊逼近或形勢將變。"
+    },
+    {
+      quote: "塵高而銳者，車來也；卑而廣者，徒來也。",
+      tokens: ["塵高而銳者","車來也","卑而廣者","徒來也"],
+      plain: "塵土高而尖銳，是車騎疾行；塵土低而廣散，則為步卒行進之象。"
+    },
+    {
+      quote: "散而條達者，樵采也；少而往來者，營軍也。",
+      tokens: ["散而條達者","樵采也","少而往來者","營軍也"],
+      plain: "塵勢稀散而成條，是樵采往來；塵少而反覆出入，多為營壘調度或小規模活動。"
+    },
+    {
+      quote: "辭卑而益備者，進也；辭強而進驅者，退也。",
+      tokens: ["辭卑而益備者","進也","辭強而進驅者","退也"],
+      plain: "言辭卑下卻加強戒備者，是將進攻；言辭強硬而催促前進者，反可能是在退卻或虛張聲勢。"
+    },
+    {
+      quote: "輕車先出，居其側者，陳也。",
+      tokens: ["輕車先出","居其側者","陳也"],
+      plain: "輕車先出並據側翼之位，往往是在布置陣列與戰位。"
+    },
+    {
+      quote: "無約而請和者，謀也。",
+      tokens: ["無約而請和者","謀也"],
+      plain: "未有前約而忽請言和，多半暗藏計謀，不可輕信。"
+    },
+    {
+      quote: "奔走而陳兵車者，期也；半進半退者，誘也。",
+      tokens: ["奔走而陳兵車者","期也","半進半退者","誘也"],
+      plain: "奔走布置兵車，是在約期集結或佈局；半進半退，則多為誘敵之勢。"
+    },
+    {
+      quote: "杖而立者，饑也；汲而先飲者，渴也；見利而不進者，勞也。",
+      tokens: ["杖而立者","饑也","汲而先飲者","渴也","見利而不進者","勞也"],
+      plain: "士卒拄杖而立，顯見飢乏；汲水先飲，顯見乾渴；見利不進，多因疲勞已極。"
+    },
+    {
+      quote: "鳥集者，虛也；夜呼者，恐也。",
+      tokens: ["鳥集者","虛也","夜呼者","恐也"],
+      plain: "營中鳥群聚集，往往顯示其營空虛；夜間呼噪，多是軍心恐懼不安。"
+    },
+    {
+      quote: "軍擾者，將不重也；旌旗動者，亂也；更怒者，倦也。",
+      tokens: ["軍擾者","將不重也","旌旗動者","亂也","更怒者","倦也"],
+      plain: "軍中紛擾，常因主將不受敬重；旌旗無故擾動，是軍陣混亂之象；屢屢發怒，則多因疲倦失度。"
+    },
+    {
+      quote: "粟馬肉食，軍無懸缻，不返其舍者，窮寇也。",
+      tokens: ["粟馬肉食","軍無懸缻","不返其舍者","窮寇也"],
+      plain: "以糧餵馬、以肉食卒，並且不設炊具、不返營舍者，多為走投無路的窮寇，其勢必死，尤須戒備。"
+    },
+    {
+      quote: "諄諄翕翕，徐與人言者，失眾也。",
+      tokens: ["諄諄翕翕","徐與人言者","失眾也"],
+      plain: "將帥言語過於低柔絮密、與人徐徐周旋者，往往顯示已失眾心與威信。"
+    },
+    {
+      quote: "數賞者，窘也；數罰者，困也。",
+      tokens: ["數賞者","窘也","數罰者","困也"],
+      plain: "賞賜過頻，多因局勢窘迫需以利綁人；刑罰過頻，則是困局深重而以威強控。"
+    },
+    {
+      quote: "先暴而後畏其眾者，不精之至也；來委謝者，欲休息也。",
+      tokens: ["先暴而後畏其眾者","不精之至也","來委謝者","欲休息也"],
+      plain: "先粗暴而後又畏懼部眾者，是統御不精之極；前來低聲致歉者，多是希望休兵喘息。"
+    },
+    {
+      quote: "兵怒而相迎，久而不合，又不相去，必謹察之。",
+      tokens: ["兵怒而相迎","久而不合","又不相去","必謹察之"],
+      plain: "兩軍怒氣相迎，久而不交戰，又彼此不退離，必有深意，須謹慎察其虛實與所圖。"
+    },
+    {
+      quote: "兵非益多也，唯無武進，足以並力、料敵、取人而已。",
+      tokens: ["兵非益多也","唯無武進","足以並力","料敵","取人而已"],
+      plain: "兵力並非越多越好，最要緊是不躁進妄動；只要能合力統一、審度敵情、奪其要害即可。"
+    },
+    {
+      quote: "夫唯無慮而易敵者，必擒於人。",
+      tokens: ["夫唯無慮而易敵者","必擒於人"],
+      plain: "凡輕忽敵人而不加思慮者，終必反被人所擒。"
+    },
+    {
+      quote: "卒未親附而罰之，則不服；不服，則難用也；",
+      tokens: ["卒未親附而罰之","則不服","不服","則難用也"],
+      plain: "士卒尚未親附就先施罰，必致不服；一旦不服，便難以驅使成軍。"
+    },
+    {
+      quote: "卒已親附而罰不行，則不可用也。",
+      tokens: ["卒已親附而罰不行","則不可用也"],
+      plain: "反之，士卒既已親附卻又賞罰不明、刑令不行，也同樣不可用，終將失紀。"
+    },
+    {
+      quote: "故令之以文，齊之以武，是謂必取。",
+      tokens: ["故令之以文","齊之以武","是謂必取"],
+      plain: "因此以文教立其令，以武紀整其隊，才能上下齊一，取勝可必。"
+    },
+    {
+      quote: "令素行以教其民，則民服；令素不行以教其民，則民不服。令素行者，與眾相得也。",
+      tokens: ["令素行以教其民","則民服","令素不行以教其民","則民不服","令素行者","與眾相得也"],
+      plain: "軍令平日能行，則以此教民而民服；軍令平日不能行，則以此教民而民不服。其所以能行者，在於上下相得、與眾同心也。"
+    }
+  ]
+},
+
+{
+  id: 10,
+  name: "第十篇 地形篇",
+  segments: [
+    {
+      quote: "孫子曰：地形,有通者，有掛者，有支者，有隘者，有險者，有遠者。",
+      tokens: ["孫子曰", "地形","有通者", "有掛者", "有支者", "有隘者", "有險者", "有遠者"],
+      plain: "地形大致分為通、掛、支、隘、險、遠六類，將帥用兵必先明辨其勢；能審形勢利害而後動，方不致誤軍失利。"
+    },
+    {
+      quote: "我可以往，彼可以來，曰通。",
+      tokens: ["我可以往", "彼可以來", "曰通"],
+      plain: "我軍可往、敵軍可來，往來皆便者名為「通」；其利在於機動迅速，其害亦在於敵我同得其便，須先奪要勢。"
+    },
+    {
+      quote: "通形者，先居高陽，利糧道，以戰則利。",
+      tokens: ["通形者", "先居高陽", "利糧道", "以戰則利"],
+      plain: "通地用兵宜先據高陽並暢通糧道，以得先機；形勢既得、轉運無礙，則交戰自有利。"
+    },
+    {
+      quote: "可以往，難以返，曰掛。",
+      tokens: ["可以往", "難以返", "曰掛"],
+      plain: "能進而難退者謂之「掛」；其患在於深入之後撤退不易，易為敵所乘。"
+    },
+    {
+      quote: "掛形者，敵無備，出而勝之；敵若有備，出而不勝，難以返，不利。",
+      tokens: ["掛形者", "敵無備", "出而勝之", "敵若有備", "出而不勝", "難以返", "不利"],
+      plain: "掛地唯在敵無備時可出擊取勝；若敵已有備而戰不克，則退路艱難而轉為不利，故貴審勢而後進。"
+    },
+    {
+      quote: "我出而不利，彼出而不利，曰支。",
+      tokens: ["我出而不利", "彼出而不利", "曰支"],
+      plain: "我出不利、彼出亦不利者謂之「支」；此多互相牽制之勢，動則兩傷，宜以巧制而不宜力爭。"
+    },
+    {
+      quote: "支形者，敵雖利我，我無出也；引而去之，令敵半出而擊之，利。",
+      tokens: ["支形者", "敵雖利我", "我無出也", "引而去之", "令敵半出而擊之", "利"],
+      plain: "支地之中，敵雖以利誘我亦不可輕出；當引兵而退以誘其半出，乘其未整而擊之則利。"
+    },
+    {
+      quote: "隘形者，我先居之，必盈之以待敵；若敵先居之，盈而勿從，不盈而從之。",
+      tokens: ["隘形者", "我先居之", "必盈之以待敵", "若敵先居之", "盈而勿從", "不盈而從之"],
+      plain: "隘地狹窄，先居者得勢：我先居則塞滿要害以待敵；敵先居而已充實則勿從，未充實則可乘隙而進。"
+    },
+    {
+      quote: "險形者，我先居之，必居高陽以待敵；若敵先居之，引而去之，勿從也。",
+      tokens: ["險形者", "我先居之", "必居高陽以待敵", "若敵先居之", "引而去之", "勿從也"],
+      plain: "險地多高峻要害，我先居必據高陽以待敵；若敵先據之，宜引兵而去不強從，以免自陷其險。"
+    },
+    {
+      quote: "遠形者，勢均，難以挑戰，戰而不利。",
+      tokens: ["遠形者", "勢均", "難以挑戰", "戰而不利"],
+      plain: "遠地路遙而勢均，難以挑戰求決；若勉強交戰多不利，宜重佈勢與持久而不貪一時之勝。"
+    },
+    {
+      quote: "凡此六者，地之道也，將之至任，不可不察也。",
+      tokens: ["凡此六者", "地之道也", "將之至任", "不可不察也"],
+      plain: "此六者皆地形之常道，將帥之任至重不可不察；能先辨其類而制其宜，則用兵不致失其所據。"
+    },
+
+    {
+      quote: "凡兵有走者，有弛者，有陷者，有崩者，有亂者，有北者。",
+      tokens: ["凡兵有走者", "有弛者", "有陷者", "有崩者", "有亂者", "有北者"],
+      plain: "軍之敗象有走、弛、陷、崩、亂、北六者；其端皆可先見先防，非臨陣偶然而至。"
+    },
+    {
+      quote: "凡此六者，非天之災，將之過也。",
+      tokens: ["凡此六者", "非天之災", "將之過也"],
+      plain: "此六敗非天災使然，皆將帥之過；能早明其因而自正其失，則敗可免而勝可期。"
+    },
+    {
+      quote: "夫勢均，以一擊十，曰走；",
+      tokens: ["夫勢均", "以一擊十", "曰走"],
+      plain: "形勢相當而妄以少擊多，軍心必潰，是謂「走」；用兵之戒，首在不以僥倖為計。"
+    },
+    {
+      quote: "卒強吏弱，曰弛；",
+      tokens: ["卒強吏弱", "曰弛"],
+      plain: "士卒雖強而軍吏羸弱不能約束，紀律必鬆，是謂「弛」；治軍之要，在於上令能行而下不敢縱。"
+    },
+    {
+      quote: "吏強卒弱，曰陷；",
+      tokens: ["吏強卒弱", "曰陷"],
+      plain: "軍吏雖強而士卒怯弱不任戰陣，遇敵易陷，是謂「陷」；上下失衡，皆足以致敗。"
+    },
+    {
+      quote: "大吏怒而不服，遇敵輒而自戰，將不知其能，曰崩；",
+      tokens: ["大吏怒而不服", "遇敵輒而自戰", "將不知其能", "曰崩"],
+      plain: "部將驕怒不服、遇敵輒自戰而主將不知其能否，軍勢易崩，是謂「崩」；統攝不明而縱其擅動，必致全局瓦解。"
+    },
+    {
+      quote: "將弱不嚴，教道不明，吏卒無常，陳兵縱橫，曰亂；",
+      tokens: ["將弱不嚴", "教道不明", "吏卒無常", "陳兵縱橫", "曰亂"],
+      plain: "主將懦弱不嚴、教令不明而部伍無常、陳兵縱橫，是謂「亂」；亂則人心離散、號令不行，敗機自生。"
+    },
+    {
+      quote: "將不能料敵，以少合眾，以弱擊強，兵無選鋒，曰北。",
+      tokens: ["將不能料敵", "以少合眾", "以弱擊強", "兵無選鋒", "曰北"],
+      plain: "主將不能料敵而以少合眾、以弱擊強，且無選鋒為先，是謂「北」；此非勇也，乃失算而取敗。"
+    },
+    {
+      quote: "凡此六者，敗之道也，將之至任，不可不察也。",
+      tokens: ["凡此六者", "敗之道也", "將之至任", "不可不察也"],
+      plain: "此六者皆敗之道，將帥責任至重不可不察；能察其萌而先治其弊，則可防患於未然。"
+    },
+
+    {
+      quote: "夫地形者，兵之助也，料敵致勝，計險厄、遠近，上將之道也。",
+      tokens: ["夫地形者", "兵之助也", "料敵致勝", "計險厄、遠近", "上將之道也"],
+      plain: "地形為用兵之助，審敵而致勝、計險厄與遠近，乃上將之道；能因地制宜而不逆勢強行，則勝算自增。"
+    },
+    {
+      quote: "知此而用戰者必勝，不知此而用戰者必敗。",
+      tokens: ["知此而用戰者必勝", "不知此而用戰者必敗"],
+      plain: "明此而用兵者必勝，不明此而用兵者必敗；勝敗之分，常在先見與慎行。"
+    },
+    {
+      quote: "故戰道必勝，主曰無戰，必戰可也；",
+      tokens: ["故戰道必勝", "主曰無戰", "必戰可也"],
+      plain: "若勝道已具而勝勢必成，雖君命曰無戰亦可決戰；將之任在全國利，不可徒守成命而失良機。"
+    },
+    {
+      quote: "戰道不勝，主曰必戰，無戰可也。",
+      tokens: ["戰道不勝", "主曰必戰", "無戰可也"],
+      plain: "若勝道未立而勢不可勝，雖君命曰必戰亦當避戰；將之職在以理保全國與民，不可逞匹夫之勇而傷大局。"
+    },
+    {
+      quote: "故進不求名，退不避罪，唯民是保，而利合於主，國之寶也。",
+      tokens: ["故進不求名", "退不避罪", "唯民是保", "而利合於主", "國之寶也"],
+      plain: "能進而不求名、退而不避罪，唯以保民為先而其利合於主者，乃國之寶；其心在國在民，故能任重而不偏。"
+    },
+    {
+      quote: "視卒如嬰兒，故可以與之赴深谿；",
+      tokens: ["視卒如嬰兒", "故可以與之赴深谿"],
+      plain: "視卒如嬰兒以慈愛護之，則可與之赴深谿而不疑；恩信所結，能使眾心同歸。"
+    },
+    {
+      quote: "視卒如愛子，故可與之俱死。",
+      tokens: ["視卒如愛子", "故可與之俱死"],
+      plain: "視卒如愛子以情義繫之，則可與之俱死而不離；將卒同心，乃死生之交所由成。"
+    },
+    {
+      quote: "厚而不能使，愛而不能令，亂而不能治，譬若驕子，不可用也。",
+      tokens: ["厚而不能使", "愛而不能令", "亂而不能治", "譬若驕子", "不可用也"],
+      plain: "厚而不能使、愛而不能令、亂而不能治，譬若驕子而不可用；恩必配威、愛必有法，然後能成其軍。"
+    },
+    {
+      quote: "知吾卒之可以擊，而不知敵之不可擊，勝之半也；",
+      tokens: ["知吾卒之可以擊", "而不知敵之不可擊", "勝之半也"],
+      plain: "但知我卒可擊而不知敵不可擊者，勝算僅半；知己而不知彼，終難全勝。"
+    },
+    {
+      quote: "知敵之可擊，而不知吾卒之不可以擊，勝之半也；",
+      tokens: ["知敵之可擊", "而不知吾卒之不可以擊", "勝之半也"],
+      plain: "但知敵可擊而不知我卒不可擊者，亦僅半勝；知彼而不知己，同樣危殆。"
+    },
+    {
+      quote: "知敵之可擊，知吾卒之可以擊，而不知地形之不可以戰，勝之半也。",
+      tokens: ["知敵之可擊", "知吾卒之可以擊", "而不知地形之不可以戰", "勝之半也"],
+      plain: "知敵可擊、知吾卒可擊而不知地形不可戰者，勝算仍僅半；天時地利人和缺一不可，失其一則勝不全。"
+    }
+  ]
+},
+
+
+    {
+  id: 11,
+  name: "第十一篇 九地篇",
+  segments: [
+    {
+      quote: "孫子曰：用兵之法：有散地，有輕地，有爭地，",
+      tokens: ["孫子曰", "用兵之法", "有散地", "有輕地", "有爭地"],
+      plain: "孫子說：用兵之法，依所處形勢可分為散、輕、爭三種地勢；先明其類，方能定其用兵之方。"
+    },
+    {
+      quote: "有交地，有衢地，有重地，有圮地，有圍地，有死地。",
+      tokens: ["有交地", "有衢地", "有重地", "有圮地", "有圍地", "有死地"],
+      plain: "又有交、衢、重、圮、圍、死六種地勢；地勢既異，軍心與利害亦異，不可一概而行。"
+    },
+    {
+      quote: "諸侯自戰其地，為散地。",
+      tokens: ["諸侯自戰其地", "為散地"],
+      plain: "散地，是諸侯在本土各自作戰之處；士卒多顧家國私情，心志易散，宜先聚志而不宜爭戰。"
+    },
+    {
+      quote: "入人之地而不深者，為輕地。",
+      tokens: ["入人之地而不深者", "為輕地"],
+      plain: "輕地，是入敵境而未深入之處；去留未決，軍心易動，宜迅速通過，不宜久止。"
+    },
+    {
+      quote: "我得則利，彼得亦利者，為爭地。",
+      tokens: ["我得則利", "彼得亦利者", "為爭地"],
+      plain: "爭地，是我得則利、敵得亦利之處；雙方必爭，宜審機而後動，不可輕率強攻。"
+    },
+    {
+      quote: "我可以往，彼可以來者，為交地。",
+      tokens: ["我可以往", "彼可以來者", "為交地"],
+      plain: "交地，是我可往、敵可來之通行之地；往來皆便，尤須守通道與聯絡，使軍不致隔絕。"
+    },
+    {
+      quote: "諸侯之地三屬，先至而得天下之眾者，為衢地。",
+      tokens: ["諸侯之地三屬", "先至而得天下之眾者", "為衢地"],
+      plain: "衢地，是多方勢力交會之處，先至者易得眾助；宜善結交以固形勢，勿孤軍自處。"
+    },
+    {
+      quote: "入人之地深，背城邑多者，為重地。",
+      tokens: ["入人之地深", "背城邑多者", "為重地"],
+      plain: "重地，是深入敵境且背後城邑已多之處；退路漸遠，宜重補給與士氣，不可戀戰失度。"
+    },
+    {
+      quote: "行山林、險阻、沮澤，凡難行之道者，為圮地。",
+      tokens: ["行山林、險阻、沮澤", "凡難行之道者", "為圮地"],
+      plain: "圮地，是山林險阻與沮澤等難行之道；行軍艱澀，宜速行通過並整隊備變。"
+    },
+    {
+      quote: "所由入者隘，所從歸者迂，彼寡可以擊吾之眾者，為圍地。",
+      tokens: ["所由入者隘", "所從歸者迂", "彼寡可以擊吾之眾者", "為圍地"],
+      plain: "圍地，是入口狹而歸路迂，敵寡亦能擊眾之處；宜慎謀開闕，勿自陷於隘。"
+    },
+    {
+      quote: "疾戰則存，不疾戰則亡者，為死地。",
+      tokens: ["疾戰則存", "不疾戰則亡者", "為死地"],
+      plain: "死地，是速戰則存、久遲則亡之處；須決志奮戰，以死地之勢求生路。"
+    },
+    {
+      quote: "是故散地則無戰，輕地則無止，爭地則無攻，",
+      tokens: ["是故散地則無戰", "輕地則無止", "爭地則無攻"],
+      plain: "因此在散地不宜交戰，在輕地不可停留，在爭地不可逞攻；各因其勢而避其害。"
+    },
+    {
+      quote: "交地則無絕，衢地則合交，重地則掠，",
+      tokens: ["交地則無絕", "衢地則合交", "重地則掠"],
+      plain: "交地務在不使軍勢斷絕，衢地在合交得援，重地在掠取資糧；所謂因地制宜者是也。"
+    },
+    {
+      quote: "圮地則行，圍地則謀，死地則戰。",
+      tokens: ["圮地則行", "圍地則謀", "死地則戰"],
+      plain: "圮地以迅行為要，圍地以謀出為先，死地則唯有決戰；行軍用兵，當依地勢而定策。"
+    },
+    {
+      quote: "所謂古之善用兵者，能使敵人前後不相及，眾寡不相恃，",
+      tokens: ["所謂古之善用兵者", "能使敵人前後不相及", "眾寡不相恃"],
+      plain: "所謂古之善用兵者，能設法使敵前後不能相及、眾寡不得相恃；先破其聯絡與依憑，以削其勢。"
+    },
+    {
+      quote: "貴賤不相救，上下不相收，卒離而不集，",
+      tokens: ["貴賤不相救", "上下不相收", "卒離而不集"],
+      plain: "並使貴賤不得相救、上下不能相收，令其卒離散而不集；使敵軍各自為戰，難以成一體。"
+    },
+    {
+      quote: "兵合而不齊。合於利而動，不合於利而止。",
+      tokens: ["兵合而不齊", "合於利而動", "不合於利而止"],
+      plain: "縱使敵軍暫合亦不能整齊，故唯於利合則動、不合則止；動止皆以利害為準，不以意氣為行。"
+    },
+    {
+      quote: "敢問：敵眾整而將來，待之若何？曰：先奪其所愛，則聽矣。",
+      tokens: ["敢問", "敵眾整而將來", "待之若何", "曰：", "先奪其所愛", "則聽矣"],
+      plain: "若敵眾整齊而將至，當如何待之？孫子說：先奪其所愛；取其所恃所重，則其行動必受我制。"
+    },
+    {
+      quote: "兵之情主速，乘人之不及，由不虞之道，攻其所不戒也。",
+      tokens: ["兵之情主速", "乘人之不及", "由不虞之道", "攻其所不戒也"],
+      plain: "用兵之情貴在迅速，當乘其不及、由其不虞之道，攻其所不戒；以快制慢、以奇制常，乃勝機所在。"
+    },
+    {
+      quote: "凡為客之道：深入則專，主人不克；掠於饒野，三軍足食；",
+      tokens: ["凡為客之道", "深入則專", "主人不克", "掠於饒野", "三軍足食"],
+      plain: "凡深入敵境作客軍者，深入則心志專一，使敵主不能制我；又當掠取沃野，使三軍資糧自足而不乏。"
+    },
+    {
+      quote: "謹養而勿勞，並氣積力；運兵計謀，為不可測。",
+      tokens: ["謹養而勿勞", "並氣積力", "運兵計謀", "為不可測"],
+      plain: "並宜謹慎養兵而勿使疲勞，使氣勢合而力積；運兵用謀務在不可測，使敵難以揣度我之所向。"
+    },
+    {
+      quote: "投之無所往，死且不北；死焉不得，士人盡力。",
+      tokens: ["投之無所往", "死且不北", "死焉不得", "士人盡力"],
+      plain: "投之使其無所往，則雖臨死亦不退北；既無退路，士卒反能盡力，以求生於必死之際。"
+    },
+    {
+      quote: "兵士甚陷則不懼，無所往則固，深入則拘，不得已則鬥。",
+      tokens: ["兵士甚陷則不懼", "無所往則固", "深入則拘", "不得已則鬥"],
+      plain: "士卒陷深則不懼，無所往則志固，深入則受拘，不得已則鬥；勢逼則人心一，故能成其用。"
+    },
+    {
+      quote: "是故其兵不修而戒，不求而得，不約而親，不令而信；",
+      tokens: ["是故其兵不修而戒", "不求而得", "不約而親", "不令而信"],
+      plain: "因此其兵雖未特加修治亦自警戒，不求亦得，不約亦親，不令亦信；皆由形勢所迫而人心自同也。"
+    },
+    {
+      quote: "禁祥去疑，至死無所之。吾士無餘財，非惡貨也；無餘命，非惡壽也。",
+      tokens: ["禁祥去疑", "至死無所之", "吾士無餘財", "非惡貨也", "無餘命", "非惡壽也"],
+      plain: "並當禁祥去疑，使眾無所顧忌而至死不疑；士卒無餘財非惡貨，無餘命非惡壽，乃知所從之急也。"
+    },
+    {
+      quote: "令發之日，士卒坐者涕沾襟，偃臥者涕交頤，投之無所往，諸、劌之勇也。",
+      tokens: ["令發之日", "士卒坐者涕沾襟", "偃臥者涕交頤", "投之無所往", "諸、劌之勇也"],
+      plain: "令發之日，或坐者涕沾襟、偃臥者涕交頤；及投之無所往，則能奮起如諸、劌之勇，以死地求生。"
+    },
+    {
+      quote: "故善用兵者，譬如率然。率然者，常山之蛇也，",
+      tokens: ["故善用兵者", "譬如率然", "率然者", "常山之蛇也"],
+      plain: "善用兵者，譬如率然；率然乃常山之蛇，能應擊而動，示人以用兵貴在一體相應之理。"
+    },
+    {
+      quote: "擊其首則尾至，擊其尾則首至，擊其中則首尾俱至。",
+      tokens: ["擊其首則尾至", "擊其尾則首至", "擊其中則首尾俱至"],
+      plain: "擊其首則尾至，擊其尾則首至，擊其中則首尾俱至；軍亦當如是，受擊能相救援，不致離散。"
+    },
+    {
+      quote: "敢問：兵可使如率然乎？曰：可。",
+      tokens: ["敢問", "兵可使如率然乎", "曰", "可"],
+      plain: "敢問軍可使如率然乎？曰可；使軍同心同勢，則雖分處亦能相應，關鍵在於制度與統一號令。"
+    },
+    {
+      quote: "夫吳人與越人相惡也，當其同舟而濟，遇風，其相救也如左右手。",
+      tokens: ["夫吳人與越人相惡也", "當其同舟而濟", "遇風", "其相救也如左右手"],
+      plain: "吳越本相惡，然同舟遇風則相救如左右手；勢所迫則人必相助，故治軍亦當使其同舟共濟。"
+    },
+    {
+      quote: "是故方馬埋輪，未足恃也；齊勇若一，政之道也；剛柔皆得，地之理也。",
+      tokens: ["是故方馬埋輪", "未足恃也", "齊勇若一", "政之道也", "剛柔皆得", "地之理也"],
+      plain: "方馬埋輪不足恃，齊勇若一乃政之道，剛柔皆得乃地之理；所恃在整齊與調度，不在障礙之設。"
+    },
+    {
+      quote: "故善用兵者，攜手若使一人，不得已也。",
+      tokens: ["故善用兵者", "攜手若使一人", "不得已也"],
+      plain: "故善用兵者，使眾攜手若一人，乃不得已之勢；能逼其同心同力，則臨變不散而可以成事。"
+    },
+    {
+      quote: "將軍之事，靜以幽，正以治。能愚士卒之耳目，使之無知；",
+      tokens: ["將軍之事", "靜以幽", "正以治", "能愚士卒之耳目", "使之無知"],
+      plain: "將軍之事，在於靜以幽、正以治；其心沉靜而指揮嚴正，然後能統攝眾心而令行禁止。"
+    },
+    {
+      quote: "易其事，革其謀，使人無識；易其居，迂其途，使人不得慮。",
+      tokens: ["易其事", "革其謀", "使人無識", "易其居", "迂其途", "使人不得慮"],
+      plain: "並能愚士卒耳目使之無知，易其事、革其謀使人無識；變更部署以掩其意，使敵難測。 又易其居、迂其途，使人不得慮；變換行止與道路，使敵無從推求我之計。"
+    },
+    {
+      quote: "帥與之期，如登高而去其梯；",
+      tokens: ["帥與之期", "如登高而去其梯"],
+      plain: "帥與之期，如登高而去其梯；使士卒知進而無退，以斷其後顧，專其心於前進。"
+    },
+    {
+      quote: "帥與之深入諸侯之地，而發其機，焚舟破釜，",
+      tokens: ["帥與之深入諸侯之地", "而發其機", "焚舟破釜"],
+      plain: "帥與之深入諸侯之地而發其機，焚舟破釜；以斷其歸計，使眾知唯有奮進，方可全生。"
+    },
+    {
+      quote: "若驅群羊，驅而往，驅而來，莫知所之。",
+      tokens: ["若驅群羊", "驅而往", "驅而來", "莫知所之"],
+      plain: "若驅群羊，驅而往、驅而來，莫知所之；主帥掌其趨向，使眾不自疑而同赴其所。"
+    },
+    {
+      quote: "聚三軍之眾，投之於險，此謂將軍之事也。",
+      tokens: ["聚三軍之眾", "投之於險", "此謂將軍之事也"],
+      plain: "聚三軍之眾投之於險，是謂將軍之事；以險勢聚其志，以勢迫其力，然後能同心而成用。"
+    },
+    {
+      quote: "九地之變，屈伸之利，人情之理，不可不察。",
+      tokens: ["九地之變", "屈伸之利", "人情之理", "不可不察"],
+      plain: "九地之變、屈伸之利與人情之理，皆不可不察；能審勢、審利、審人心，方可因變而制勝。"
+    },
+    {
+      quote: "凡為客之道：深則專，淺則散。去國越境而師者，絕地也。",
+      tokens: ["凡為客之道", "深則專", "淺則散", "去國越境而師者", "絕地也"],
+      plain: "作客之道，深則專、淺則散；去國越境而師者為絕地，乃遠離本國之境，須自立自給而不倚外援。"
+    },
+    {
+      quote: "四達者，衢地也。入深者，重地也。入淺者，輕地也。",
+      tokens: ["四達者", "衢地也", "入深者", "重地也", "入淺者", "輕地也"],
+      plain: "四達者為衢地，入深者為重地，入淺者為輕地；辨其深淺與通塞，方知軍心與利害所在。"
+    },
+    {
+      quote: "背固前隘者，圍地也。無所往者，死地也。",
+      tokens: ["背固前隘者", "圍地也", "無所往者", "死地也"],
+      plain: "背固前隘者為圍地，無所往者為死地；或有憑倚或無路可退，皆須因其勢而定其策。"
+    },
+    {
+      quote: "是故散地，吾將一其志；輕地，吾將使之屬；",
+      tokens: ["是故散地", "吾將一其志", "輕地", "吾將使之屬"],
+      plain: "在散地，將使其志一；在輕地，將使之相屬；先收其心、固其隊，使眾不散而令可行。"
+    },
+    {
+      quote: "爭地，吾將趨其後；交地，吾將謹其守；衢地，吾將固其結；",
+      tokens: ["爭地", "吾將趨其後", "交地", "吾將謹其守", "衢地", "吾將固其結"],
+      plain: "在爭地，將趨其後；在交地，將謹其守；在衢地，將固其結；各隨其勢以奪先、以守通、以固援。"
+    },
+    {
+      quote: "重地，吾將繼其食；圮地，吾將進其塗；圍地，吾將塞其闕；死地，吾將示之以不活。",
+      tokens: ["重地", "吾將繼其食", "圮地", "吾將進其塗", "圍地", "吾將塞其闕", "死地", "吾將示之以不活"],
+      plain: "在重地，將繼其食；在圮地，將進其塗；在圍地，將塞其闕；在死地，將示之以不活；重在補給，圮在速行，圍在開路，死在決志。"
+    },
+    {
+      quote: "故兵之情：圍則禦，不得已則鬥，過則從。",
+      tokens: ["故兵之情", "圍則禦", "不得已則鬥", "過則從"],
+      plain: "兵之常情，圍則禦，不得已則鬥，過則從；勢迫則守，無路則戰，形勢一轉則眾自順從。"
+    },
+    {
+      quote: "是故不知諸侯之謀者，不能預交；不知山林、險阻、沮澤之形者，不能行軍；不用鄉導者，不能得地利。",
+      tokens: ["是故不知諸侯之謀者", "不能預交", "不知山林、險阻、沮澤之形者", "不能行軍", "不用鄉導者", "不能得地利"],
+      plain: "若不知諸侯之謀則不能預交，不知山林險阻沮澤之形則不能行軍，不用鄉導則不能得地利；不明敵情地勢與向導，則行軍無所據。"
+    },
+    {
+      quote: "四五者不知一，非霸王之兵也。",
+      tokens: ["四五者不知一", "非霸王之兵也"],
+      plain: "此四五者若不知其一，便非霸王之兵；欲成大兵之功，先在周知謀勢與地利而後可制勝。"
+    },
+    {
+      quote: "夫霸王之兵，伐大國，則其眾不得聚；威加於敵，則其交不得合。",
+      tokens: ["夫霸王之兵", "伐大國", "則其眾不得聚", "威加於敵", "則其交不得合"],
+      plain: "霸王之兵伐大國，則使其眾不得聚；威加於敵，則使其交不得合；先破其聚眾與結盟，則敵勢自弱。"
+    },
+    {
+      quote: "是故不爭天下之交，不養天下之權，信己之私，威加於敵，",
+      tokens: ["是故不爭天下之交", "不養天下之權", "信己之私", "威加於敵"],
+      plain: "因此不爭天下之交，不養天下之權，而信其私計以威加於敵；不以外援自恃，而以己能制其勢。"
+    },
+    {
+      quote: "故其城可拔，其國可隳。",
+      tokens: ["故其城可拔", "其國可隳"],
+      plain: "故其城可拔，其國可隳；勢既奪而援既斷，則攻城滅國皆可成。"
+    },
+    {
+      quote: "施無法之賞，懸無政之令，犯三軍之眾，若使一人。",
+      tokens: ["施無法之賞", "懸無政之令", "犯三軍之眾", "若使一人"],
+      plain: "施無法之賞，懸無政之令，犯三軍之眾若使一人；賞罰出於非常以奪其心，號令直截以一其志。"
+    },
+    {
+      quote: "犯之以事，勿告以言；犯之以利，勿告以害。",
+      tokens: ["犯之以事", "勿告以言", "犯之以利", "勿告以害"],
+      plain: "使之以事而不告以言，使之以利而不告以害；令其只知所行，不使多疑，則眾心不分而行動一致。"
+    },
+    {
+      quote: "投之亡地，然後存；陷之死地，然後生。",
+      tokens: ["投之亡地", "然後存", "陷之死地", "然後生"],
+      plain: "投之亡地然後存，陷之死地然後生；以絕境逼其力，使士卒必死之心反成求生之勇。"
+    },
+    {
+      quote: "夫眾陷於害，然後能為勝敗。",
+      tokens: ["夫眾陷於害", "然後能為勝敗"],
+      plain: "眾陷於害然後能為勝敗；人心至此，懼退而爭進，故能轉害為利而奪勝機。"
+    },
+    {
+      quote: "故為兵之事，在於順詳敵之意，並敵一向，千里殺將。",
+      tokens: ["故為兵之事", "在於順詳敵之意", "並敵一向", "千里殺將"],
+      plain: "為兵之事，在於順詳敵意，並敵一向，千里殺將；察敵所向而以一意貫之，則能遠襲而斷其將。"
+    },
+    {
+      quote: "此謂巧能成事者也。",
+      tokens: ["此謂巧能成事者也"],
+      plain: "此謂巧能成事者也；能以勢制人、以謀奪機，而使敵不及應，乃為用兵之巧。"
+    },
+    {
+      quote: "是故政舉之日，夷關折符，無通其使，屬於廊廟之上，以誅其事，",
+      tokens: ["是故政舉之日", "夷關折符", "無通其使", "屬於廊廟之上", "以誅其事"],
+      plain: "政令舉行之日，當夷關折符，無通其使，屬於廊廟之上以誅其事；封閉關鍵通道與往來，使決策歸於中樞而不外洩。"
+    },
+    {
+      quote: "敵人開闔，必亟入之，先其所愛，微與之期，踐墨隨敵，以決戰事。",
+      tokens: ["敵人開闔", "必亟入之", "先其所愛", "微與之期", "踐墨隨敵", "以決戰事"],
+      plain: "敵人開闔之際，必亟入之，先奪其所愛，微與之期，踐墨隨敵以決戰事；乘其機會迅速切入，取其所重而逼其就範，以定決戰。"
+    },
+    {
+      quote: "是故始如處女，敵人開戶；後如脫兔，敵不及拒。",
+      tokens: ["是故始如處女", "敵人開戶", "後如脫兔", "敵不及拒"],
+      plain: "起初宜如處女般沉靜，使敵自開其戶；繼而如脫兔般迅疾，使敵來不及拒，則可先得其勢。"
+    }
+  ]
+},
+    {
+  id: 12,
+  name: "第十二篇 火攻篇",
+  segments: [
+    {
+      id: "C12-01",
+      quote: "孫子曰：凡火攻有五：一曰火人，二曰火積，三曰火輜，四日火庫，五曰火隊。",
+      tokens: ["孫子曰", "凡火攻有五", "一曰火人", "二曰火積", "三曰火輜", "四日火庫", "五曰火隊"],
+      plain: "孫子說：用火作戰大略有五種方式，分別針對人員、積聚物資、輜重運補、庫藏與部隊本身施火；先明其類，方能按目標選法而不致混用。"
+    },
+    {
+      id: "C12-02",
+      quote: "行火必有因，煙火必素具。",
+      tokens: ["行火必有因", "煙火必素具"],
+      plain: "孫子說：用火必有明確原因，不可徒逞一時之計；且引火與助燃等器具必須預先備妥，臨事倉促則易失機反受害。"
+    },
+    {
+      id: "C12-03",
+      quote: "發火有時，起火有日。",
+      tokens: ["發火有時", "起火有日"],
+      plain: "孫子說：放火有合宜的時機，起火亦有合宜的日子；能先擇時擇日，火勢方可為我所用，而不為天候所制。"
+    },
+    {
+      id: "C12-04",
+      quote: "時者，天之燥也；",
+      tokens: ["時者", "天之燥也"],
+      plain: "孫子說：所謂「時」，重在天候乾燥便於燃燒；天不燥則火難成勢，用火之利便難取。"
+    },
+    {
+      id: "C12-05",
+      quote: "日者，月在箕、壁、翼、軫也。",
+      tokens: ["日者", "月在箕、壁、翼、軫也"],
+      plain: "孫子說：所謂「日」，是指月行至箕、壁、翼、軫之時；此為古人觀天象以察風候之法，用以佐定用火之日。"
+    },
+    {
+      id: "C12-06",
+      quote: "凡此四宿者，風起之日也。",
+      tokens: ["凡此四宿者", "風起之日也"],
+      plain: "孫子說：月在此四宿之日，多見風勢發動；火因風而盛，故知風候者，方能使火攻成其勢而不致失控。"
+    },
+
+    {
+      id: "C12-07",
+      quote: "凡火攻，必因五火之變而應之。",
+      tokens: ["凡火攻", "必因五火之變而應之"],
+      plain: "孫子說：凡行火攻，必須隨五種火勢的變化而調整應對；能察其變、因變制宜，則火為助攻之利，不為反噬之患。"
+    },
+    {
+      id: "C12-08",
+      quote: "火發於內，則早應之於外。",
+      tokens: ["火發於內", "則早應之於外"],
+      plain: "孫子說：若火自敵內起，就要及早在外配合行動以乘其亂；遲疑不應，則火勢既過而良機亦失。"
+    },
+    {
+      id: "C12-09",
+      quote: "火發兵靜者，待而勿攻；極其火力，可從而從之，不可從而止。",
+      tokens: ["火發兵靜者", "待而勿攻", "極其火力", "可從而從之", "不可從而止"],
+      plain: "孫子說：火起而敵軍仍能安定者，當先觀望不可躁攻；待火力達其極而形勢可乘則隨勢而進，若不可乘則即止，以免貪功反陷。"
+    },
+    {
+      id: "C12-10",
+      quote: "火可發於外，無待於內，以時發之。",
+      tokens: ["火可發於外", "無待於內", "以時發之"],
+      plain: "孫子說：火亦可自外施放，不必等待敵內先起火；只要時機成熟便可發動，使火勢先為我所用而奪其應變之先。"
+    },
+    {
+      id: "C12-11",
+      quote: "火發上風，無攻下風。畫風久，夜風止。",
+      tokens: ["火發上風", "無攻下風", "畫風久", "夜風止"],
+      plain: "孫子說：火在上風起時，不可逆勢攻向下風，以免為煙焰所逼而自亂；且風勢多在晝間較久、夜間易止，必先料其轉止，方能保火攻之利不致變禍。"
+    },
+    {
+      id: "C12-12",
+      quote: "凡軍必知有五火之變，以數守之。故以火佐攻者明，以水佐攻者強；水可以絕，不可以奪。",
+      tokens: ["凡軍必知有五火之變", "以數守之", "故以火佐攻者明", "以水佐攻者強", "水可以絕", "不可以奪"],
+      plain: "孫子說：軍中必須明知五火之變並以法度防守，方能用而不亂；以火助攻者能洞明其機，以水助攻者能增其勢，但水所長在截斷與隔絕，終不能如火一般直接奪取成果。"
+    },
+
+    {
+      id: "C12-13",
+      quote: "夫戰勝攻取，而不修其功者，凶，命曰「費留」。",
+      tokens: ["夫戰勝攻取", "而不修其功者", "凶", "命曰「費留」"],
+      plain: "孫子說：即便戰勝攻取，若不善後整飭、不修其功，反致凶險；此名「費留」，意謂徒有勝而遺後患，終以自耗。"
+    },
+    {
+      id: "C12-14",
+      quote: "故曰：明主慮之，良將修之，非利不動，非得不用，非危不戰。",
+      tokens: ["故曰", "明主慮之", "良將修之", "非利不動", "非得不用", "非危不戰"],
+      plain: "孫子說：明主先審慮，良將重修治，凡兵事皆以利為準；無利則不動、不得則不用、非至危則不戰，如此方能動而有據，不以僥倖誤國。"
+    },
+    {
+  id: "C12-15",
+  quote: "主不可以怒而興師，將不可以慍而致戰；",
+  tokens: ["主不可以怒而興師", "將不可以慍而致戰"],
+  plain: "君主不可因一時憤怒而興兵，將帥亦不可因私怨而開戰；用兵若由情緒主導，往往先失其度。"
+},
+{
+  id: "C12-16",
+  quote: "合於利而動，不合於利而止。",
+  tokens: ["合於利而動", "不合於利而止"],
+  plain: "行動必須合於實際利益方可發動，不合於利則應停止；進退取捨，皆以利害為準繩。"
+},
+{
+  id: "C12-17",
+  quote: "怒可以復喜，慍可以復悅，亡國不可以復存，死者不可以復生。",
+  tokens: ["怒可以復喜", "慍可以復悅", "亡國不可以復存", "死者不可以復生"],
+  plain: "情緒尚可轉回為喜悅，但國家一旦滅亡便不可復存，生命一旦失去亦不可復生；一念之失，代價極重。"
+},
+{
+  id: "C12-18",
+  quote: "故明君慎之，良將警之，此安國全軍之道也。",
+  tokens: ["故明君慎之", "良將警之", "此安國全軍之道也"],
+  plain: "因此明智的君主必須審慎，優秀的將帥必須自警；此乃安定國家、保全三軍的正道。"
+    }
+  ]
+},
+
+   {
+  id: 13,
+  name: "第十三篇 用間篇",
+  segments: [
+
+    {
+      quote: "孫子曰：凡興師十萬，出征千里，百姓之費，公家之奉，日費千金；",
+      tokens: ["孫子曰", "凡興師十萬", "出征千里", "百姓之費", "公家之奉", "日費千金"],
+      plain: "孫子指出，大規模用兵本身即是沉重消耗；動員十萬大軍、遠征千里，百姓與國家每日都須付出極高的財力與資源。"
+    },
+    {
+      quote: "內外騷動，怠於道路，不得操事者七十萬家。",
+      tokens: ["內外騷動", "怠於道路", "不得操事者七十萬家"],
+      plain: "軍隊一動，內外必然騷動，百姓奔走勞累，生計中斷；戰爭所牽動的，是數十萬家庭的正常生活。"
+    },
+
+    {
+      quote: "相守數年，以爭一日之勝，而愛爵祿百金，不知敵之情者，不仁之至也，",
+      tokens: ["相守數年", "以爭一日之勝", "而愛爵祿百金", "不知敵之情者", "不仁之至也"],
+      plain: "若兩軍相持多年，只為爭取一日之勝，卻因吝惜賞賜而不肯探知敵情，便是對國家與百姓極不仁厚的行為。"
+    },
+    {
+      quote: "非人之將也，非主之佐也，非勝之主也。",
+      tokens: ["非人之將也", "非主之佐也", "非勝之主也"],
+      plain: "這樣的人，既不配為將，也不配為君主的輔佐，更不可能成為取勝的主導者。"
+    },
+
+    {
+      quote: "故明君賢將，所以動而勝人，成功出於眾者，先知也。",
+      tokens: ["故明君賢將", "所以動而勝人", "成功出於眾者", "先知也"],
+      plain: "因此，明君與賢將之所以能一動而勝、成功超越眾人，根本原因在於事先掌握敵情。"
+    },
+
+    {
+      quote: "先知者，不可取於鬼神，不可象於事，不可驗於度，",
+      tokens: ["先知者", "不可取於鬼神", "不可象於事", "不可驗於度"],
+      plain: "這種先知，不是求神問卜得來，也不能從表面事象或制度推算而得。"
+    },
+    {
+      quote: "必取於人，知敵之情者也。",
+      tokens: ["必取於人", "知敵之情者也"],
+      plain: "唯有透過人，直接掌握敵方內情，才能得到真正有用的先知。"
+    },
+
+    {
+      quote: "故用間有五：有因間，有內間，有反間，有死間，有生間。",
+      tokens: ["故用間有五", "有因間", "有內間", "有反間", "有死間", "有生間"],
+      plain: "因此，用間可分為五類，分別對應不同來源與用途，是情報運作的完整體系。"
+    },
+    {
+      quote: "五間俱起，莫知其道，是謂神紀，人君之寶也。",
+      tokens: ["五間俱起", "莫知其道", "是謂神紀", "人君之寶也"],
+      plain: "五種間諜同時運作而外人無從察覺，便形成高度隱密的情報網，這正是君主最珍貴的武器。"
+    },
+
+    {
+      quote: "因間者，因其鄉人而用之。",
+      tokens: ["因間者", "因其鄉人而用之"],
+      plain: "因間，是利用敵方本地鄉里之人取得情報。"
+    },
+    {
+      quote: "內間者，因其官人而用之。",
+      tokens: ["內間者", "因其官人而用之"],
+      plain: "內間，是透過敵方官員或內部人員來探知情況。"
+    },
+    {
+      quote: "反間者，因其敵間而用之。",
+      tokens: ["反間者", "因其敵間而用之"],
+      plain: "反間，是將敵方派來的間諜反為我所用。"
+    },
+    {
+      quote: "死間者，為誑事於外，令吾間知之，而傳於敵間也。",
+      tokens: ["死間者", "為誑事於外", "令吾間知之", "而傳於敵間也"],
+      plain: "死間，是刻意散布虛假情報，讓敵方相信，即便因此犧牲也在所不惜。"
+    },
+    {
+      quote: "生間者，反報也。",
+      tokens: ["生間者", "反報也"],
+      plain: "生間，是能安全返回並回報真實情報的間諜。"
+    },
+
+    {
+      quote: "故三軍之親，莫親於間，賞莫厚於間，事莫密於間。",
+      tokens: ["故三軍之親", "莫親於間", "賞莫厚於間", "事莫密於間"],
+      plain: "因此，在軍中最需親近的是間諜，賞賜最應厚待的是間諜，保密要求最高的也正是間諜之事。"
+    },
+    {
+      quote: "非聖賢不能用間，非仁義不能使間，非微妙不能得間之實。",
+      tokens: ["非聖賢不能用間", "非仁義不能使間", "非微妙不能得間之實"],
+      plain: "唯有具備智慧、仁義與細密手段的人，才能正確運用間諜並獲得真實情報。"
+    },
+    {
+      quote: "微哉微哉，無所不用間也；間事未發而先聞者，間與所告者皆死。",
+      tokens: ["微哉微哉", "無所不用間也", "間事未發而先聞者", "間與所告者皆死"],
+      plain: "用間之事極其細微而嚴密，一旦洩密，無論是間諜還是洩漏者，都必須處死。"
+    },
+
+    {
+      quote: "凡軍之所欲擊，城之所欲攻，人之所欲殺，",
+      tokens: ["凡軍之所欲擊", "城之所欲攻", "人之所欲殺"],
+      plain: "凡是軍隊計畫攻擊的目標，無論是軍、城或人，都不可貿然行動。"
+    },
+    {
+      quote: "必先知其守將、左右、謁者、門者、舍人之姓名，令吾間必索知之。",
+      tokens: ["必先知其守將", "左右", "謁者", "門者", "舍人之姓名", "令吾間必索知之"],
+      plain: "必須事先掌握對方關鍵人物與出入關係，並命令間諜逐一查明。"
+    },
+
+    {
+      quote: "必索敵人之間來間我者，因而利之，導而舍之，故反間可得而用也。",
+      tokens: ["必索敵人之間來間我者", "因而利之", "導而舍之", "故反間可得而用也"],
+      plain: "必須主動找出敵方派來的間諜，利誘、引導並安置他，才能使其反為我用。"
+    },
+    {
+      quote: "因是而知之，故鄉間、內間可得而使也。",
+      tokens: ["因是而知之", "故鄉間", "內間可得而使也"],
+      plain: "透過反間，便能進一步掌握敵情，進而有效運用鄉間與內間。"
+    },
+    {
+      quote: "因是而知之，故死間為誑事，可使告敵。",
+      tokens: ["因是而知之", "故死間為誑事", "可使告敵"],
+      plain: "同樣地，也能藉此安排死間，向敵方散布假情報。"
+    },
+    {
+      quote: "因是而知之，故生間可使如期。",
+      tokens: ["因是而知之", "故生間可使如期"],
+      plain: "如此一來，生間也能依計畫往返回報，情報運作方能成形。"
+    },
+
+    {
+      quote: "五間之事，主必知之，知之必在於反間，故反間不可不厚也。",
+      tokens: ["五間之事", "主必知之", "知之必在於反間", "故反間不可不厚也"],
+      plain: "五間運作，君主必須完全掌握，而其中關鍵在於反間，因此對反間的厚待不可或缺。"
+    },
+
+    {
+      quote: "昔殷之興也，伊摰在夏；周之興也，呂牙在殷。",
+      tokens: ["昔殷之興也", "伊摰在夏", "周之興也", "呂牙在殷"],
+      plain: "歷史上，殷與周的興起，皆因能在敵方陣營中掌握關鍵人物。"
+    },
+    {
+      quote: "故唯明君賢將，能以上智為間者，必成大功。",
+      tokens: ["故唯明君賢將", "能以上智為間者", "必成大功"],
+      plain: "因此，唯有明君賢將，能以最高智慧運用間諜，方能成就大功。"
+    },
+    {
+      quote: "此兵之要，三軍之所恃而動也。",
+      tokens: ["此兵之要", "三軍之所恃而動也"],
+      plain: "這正是用兵的核心要義，也是三軍賴以行動的根本依據。"
+    }
+
+  ]
+}
+
+
+
+  ];
+
+  for(const ch of CHAPTERS){
+    if(ch.segments && ch.segments.length) autoSplitChapterSegments(ch);
+  }
+
+  /***********************
+   * STORAGE
+   ***********************/
+  const LS_KEY = "sunzi_v1_master_fixed";
+
+  // ✅避免 iOS/LINE 對話方塊阻擋：把 alert 轉成 toast（不影響流程）
+  (function(){
+  // ✅ iOS/LINE 內建瀏覽器會封鎖原生 alert/confirm（也會造成操作卡住）；統一改用自家 Modal/Toast
+  try{ window.alert = function(){}; window.confirm = function(){ return false; }; }catch(_e){}
+
+    const _native = window.alert;
+    window.alert = function(msg){
+      try{
+        if(typeof showToast === "function") showToast(String(msg));
+        else console.log(msg);
+      }catch(e){
+        try{ _native(String(msg)); }catch(_e){}
+      }
+    };
+  })();
+  const defaultProgress = () => ({
+    fontScale: 1.00,
+    hintDefault: true,
+    hintOn: true,
+    soundOn: true,
+    ttsOn: true,
+    showPlainDefault: true,
+freeNav: false,
+    chapters: {}
+  });
+
+  function loadProgress(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      if(!raw) return defaultProgress();
+      const obj = JSON.parse(raw);
+      return { ...defaultProgress(), ...obj, chapters: obj.chapters || {} };
+    }catch(e){
+      return defaultProgress();
+    }
+  }
+  function saveProgress(){ localStorage.setItem(LS_KEY, JSON.stringify(PROG)); }
+
+  let PROG = loadProgress();
+  document.body.style.setProperty("--fontScale", String(PROG.fontScale));
+
+  
+  /***********************
+   * MOBILE VIEWPORT FIX (URL bar safe)
+   ***********************/
+  function __setVh(){
+    try{
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    }catch(_e){}
+  }
+  __setVh();
+  window.addEventListener("resize", __setVh);
+  window.addEventListener("orientationchange", __setVh);
+/***********************
+   * UI REFS
+   ***********************/
+  const viewOverview = document.getElementById("viewOverview");
+  const viewChapterHome = document.getElementById("viewChapterHome");
+  const viewGame = document.getElementById("viewGame");
+  const viewSettings = document.getElementById("viewSettings");
+
+  const topTitle = document.getElementById("topTitle");
+  const topSub = document.getElementById("topSub");
+
+  
+  const topVer = document.getElementById("topVer");
+  function setTopVer(show){
+    try{
+      if(!topVer) return;
+      topVer.textContent = `v1.0（${APP_VERSION}）`;
+      topVer.style.display = show ? "" : "none";
+    }catch(_e){}
+  }
+const btnOverview = document.getElementById("btnOverview");
+  const btnBackOrSettings = document.getElementById("btnBackOrSettings");
+
+  const overviewList = document.getElementById("overviewList");
+
+  const homeTitle = document.getElementById("homeTitle");
+  const homeMeta = document.getElementById("homeMeta");
+  const homeFullText = document.getElementById("homeFullText");
+  const btnStart = document.getElementById("btnStart");
+  const btnFromStart = document.getElementById("btnFromStart");
+  const btnHomeRead = document.getElementById("btnHomeRead");
+  const btnHomeStop = document.getElementById("btnHomeStop");
+  const showPlainSwitch = document.getElementById("showPlainSwitch");
+
+  const npcLine = document.getElementById("npcLine");
+  const btnSegRead = document.getElementById("btnSegRead");
+  const btnReset = document.getElementById("btnReset");
+  const btnBook = document.getElementById("btnBook");
+  const btnPrev = document.getElementById("btnPrev");
+  const btnNext = document.getElementById("btnNext");
+
+
+  const boardMeta = document.getElementById("boardMeta");
+
+  const slots = document.getElementById("slots");
+  const tokensEl = document.getElementById("tokens");
+  // ✅iOS Safari（非捷徑）底部工具列會吃掉貼近底部的點擊：建立「底部安全帶」並在需要時自動把畫面往上推
+  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = !!(window.navigator.standalone) || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  const DEAD_BAND = 0; // fixed23：改用底部安全緩衝，不再自動推畫面 // 非捷徑 iOS 才需要（約等於底部工具列/手勢區）
+
+  const gameWrapEl = document.querySelector('.gameWrap');
+  const tokensPanelEl = document.querySelector('.tokensPanel');
+
+  function ensureBottomSafe(){
+    try{
+      if(!DEAD_BAND) return;
+      if(!gameWrapEl || !tokensPanelEl) return;
+
+      const rect = tokensPanelEl.getBoundingClientRect();
+      const limit = window.innerHeight - (DEAD_BAND + 10);
+
+      if(rect.bottom > limit){
+        const delta = Math.min(220, Math.max(0, rect.bottom - limit));
+        gameWrapEl.scrollTop += (delta + 6);
+      }
+    }catch(_e){}
+  }
+
+  // 初次載入與旋轉螢幕時也補一次
+  window.addEventListener('resize', ()=>{ setTimeout(ensureBottomSafe, 60); }, {passive:true});
+
+  const hintSwitch = document.getElementById("hintSwitch");
+  const freeNavSwitch = document.getElementById("freeNavSwitch");
+  const hintToggleWrap = document.getElementById("hintToggleWrap");
+
+  const floatTestBtn = document.getElementById("floatTestBtn");
+
+  const modal = document.getElementById("modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = document.getElementById("modalBody");
+  const modalClose = document.getElementById("modalClose");
+  const modalActions = document.getElementById("modalActions");
+
+  const fontRange = document.getElementById("fontRange");
+  const soundSwitch = document.getElementById("soundSwitch");
+  const ttsSwitch = document.getElementById("ttsSwitch");
+  const hintDefaultSwitch = document.getElementById("hintDefaultSwitch");
+const btnClear = document.getElementById("btnClear");
+  const btnGuide = document.getElementById("btnGuide");
+  const btnResetChapter = document.getElementById("btnResetChapter");
+
+  /***********************
+   * NAV STATE
+   ***********************/
+  let nav = {
+    lastNonSettingsView: "overview",
+    chapterId: 1,
+    segIndex: 0,
+    mode: "learn",
+    testRange: {start:0,end:0},
+    testCursor: 0
+  };
+
+  function showView(which){
+    [viewOverview, viewChapterHome, viewGame, viewSettings].forEach(v => v.classList.remove("active"));
+    which.classList.add("active");
+    updateTopActionsLabel();
+    refreshFloatTestButton();
+  }
+
+  function updateTopActionsLabel(){
+    const inSettings = viewSettings.classList.contains("active");
+    btnBackOrSettings.textContent = inSettings ? "返回" : "設定";
+  }
+
+  function rememberNonSettingsView(){
+    if(viewSettings.classList.contains("active")) return;
+    if(viewOverview.classList.contains("active")) nav.lastNonSettingsView = "overview";
+    if(viewChapterHome.classList.contains("active")) nav.lastNonSettingsView = "home";
+    if(viewGame.classList.contains("active")) nav.lastNonSettingsView = "game";
+    nav.chapterId = currentChapterId;
+    nav.segIndex = currentSegIndex;
+    nav.mode = mode;
+    nav.testRange = {...testRange};
+    nav.testCursor = testCursor;
+  }
+
+  function restoreNonSettingsView(){
+    const target = nav.lastNonSettingsView;
+    currentChapterId = Number(nav.chapterId)||1;
+    currentSegIndex = nav.segIndex;
+    mode = nav.mode;
+    testRange = {...nav.testRange};
+    testCursor = nav.testCursor;
+
+    if(target==="overview"){
+      renderOverview();
+      topTitle.textContent = "孫子兵法";
+      topSub.textContent = "原書順序";
+    setTopVer(true);
+      showView(viewOverview);
+      return;
+    }
+    if(target==="home"){
+      openChapterHome();
+      return;
+    }
+    if(target==="game"){
+      startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
+      return;
+    }
+  }
+
+  btnOverview.onclick = () => {
+    stopReading();
+    rememberNonSettingsView();
+    renderOverview();
+    topTitle.textContent = "孫子兵法";
+    topSub.textContent = "原書順序";
+    setTopVer(true);
+    showView(viewOverview);
+  };
+
+  btnBackOrSettings.onclick = () => {
+    const inSettings = viewSettings.classList.contains("active");
+    if(inSettings){
+      restoreNonSettingsView();
+      return;
+    }
+    rememberNonSettingsView();
+    topTitle.textContent = "設定";
+    topSub.textContent = "調整你的學習手感";
+    setTopVer(false);
+    syncSettingsUI();
+    showView(viewSettings);
+  };
+
+  /***********************
+   * OVERVIEW（改成 2/9 進度顯示）
+   ***********************/
+  function getChapterProg(id){
+    if(!PROG.chapters[id]) PROG.chapters[id] = { stars:0 };
+    return PROG.chapters[id];
+  }
+
+  function renderOverview(){
+    overviewList.innerHTML = "";
+    CHAPTERS.forEach(ch => {
+      const total = (ch.segments && ch.segments.length) ? ch.segments.length : 0;
+      const p = getChapterProg(ch.id);
+      const done = Math.min(p.stars || 0, total);
+
+      const row = document.createElement("div");
+      row.className = "chapterRow";
+
+      const left = document.createElement("div");
+      left.className = "chapterLeft";
+
+      const name = document.createElement("div");
+      name.className = "chapterName";
+
+      const title = document.createElement("span");
+      title.style.minWidth = "0";
+      title.style.overflow = "hidden";
+      title.style.textOverflow = "ellipsis";
+      title.style.whiteSpace = "nowrap";
+      title.textContent = ch.name;
+
+      const prog = document.createElement("span");
+      prog.className = "chapterProg";
+      prog.textContent = total>0 ? `${done}/${total}` : "—/—";
+
+      name.appendChild(title);
+      name.appendChild(prog);
+
+      const hint = document.createElement("div");
+      hint.className = "chapterHint";
+      hint.textContent = (total>0)
+        ? (done>=total ? "已完成，可複習/測驗" : "可進入練習")
+        : "內容待補";
+
+      left.appendChild(name);
+      left.appendChild(hint);
+
+      const go = document.createElement("button");
+      go.className = "chapterGo";
+      go.textContent = (total>0) ? "進入" : "待補";
+      go.disabled = (total===0);
+      go.onclick = () => { currentChapterId = ch.id; openChapterHome(); };
+
+      row.appendChild(left);
+      row.appendChild(go);
+      overviewList.appendChild(row);
+    });
+  }
+
+  /***********************
+   * CHAPTER HOME
+   ***********************/
+  let currentChapterId = 1;
+  let currentSegIndex = 0;
+
+  function openChapterHome(){
+    stopReading();
+
+    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    if(!ch || !ch.segments.length) return;
+
+    const p = getChapterProg(currentChapterId);
+    const total = ch.segments.length;
+    const done = Math.min(p.stars || 0, total);
+
+    homeTitle.textContent = ch.name;
+    homeMeta.textContent = `${done}/${total}`;
+
+    const showPlain = !!PROG.showPlainDefault;
+    const full = ch.segments.map((s, i) => {
+      const n = `（${i+1}）`;
+      if(!showPlain) return `${n}${s.quote}`;
+      const pl = (s.plain || "").trim();
+      return pl
+        ? `${n}${s.quote}\n【白話】${pl}`
+        : `${n}${s.quote}\n【白話】（待補）`;
+    }).join("\n\n");
+
+    homeFullText.textContent = full;
+
+    showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
+
+    topTitle.textContent = ch.name;
+    topSub.textContent = "篇章首頁";
+    setTopVer(false);
+    showView(viewChapterHome);
+  }
+
+  bindFastTap(btnStart, () => {
+    // ✅ 防呆：避免某些手機瀏覽器在「清空/返回」後，chapterId 變成字串導致找不到章節
+    let ch = CHAPTERS.find(x => x.id===currentChapterId);
+    if(!ch){
+      currentChapterId = Number(currentChapterId)||1;
+      ch = CHAPTERS.find(x => x.id===currentChapterId);
+    }
+    const p = getChapterProg(currentChapterId);
+
+    // 找不到章節就直接從頭進（避免卡死）
+    if(!ch || !ch.segments || !ch.segments.length){
+      currentSegIndex = 0;
+      startLearnSegment(0, { firstEntry:true });
+      return;
+    }
+
+    currentSegIndex = Math.min((p.stars || 0), ch.segments.length-1);
+    startLearnSegment(currentSegIndex, { firstEntry:true });
+  });
+
+  bindFastTap(btnFromStart, () => {
+    currentSegIndex = 0;
+    startLearnSegment(currentSegIndex, { firstEntry:true, fromStart:true });
+  });
+
+  showPlainSwitch.onclick = () => {
+    PROG.showPlainDefault = !PROG.showPlainDefault;
+    saveProgress();
+        try{ showToast && showToast('✅ 已重置本篇進度'); }catch(_e){ try{ alert('已重置本篇進度'); }catch(__){} }
+
+    showPlainSwitch.classList.toggle("on", !!PROG.showPlainDefault);
+    openChapterHome();
+  };
+
+  /***********************
+   * AUDIO（beep）
+   ***********************/
+  let audioCtx = null;
+
+  // ✅集中管理：確保 AudioContext 存在且已 resume（iOS/PWA 常會自動 suspend）
+  function ensureAudioCtx(){
+    try{
+      if(!audioCtx){
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return null;
+        audioCtx = new AC();
+      }
+      return audioCtx;
+    }catch(e){
+      return null;
+    }
+  }
+
+  // ✅ iOS / PWA：用第一次手勢解鎖音效（避免「有時候沒聲音」）
+  function unlockAudio(){
+    try{
+      const ctx = ensureAudioCtx();
+      if(!ctx) return;
+      if(ctx.state === "suspended"){
+        ctx.resume().catch(()=>{});
+      }
+      // 播一個「靜音」buffer，讓 iOS 視為已解鎖（不會真的發聲）
+      try{
+        const b = ctx.createBuffer(1, 1, 22050);
+        const src = ctx.createBufferSource();
+        const g = ctx.createGain();
+        g.gain.value = 0;
+        src.buffer = b;
+        src.connect(g);
+        g.connect(ctx.destination);
+        src.start(0);
+      }catch(_e){}
+    }catch(_e){}
+  }
+  window.addEventListener("pointerdown", unlockAudio, { once:true, passive:true });
+  window.addEventListener("touchstart", unlockAudio, { once:true, passive:true });
+
+  function beep(type="ok"){
+  if(!PROG.soundOn) return;
+  try{
+    const ctx = ensureAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+
+    // 預設參數
+    let freq = 740;
+    let dur = 0.18;
+    let peak = 0.075;
+
+    if(type==="tap"){ freq = 520; dur = 0.08; peak = 0.055; }
+    if(type==="ok"){  freq = 740; dur = 0.18; peak = 0.075; }
+    if(type==="bad"){ freq = 220; dur = 0.22; peak = 0.085; }
+
+    o.frequency.setValueAtTime(freq, now);
+
+    // 平滑包絡，避免爆音
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(peak, now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+    o.connect(g); g.connect(ctx.destination);
+    o.start(now);
+    o.stop(now + dur + 0.01);
+  }catch(_e){}
+}
+
+  // === A2H 教學：保險開啟器（設定第一行） ===
+  function openA2HGuide(){
+    try{ unlockAudio(); }catch(_e){}
+    try{ showA2HGuide(); return; }catch(_e){}
+    // fallback：若 showA2HGuide 不存在，試著觸發既有的 modal
+    try{
+      const m = document.getElementById("a2hModal");
+      if(m){ m.classList.add("show"); document.body.classList.add("lock"); }
+    }catch(_e){}
+  }
+
+  // === Token 音效：每次點令牌都有回饋；錯誤另有提示音 ===
+  window.__resultBeepAt = 0;
+  const _beep = beep;
+  beep = function(type="ok"){
+    window.__resultBeepAt = Date.now();
+    return _beep(type);
+  };
+
+  function tapBeepDeferred(){
+    if(!PROG.soundOn) return;
+    const t0 = Date.now();
+    setTimeout(()=>{
+      // 若剛剛已經播了 ok/bad，就不再補 tap，避免雙重音
+      if(Date.now() - (window.__resultBeepAt||0) < 80) return;
+      _beep("tap");
+    }, 0);
+  }
+
+  /***********************
+   * ✅TTS（iOS 穩定暫停：onboundary 記錄斷點）
+   ***********************/
+  let ttsState = {
+    playing:false,
+    kind:"none",
+    queue:[],
+    idx:0,
+    boundaryChar:0,
+    currentText:"",
+    paused:false
+  };
+
+  function canTTS(){
+    return PROG.ttsOn && ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
+  }
+
+  function stopReading(){
+    try{ if("speechSynthesis" in window) window.speechSynthesis.cancel(); }catch(e){}
+    ttsState = { playing:false, kind:"none", queue:[], idx:0, boundaryChar:0, currentText:"", paused:false };
+    btnHomeRead.innerHTML = (document.getElementById("btnSegRead") ? document.getElementById("btnSegRead").innerHTML : "🗣️");
+  }
+
+  function speakFrom(text, kind){
+    if(!canTTS()) return;
+    try{
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "zh-TW";
+      u.rate = 0.92;
+      u.pitch = 1.0;
+
+      ttsState.currentText = text;
+      ttsState.boundaryChar = 0;
+      ttsState.kind = kind;
+      ttsState.playing = true;
+      ttsState.paused = false;
+
+      u.onboundary = (ev) => {
+        if(typeof ev.charIndex === "number") ttsState.boundaryChar = ev.charIndex;
+      };
+
+      u.onend = () => {
+        if(!ttsState.playing) return;
+        ttsState.idx += 1;
+        playNextUtterance();
+      };
+
+      u.onerror = () => stopReading();
+
+      window.speechSynthesis.speak(u);
+    }catch(e){
+      stopReading();
+    }
+  }
+
+  function speakQueue(queue, kind){
+    if(!canTTS()) return;
+    stopReading();
+    ttsState.queue = queue;
+    ttsState.idx = 0;
+    ttsState.kind = kind;
+    ttsState.playing = true;
+    ttsState.paused = false;
+
+    btnHomeRead.innerHTML = (document.getElementById("btnSegRead") ? document.getElementById("btnSegRead").innerHTML : "🗣️");
+
+    playNextUtterance();
+  }
+
+  function playNextUtterance(){
+    if(!canTTS()) return;
+    if(ttsState.idx >= ttsState.queue.length){
+      stopReading();
+      return;
+    }
+    const text = ttsState.queue[ttsState.idx];
+    speakFrom(text, ttsState.kind);
+  }
+
+  function pauseOrResume(){
+    if(!canTTS()) return;
+
+    if(ttsState.playing && !ttsState.paused){
+      try{ window.speechSynthesis.cancel(); }catch(e){}
+      ttsState.paused = true;
+
+    btnHomeRead.innerHTML = (document.getElementById("btnSegRead") ? document.getElementById("btnSegRead").innerHTML : "🗣️");
+      return;
+    }
+
+    if(ttsState.playing && ttsState.paused){
+      const remain = (ttsState.currentText || "").slice(Math.max(0, ttsState.boundaryChar));
+      ttsState.paused = false;
+
+    btnHomeRead.innerHTML = (document.getElementById("btnSegRead") ? document.getElementById("btnSegRead").innerHTML : "🗣️");
+
+      if(remain.trim().length < 2){
+        ttsState.idx += 1;
+        playNextUtterance();
+        return;
+      }
+
+      speakFrom(remain, ttsState.kind);
+      return;
+    }
+  }
+
+  btnHomeRead.onclick = () => {
+    if(!canTTS()) return;
+    if(ttsState.playing && ttsState.kind==="chapter"){ pauseOrResume(); return; }
+    const ch = CHAPTERS.find(x => x.id===currentChapterId);
+    if(!ch) return;
+    const q = ch.segments.map(s => s.quote);
+    speakQueue(q, "chapter");
+  };
+  btnHomeStop.onclick = () => stopReading();
+
+  btnSegRead.onclick = () => {
+    if(!canTTS()) return;
+    if(ttsState.playing && ttsState.kind==="segment"){ pauseOrResume(); return; }
+    const seg = currentSeg();
+    speakQueue([seg.quote], "segment");
+  };
+
+  /***********************
+   * GAME
+   ***********************/
+  let pool = [];
+  let selection = [];
+
+  let mode = "learn";
+  let testRange = { start:0, end:0 };
+  let testCursor = 0;
+
+  function shuffle(a){
+    const arr = [...a];
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function setNpcOriginal(line){
+    const maxLen = 64;
+    if(line.length > maxLen){
+      npcLine.innerHTML = escapeHtml(line.slice(0, maxLen)) + `<span class="npcMore" id="npcMore">…（更多）</span>`;
+      document.getElementById("npcMore").onclick = () => showNpcFull(line);
+    }else{
+      npcLine.textContent = line;
+    }
+  }
+
+  function showNpcFull(line){
+    openModal("原文", `<div class="quote">${escapeHtml(line)}</div>`);
+  }
+
+  function currentChapter(){ return CHAPTERS.find(x => x.id===currentChapterId); }
+  function currentSeg(){
+    const ch = currentChapter();
+    return (mode==="test") ? ch.segments[testCursor] : ch.segments[currentSegIndex];
+  }
+
+  function updateBoardMeta(){
+    const ch = currentChapter();
+    const totalSeg = ch?.segments?.length || 0;
+    const idx = (mode==="test") ? (testCursor + 1) : (currentSegIndex + 1);
+
+    // ✅此段完成度（已放入佈令板 / 此段總令牌）
+    let totalTokens = 0;
+    try{
+      const seg = ch?.segments?.[(mode==="test") ? testCursor : currentSegIndex];
+      totalTokens = seg?.tokens?.length || 0;
+    }catch(e){ totalTokens = 0; }
+    const placed = Array.isArray(selection) ? selection.length : 0;
+    boardMeta.textContent = `完成 ${placed}/${totalTokens}`;
+
+    const navText = document.getElementById('navText');
+    if(navText) navText.textContent = `${idx}/${totalSeg}`;
+  }
+
+  function startLearnSegment(segIndex, opts={}) {
+    stopReading();
+    mode = "learn";
+    btnPrev.disabled = (segIndex <= 0);
+
+    btnBook.classList.remove("pulseStrong");
+    btnBook.disabled = true;
+
+    const ch = currentChapter();
+    const seg = ch.segments[segIndex];
+    // ✅若此段已通過，就不要再把「下一關」鎖灰
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
+    const freeNav = !!PROG.freeNav;
+    const unlocked = freeNav ? true : (passed >= (segIndex + 1));
+
+    btnNext.disabled = !unlocked;
+    btnBook.disabled = !unlocked;
+    btnBook.classList.toggle("pulseStrong", unlocked);
+
+
+    if(!opts.preserve){
+      selection = [];
+      pool = shuffle(seg.tokens);
+    }
+
+    topTitle.textContent = ch.name;
+    topSub.textContent = "佈令背誦";
+    setTopVer(false);
+    showView(viewGame);
+
+    if(opts.firstEntry){
+      PROG.hintOn = !!PROG.hintDefault;
+      saveProgress();
+    }
+    renderHintSwitch();
+
+  if(freeNavSwitch){
+    const syncFreeNav = () => {
+      freeNavSwitch.classList.toggle('on', !!PROG.freeNav);
+      freeNavSwitch.setAttribute('aria-checked', PROG.freeNav ? 'true' : 'false');
+    };
+    syncFreeNav();
+    freeNavSwitch.addEventListener('click', () => {
+      PROG.freeNav = !PROG.freeNav;
+      syncFreeNav();
+      saveProgress();
+      try{ showToast('已更新：自由瀏覽 ' + (PROG.freeNav ? '開啟' : '關閉')); }catch(_e){}
+    });
+  }
+
+    setNpcOriginal(seg.quote);
+    updateBoardMeta();
+    renderBoard();
+    refreshFloatTestButton();
+    syncLearnUnlock();
+
+
+    if(PROG.hintOn) flashHintTimes(2);
+  }
+
+  btnReset.onclick = () => {
+    stopReading();
+    beep("tap");
+
+    openModal(
+      "重整",
+      `<div class="plain">想怎麼重整？</div>`,
+      `
+        <button class="btn" id="resetSegBtn">重整本段落</button>
+        <button class="btn primary" id="resetChBtn">重整本篇章</button>
+      `
+    );
+
+    // 綁定一次性按鈕
+    setTimeout(() => {
+      const a = document.getElementById("resetSegBtn");
+      const b = document.getElementById("resetChBtn");
+      if(a) a.onclick = () => {
+        modal.classList.remove("show");
+    modal.classList.remove("a2hs");
+
+        restartCurrent();
+        // 完成後若提示開啟，給一次提示閃爍
+        try{ if(PROG.hintOn) flashHintTimes(1); }catch(_e){}
+      };
+      if(b) b.onclick = () => {
+        modal.classList.remove("show");
+        // 走既有的「重置本篇」確認流程
+        try{ __resetCurrentChapterHard(); }catch(_e){ openChapterHome(); }
+      };
+    }, 0);
+  };
+
+  function restartCurrent(){
+    btnNext.disabled = true;
+    btnBook.classList.remove("pulseStrong");
+    btnBook.disabled = true;
+
+    const seg = currentSeg();
+    selection = [];
+    pool = shuffle(seg.tokens);
+    renderBoard();
+    updateBoardMeta();
+    try{ setOrderError(false); }catch(_e){}
+  }
+
+  
+  // ✅放錯令牌：立即回饋（不受「學習提示」開關影響）
+  const orderErrorEl = document.getElementById("orderError");
+  function setOrderError(on){
+    if(!orderErrorEl) return;
+    orderErrorEl.classList.toggle("show", !!on);
+  }
+
+function vibrateSoft(){
+    try{
+      if(navigator && navigator.vibrate) navigator.vibrate(20);
+    }catch(_e){}
+  }
+
+function bindFastTap(el, handler){
+    if(!el) return;
+
+    // ✅手機瀏覽器「連發」的根因：同時綁了 pointerdown / pointerup / touchstart / touchend
+    // 會讓同一次觸控觸發 2~4 次。
+    // 這裡改成：
+    // 1) 以 pointerdown 為主（最靈敏）
+    // 2) 同一個 pointerId 只允許觸發一次
+    // 3) click 當最後保險（桌機/少數環境）
+
+    let activePointerId = null;
+    let lastFire = 0;
+    let lastPointerDown = 0;
+
+    // 🔒 Android（新增到主畫面／捷徑模式）容易「一觸多發」：同一手勢會補送 click/touch
+    // 只在 Android + standalone 時提高防抖門檻，避免噴發；iOS/桌機不受影響。
+    const __isAndroid = /Android/i.test(navigator.userAgent);
+    const __isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                          (window.navigator.standalone === true);
+    const __DEBOUNCE = (__isAndroid && __isStandalone) ? 900 : 220;
+
+
+    const fireOnce = (ev) => {
+      const now = Date.now();
+      if(now - lastFire < __DEBOUNCE) return; // 防抖：避免極端情境（某些瀏覽器會再補一個 click）
+      lastFire = now;
+      try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
+      try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
+      try{ unlockAudio(); }catch(_e){}
+      handler();
+      try{ ensureBottomSafe(); }catch(_e){}
+    };
+
+    const onDown = (ev) => {
+      // 同一次觸控，只觸發一次
+      if(activePointerId !== null) return;
+      activePointerId = ev && (ev.pointerId ?? 1);
+      lastPointerDown = Date.now();
+      try{ el.setPointerCapture && ev && el.setPointerCapture(ev.pointerId); }catch(_e){}
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.preventDefault();
+      ev.stopPropagation();
+      fireOnce(ev);
+    };
+
+    const release = () => { activePointerId = null; };
+
+    // Pointer events
+    el.addEventListener('pointerdown', onDown, {passive:false});
+    el.addEventListener('pointerup', release, {passive:true});
+    el.addEventListener('pointercancel', release, {passive:true});
+    el.addEventListener('lostpointercapture', release, {passive:true});
+
+    // Click 後援（桌機）
+    el.addEventListener('click', (ev)=>{
+      // 手機上 pointerdown 後仍可能補一個 click；若剛剛有 pointerdown，就直接忽略 click
+      if(Date.now() - lastPointerDown < 900) return;
+      fireOnce(ev);
+    }, {passive:false});
+  }
+
+  function makeToken(text){
+    const el = document.createElement("div");
+    el.className = "token";
+    el.textContent = text;
+    return el;
+  }
+
+  function renderBoard(){
+    slots.innerHTML = "";
+
+    if(selection.length===0){
+      const hint = document.createElement("div");
+      hint.className = "slotHint";
+      hint.textContent = "點下方令牌，依順序放進佈令板";
+      slots.appendChild(hint);
+    }else{
+      selection.forEach((t, idx) => {
+        const el = makeToken(t);
+        bindFastTap(el, () => {
+          beep("tap");
+          selection.splice(idx,1);
+          pool.push(t);
+        renderBoard();
+          applyHint();
+    try{ ensureBottomSafe(); }catch(_e){}
+        });
+        slots.appendChild(el);
+      });
+    }
+
+    tokensEl.innerHTML = "";
+    pool.forEach((t, idx) => {
+      const el = makeToken(t);
+      bindFastTap(el, () => {
+        selection.push(t);
+        pool.splice(idx,1);
+
+        // ✅立即判斷「目前已放的前綴」是否正確（學習模式才做）
+        let prefixOk = true;
+        if(mode==="learn"){
+          const segNow = currentSeg();
+          prefixOk = selection.every((v,i)=> v===segNow.tokens[i]);
+        }
+
+        renderBoard();
+
+        // ✅ 放錯：紅框閃 + 輕震 + 淡字提示（不受「學習提示」開關影響）
+        if(!prefixOk){
+          const placed = slots.querySelectorAll(".token");
+          const last = placed[placed.length-1];
+          if(last){
+            last.classList.add("wrongFlash");
+            setTimeout(()=> last.classList.remove("wrongFlash"), 520);
+          }
+          vibrateSoft();
+          setOrderError(true);
+        }else{
+          setOrderError(false);
+        }
+
+        checkWinRouter();
+      });
+      tokensEl.appendChild(el);
+    });
+
+    applyHint();
+    updateBoardMeta();
+  }
+
+  function applyHint(){
+    const all = tokensEl.querySelectorAll(".token");
+    all.forEach(t => t.classList.remove("hintStrong","hintMid","hintWeak","hintFlash","breath"));
+
+    if(!PROG.hintOn) return;
+    const seg = currentSeg();
+    const next = seg.tokens[selection.length];
+    if(!next) return;
+
+    for(const el of all){
+      if(el.textContent === next){
+        el.classList.add("breath");
+        break;
+      }
+    }
+  }
+
+  function flashHintTimes(times=2){
+    if(!PROG.hintOn) return;
+    const seg = currentSeg();
+    const next = seg.tokens[selection.length];
+    if(!next) return;
+
+    const all = [...tokensEl.querySelectorAll(".token")];
+    const target = all.find(el => el.textContent === next);
+    if(!target) return;
+
+    let n = 0;
+    const tick = () => {
+      if(n >= times) return;
+      target.classList.remove("hintFlash");
+      void target.offsetWidth;
+      target.classList.add("hintFlash");
+      n++;
+      setTimeout(tick, 760);
+    };
+    tick();
+  }
+
+  function checkLearnWin(){
+    const seg = currentSeg();
+    if(selection.length !== seg.tokens.length) return;
+
+    const ok = selection.every((v,i)=> v===seg.tokens[i]);
+    if(ok){
+      beep("ok");
+      onSegmentPassed();
+    }else{
+      beep("bad");
+    }
+  }
+
+  function onSegmentPassed(){
+    btnNext.disabled = false;
+
+    btnBook.disabled = false;
+    btnBook.classList.add("pulseStrong");
+
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    p.stars = Math.max(p.stars || 0, currentSegIndex + 1);
+    saveProgress();
+
+    refreshFloatTestButton();
+  }
+  // ✅把「下一關 / 兵書」按鈕狀態同步回學習模式
+  function syncLearnUnlock(){
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
+
+    const unlocked = (!!PROG.freeNav) ? true : (passed >= (currentSegIndex + 1));
+
+    // 下一關：已通過當前段就應該可按
+    btnNext.disabled = !unlocked;
+
+    // 兵書：同樣規則（你通過了才給你“打開兵書”爽一下）
+    btnBook.disabled = !unlocked;
+    btnBook.classList.toggle("pulseStrong", unlocked);
+  }
+
+
+  function checkTestWin(){
+    const seg = currentSeg();
+    if(selection.length !== seg.tokens.length) return;
+    const ok = selection.every((v,i)=> v===seg.tokens[i]);
+
+    if(ok){
+      beep("ok");
+      if(testCursor < testRange.end){
+        testCursor++;
+btnPrev.disabled = (testCursor <= testRange.start);
+btnNext.disabled = true; // 測驗不走「下一關」，保持鎖住是對的
+
+        setNpcOriginal(currentChapter().segments[testCursor].quote);
+        updateBoardMeta();
+        restartCurrent();
+btnPrev.disabled = (testCursor <= testRange.start);
+
+
+
+        if(PROG.hintOn) flashHintTimes(1);
+      }else{
+        openModal("測驗通過", `<div class="plain">完成範圍：第${testRange.start+1}段～第${testRange.end+1}段</div>`, `
+          <button class="btn" id="btnBackToLearn">回到佈令</button>
+          <button class="btn primary" id="btnBackHome">回到篇章首頁</button>
+        `);
+        setTimeout(() => {
+          const a = document.getElementById("btnBackToLearn");
+          const b = document.getElementById("btnBackHome");
+          if(a) a.onclick = () => { closeModal(); mode="learn"; startLearnSegment(currentSegIndex, { firstEntry:false }); };
+          if(b) b.onclick = () => { closeModal(); openChapterHome(); };
+        }, 0);
+      }
+    }else{
+      beep("bad");
+      openModal("測驗未過", `
+        <div class="plain">沒關係。你按下「重來」那一刻，腦子其實正在重編碼。</div>
+      `, `
+        <button class="btn" id="btnRetryTest">重來</button>
+        <button class="btn primary" id="btnPauseLater">先放下</button>
+      `);
+      setTimeout(() => {
+        const r = document.getElementById("btnRetryTest");
+        const g = document.getElementById("btnPauseLater");
+        if(r) r.onclick = () => { closeModal(); restartCurrent(); if(PROG.hintOn) flashHintTimes(1); };
+        if(g) g.onclick = () => { closeModal(); openChapterHome(); };
+      }, 0);
+    }
+  }
+
+  function checkWinRouter(){
+    if(mode==="learn") checkLearnWin();
+    else checkTestWin();
+  }
+
+  btnPrev.onclick = () => {
+  stopReading();
+  beep("tap");
+
+  const ch = currentChapter();
+
+  // 測驗模式：回到測驗範圍的上一段
+  if(mode === "test"){
+    if(testCursor > testRange.start){
+      testCursor -= 1;
+      setNpcOriginal(ch.segments[testCursor].quote);
+      updateBoardMeta();
+      restartCurrent();
+      if(PROG.hintOn) flashHintTimes(1);
+    }
+    return;
+  }
+
+  // 佈令模式：回到上一關複習
+  if(currentSegIndex > 0){
+    currentSegIndex -= 1;
+    startLearnSegment(currentSegIndex, { firstEntry:false });
+  }
+};
+
+
+  /***********************
+   * BOOK（原文＋白話）
+   ***********************/
+  btnBook.onclick = () => {
+    if(btnBook.disabled) return;
+    const seg = currentSeg();
+    openModal("兵書", `
+      <div class="quote">${escapeHtml(seg.quote)}</div>
+      <div class="plain"><strong>白話：</strong>${escapeHtml((seg.plain || "（待補）").trim() || "（待補）")}</div>
+    `);
+  };
+
+  function openModal(title, html, actionsHtml=null){
+    modalTitle.textContent = title;
+    modalBody.innerHTML = html;
+
+    if(actionsHtml){
+      modalActions.style.display = "flex";
+      modalActions.innerHTML = actionsHtml;
+    }else{
+      modalActions.style.display = "none";
+      modalActions.innerHTML = "";
+    }
+    modal.classList.add("show");
+  }
+  // ✅ 統一關閉 Modal（避免未定義造成按鈕無反應）
+  function closeModal(){
+    try{ modal.classList.remove("show"); }catch(_e){}
+    try{
+      modalActions.style.display = "none";
+      modalActions.innerHTML = "";
+    }catch(_e){}
+  }
+
+
+
+    modalClose.onclick = () => {
+    // 關閉視窗
+    modal.classList.remove("show");
+
+    // 清空 actions
+    modalActions.style.display = "none";
+    modalActions.innerHTML = "";
+
+    // ✅保險：只在「佈令畫面」且剛好在「測驗模式」時，才做復原
+    try{
+      if(viewGame.classList.contains("active") && mode === "test"){
+        mode = "learn";
+        startLearnSegment(currentSegIndex, { firstEntry:false, preserve:true });
+        syncLearnUnlock(); // 恢復「下一關 / 兵書」狀態
+      }
+    }catch(_e){}
+  };
+
+  modal.onclick = (e) => { if(e.target === modal) closeModal(); };
+
+  /***********************
+   * ✅浮動測驗鈕（不佔空間）
+   ***********************/
+  function refreshFloatTestButton(){
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch?.segments?.length || 0);
+
+    if(viewGame.classList.contains("active") && mode==="learn" && passed >= 1){
+      floatTestBtn.classList.add("show");
+    }else{
+      floatTestBtn.classList.remove("show");
+    }
+  }
+
+  function beginTest(s,e){
+    stopReading();
+    mode = "test";
+    testRange = { start:s, end:e };
+    testCursor = s;
+    btnPrev.disabled = (testCursor <= testRange.start);
+
+
+    btnNext.disabled = true;
+    btnBook.classList.remove("pulseStrong");
+    btnBook.disabled = true;
+
+    setNpcOriginal(currentChapter().segments[testCursor].quote);
+    updateBoardMeta();
+    restartCurrent();
+    refreshFloatTestButton();
+    if(PROG.hintOn) flashHintTimes(1);
+  }
+
+  floatTestBtn.onclick = () => {
+    const ch = currentChapter();
+    const p = getChapterProg(currentChapterId);
+    const passed = Math.min(p.stars || 0, ch.segments.length);
+
+    const options = Array.from({length: passed}, (_,i)=> `<option value="${i}">第${i+1}段</option>`).join("");
+    openModal("測驗", `
+      <div class="plain">選擇範圍：</div>
+      <div class="plain">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <span style="font-weight:1000;">從</span>
+          <select id="mTestStart" class="select">${options}</select>
+          <span style="font-weight:1000;">到</span>
+          <select id="mTestEnd" class="select">${options}</select>
+        </div>
+      </div>
+    `, `
+      <button class="btn" id="btnCancelTest">取消</button>
+      <button class="btn primary" id="btnGoTest">開始測驗</button>
+    `);
+
+    setTimeout(()=>{
+      const sEl = document.getElementById("mTestStart");
+      const eEl = document.getElementById("mTestEnd");
+      const cancel = document.getElementById("btnCancelTest");
+      const go = document.getElementById("btnGoTest");
+
+      sEl.value = "0";
+      eEl.value = String(passed-1);
+
+      sEl.onchange = () => { if(Number(eEl.value) < Number(sEl.value)) eEl.value = sEl.value; };
+      eEl.onchange = () => { if(Number(eEl.value) < Number(sEl.value)) sEl.value = eEl.value; };
+
+      cancel.onclick = () => closeModal();
+      go.onclick = () => {
+        const s = Number(sEl.value);
+        const e = Number(eEl.value);
+        closeModal();
+        beginTest(s,e);
+      };
+    },0);
+  };
+
+  /***********************
+   * HINT TOGGLE
+   ***********************/
+  function renderHintSwitch(){ hintSwitch.classList.toggle("on", !!PROG.hintOn); }
+  hintToggleWrap.onclick = () => {
+    PROG.hintOn = !PROG.hintOn;
+    saveProgress();
+    renderHintSwitch();
+    applyHint();
+    if(PROG.hintOn) flashHintTimes(2);
+  };
+
+  
+  /***********************
+   * CHAPTER RESET (robust)
+   ***********************/
+  function resetChapterProgress(){
+    try{
+      const chId = currentChapterId;
+      const p = getChapterProg(chId);
+      p.stars = 0;
+      saveProgress();
+      currentSegIndex = 0;
+      // If currently in game, refresh; otherwise go to chapter home
+      try{ showToast("✅ 已重置本篇進度"); }catch(_e){ try{ alert("已重置本篇進度"); }catch(__){} }
+      try{ openChapterHome(); }catch(_e){ try{ renderOverview(); showView(viewOverview); }catch(__){} }
+    }catch(err){
+      try{ alert("重置失敗，請告訴小樂：" + err); }catch(_e){}
+    }
+  }
+
+/***********************
+   * SETTINGS
+   ***********************/
+  function syncSettingsUI(){
+    if(freeNavSwitch) /* freeNavSwitch UI sync handled in click binder */
+    fontRange.value = String(PROG.fontScale);
+    soundSwitch.classList.toggle("on", !!PROG.soundOn);
+    ttsSwitch.classList.toggle("on", !!PROG.ttsOn);
+    hintDefaultSwitch.classList.toggle("on", !!PROG.hintDefault);
+}
+
+  fontRange.oninput = () => {
+    PROG.fontScale = Number(fontRange.value);
+    document.body.style.setProperty("--fontScale", String(PROG.fontScale));
+    saveProgress();
+  };
+
+  function toggleSwitch(el, key){
+    PROG[key] = !PROG[key];
+    el.classList.toggle("on", !!PROG[key]);
+    saveProgress();
+    if(key==="ttsOn" && !PROG.ttsOn) stopReading();
+  }
+  soundSwitch.onclick = () => toggleSwitch(soundSwitch, "soundOn");
+  ttsSwitch.onclick = () => toggleSwitch(ttsSwitch, "ttsOn");
+
+  hintDefaultSwitch.onclick = () => {
+    PROG.hintDefault = !PROG.hintDefault;
+    hintDefaultSwitch.classList.toggle("on", !!PROG.hintDefault);
+    saveProgress();
+  };
+
+  // ✅「重看教學」：只在使用者主動點擊時顯示（避免 LINE 內建瀏覽器一直跳）
+  if(btnGuide){
+    btnGuide.onclick = () => {
+      try{
+        localStorage.removeItem("A2HS_SEEN_V1");
+        sessionStorage.removeItem("A2HS_SEEN_SESSION");
+      }catch(_e){}
+
+      const body = `
+        <div class="plain">想要像 App 一樣全螢幕、比較順暢（也比較不會被網址列擠壓），建議加入主畫面。</div>
+
+        <div class="helpBox" style="margin-top:10px">
+          <div class="helpLine"><b>iPhone / iPad（Safari）</b></div>
+          <div class="helpLine">1. 用 Safari 開啟本頁</div>
+          <div class="helpLine">2. 點下方「分享」按鈕（方框＋上箭頭）</div>
+          <div class="helpLine">3. 選「加入主畫面」</div>
+          <div class="helpLine">4. 從主畫面打開，就像 App</div>
+        </div>
+
+        <div class="helpBox" style="margin-top:10px">
+          <div class="helpLine"><b>Android（Chrome）</b></div>
+          <div class="helpLine">1. 用 Chrome 開啟本頁</div>
+          <div class="helpLine">2. 點右上角「⋮」選單</div>
+          <div class="helpLine">3. 選「加入主畫面」或「安裝應用程式」</div>
+          <div class="helpLine">4. 從主畫面打開，就像 App</div>
+        </div>
+
+        <div class="plain muted" style="margin-top:10px">小提醒：若你是在 LINE/FB 內建瀏覽器，建議改用「在 Safari/Chrome 開啟」，操作會更穩。</div>
+      `;
+
+      openModal("加入主畫面（捷徑）", body, `<button class="btn" id="btnGuideOK"><span class="btnLabel">知道了</span></button>`);
+
+      const ok = document.getElementById("btnGuideOK");
+      if(ok){
+        ok.onclick = () => {
+          try{
+            localStorage.setItem("A2HS_SEEN_V1","1");
+            sessionStorage.setItem("A2HS_SEEN_SESSION","1");
+          }catch(_e){}
+          closeModal();
+        };
+      }
+    };
+  }
+
+  // ✅ 清空足跡：用自家 Modal（不跳 iOS 原生對話方塊）
+  btnClear.onclick = () => {
+    openModal("清空足跡", `
+      <div class="plain">這會把所有篇章的「進度」清空（不會重置字級/顯示設定）。</div>
+      <div class="modalActions">
+        <button class="btn ghost" id="btnClearCancel">取消</button>
+        <button class="btn danger" id="btnClearOK">確定清空</button>
+      </div>
+    `);
+
+    document.getElementById("btnClearCancel")?.addEventListener("click", () => closeModal());
+
+    document.getElementById("btnClearOK")?.addEventListener("click", () => {
+      try{ stopReading && stopReading(); }catch(_e){}
+
+      // 保留設定
+      const keep = {
+        fontScale: PROG?.fontScale,
+        hintDefault: PROG?.hintDefault,
+        hintOn: PROG?.hintOn,
+        soundOn: PROG?.soundOn,
+        ttsOn: PROG?.ttsOn,
+        showPlainDefault: PROG?.showPlainDefault,
+        freeNav: PROG?.freeNav
+      };
+
+      try{
+        PROG = defaultProgress();
+        Object.keys(keep).forEach(k=>{
+          if(keep[k] !== undefined && keep[k] !== null) PROG[k] = keep[k];
+        });
+        PROG.chapters = {};
+        saveProgress();
+      }catch(e){
+        try{ localStorage.removeItem(LS_KEY); }catch(_e){}
+        try{ PROG = defaultProgress(); PROG.chapters = {}; saveProgress(); }catch(_e){}
+      }
+
+      // 同步 UI 並跳回總覽
+      try{ currentChapterId = 1; currentSegIndex = 0; }catch(_e){}
+      try{ topTitle.textContent = "孫子兵法"; topSub.textContent = "原書順序";
+    setTopVer(true); }catch(_e){}
+      try{ renderOverview(); }catch(_e){}
+      try{ showView(viewOverview); }catch(_e){}
+      try{ nav.lastNonSettingsView = "overview"; nav.chapterId = 1; nav.segIndex = 0; nav.mode = "learn"; }catch(_e){}
+      try{ syncSettingsUI && syncSettingsUI(); }catch(_e){}
+      try{ showToast && showToast("✅ 已清空全部足跡"); }catch(_e){}
+      try{ mode = "learn"; }catch(_e){}
+      closeModal();
+    });
+  };
+
+  btnResetChapter && (btnResetChapter.onclick = (e) => { try{ e && e.stopPropagation && e.stopPropagation(); }catch(_e){}
+    openModal("本篇重置", `
+      <div class="plain">只會把「目前篇章」的完成數歸零，其他篇不受影響。</div>
+      <div class="plain">確定要重置本篇嗎？</div>
+    `, `
+      <button class="btn" id="btnCancelResetCh">取消</button>
+      <button class="btn primary" id="btnConfirmResetCh">確定重置</button>
+    `);
+    setTimeout(() => {
+      const c = document.getElementById("btnCancelResetCh");
+      const y = document.getElementById("btnConfirmResetCh");
+      if(c) c.onclick = () => closeModal();
+      if(y) y.onclick = () => {
+        closeModal();
+        stopReading();
+        PROG.chapters[currentChapterId] = { stars:0 };
+        saveProgress();
+        currentSegIndex = 0;
+        renderChapterHome(currentChapterId);
+        showView(viewChapterHome);
+      };
+    }, 0);
+  });
+
+
+  /***********************
+   * ESCAPE
+   ***********************/
+  function escapeHtml(str){
+    return (str||"").replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  /***********************
+   * INIT
+   ***********************/
+ 
+  /***********************
+   * TOAST
+   ***********************/
+  function showToast(msg){
+    let t = document.getElementById("toast");
+    if(!t){
+      t = document.createElement("div");
+      t.id = "toast";
+      t.style.position = "fixed";
+      t.style.left = "50%";
+      t.style.bottom = "18px";
+      t.style.transform = "translateX(-50%)";
+      t.style.padding = "10px 14px";
+      t.style.borderRadius = "14px";
+      t.style.border = "1px solid var(--line)";
+      t.style.background = "rgba(0,0,0,.55)";
+      t.style.color = "rgba(233,239,233,.95)";
+      t.style.fontWeight = "900";
+      t.style.zIndex = "120";
+      t.style.pointerEvents = "none";
+      t.style.backdropFilter = "blur(6px)";
+      t.style.opacity = "0";
+      t.style.transition = "opacity .18s ease";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = "1";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=>{ t.style.opacity="0"; }, 1200);
+  }
+
+/***********************
+ * ✅上一關 / 下一關（固定補丁版）
+ * 放在 function init(){ 之前
+ ***********************/
+if (typeof btnPrev !== "undefined" && btnPrev) {
+  btnPrev.disabled = true; // 第1段先鎖住上一關
+  btnPrev.onclick = () => {
+    stopReading();
+    beep("tap");
+
+    // 若剛在測驗模式，先拉回學習模式
+    if (mode === "test") mode = "learn";
+
+    const ch = currentChapter();
+    if (!ch || !ch.segments || !ch.segments.length) return;
+
+    if (currentSegIndex > 0) {
+      currentSegIndex -= 1;
+      startLearnSegment(currentSegIndex, { firstEntry:false });
+    }
+  };
+}
+
+if (typeof btnNext !== "undefined" && btnNext) {
+  btnNext.onclick = () => {
+    if (btnNext.disabled) return;
+
+    stopReading();
+    beep("tap");
+
+    // 防止 mode 卡在 test 造成「亮了但按不動」
+    if (mode === "test") mode = "learn";
+
+    const ch = currentChapter();
+    if (!ch || !ch.segments || !ch.segments.length) return;
+
+    if (currentSegIndex < ch.segments.length - 1) {
+      currentSegIndex += 1;
+      startLearnSegment(currentSegIndex, { firstEntry:false });
+    } else {
+      openModal("本篇完成", `<div class="plain">你已完成：${escapeHtml(ch.name)}。</div>`, `
+        <button class="btn" id="btnBackHome2">回到篇章首頁</button>
+        <button class="btn primary" id="btnBackOverview2">回到總覽</button>
+      `);
+      setTimeout(() => {
+        const a = document.getElementById("btnBackHome2");
+        const b = document.getElementById("btnBackOverview2");
+        if (a) a.onclick = () => { closeModal(); openChapterHome(); };
+        if (b) b.onclick = () => { closeModal(); btnOverview.click(); };
+      }, 0);
+    }
+  };
+}
+
+
+ function init(){
+    PROG.hintOn = !!PROG.hintDefault;
+    saveProgress();
+    renderHintSwitch();
+
+    btnBook.disabled = true;
+    btnNext.disabled = true;
+
+    renderOverview();
+    topTitle.textContent = "孫子兵法";
+    topSub.textContent = "原書順序";
+    setTopVer(true);
+    showView(viewOverview);
+  }
+
+  init();
+})();
+</script>
+<script>
+/* ✅ 加入主畫面（捷徑）｜v1.0 fixed53 */
+(function(){
+  const KEY = 'sunzi_a2hs_dismissed_v1';
+  const isStandalone =
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+    window.navigator.standalone === true;
+
+  function markDismissed(){
+    try{ localStorage.setItem(KEY,'yes'); }catch(_e){}
+  }
+  function shouldPrompt(){
+    if(isStandalone) return false;
+    try{ return localStorage.getItem(KEY) !== 'yes'; }catch(_e){ return true; }
+  }
+
+  function openTutorial(){
+    const html = `
+<div class="helpModalHead">
+  <div class="helpModalTitle">捷徑加入主畫面教學</div>
+  <div class="helpModalSub">加入後可全螢幕顯示、操作更順暢，整體穩定度與使用體驗會更接近 App。</div>
+</div>
+
+<div class="helpStepsGrid">
+  <section class="helpStepsCard">
+    <h3>iPhone / iPad（Safari）</h3>
+    <ol>
+      <li>點下方「分享」按鈕（方框＋上箭頭）。</li>
+      <li>往下滑，選「加入主畫面」。</li>
+      <li>確認名稱後按「加入」。</li>
+    </ol>
+  </section>
+
+  <section class="helpStepsCard">
+    <h3>Android（Chrome）</h3>
+    <ol>
+      <li>點右上角「⋮」選單。</li>
+      <li>選「加到主畫面」或「安裝應用程式」（依機型顯示）。</li>
+      <li>確認後完成加入。</li>
+    </ol>
+  </section>
+</div>
+
+<div class="helpTips">
+  <div class="helpTipsTitle">溫馨小提醒</div>
+  <div class="helpLine">1. 本系統為網頁遊戲，加入主畫面捷徑不會佔用手機太多空間。</div>
+  <div class="helpLine">2. 若選擇稍後再加，可隨時到「設定」中重新開啟本教學。</div>
+</div>`;
+    openModal("捷徑加入主畫面教學", html, `<button class="btn primary" id="a2hsDone">知道了</button>`);
+    setTimeout(()=>{ const b=document.getElementById("a2hsDone"); if(b) b.onclick=()=>{ closeModal(); }; },0);
+  }
+
+  function openFirstPrompt(){
+    const html = `
+<div class="plain" style="line-height:1.75">
+  想把本背誦系統的捷徑加到主畫面嗎？<br/>
+  將捷徑加入主畫面的優點是全螢幕顯示、介面友好、系統穩定。<br/>
+  之後也可以到「設定」→「使用說明」查看加入主畫面（捷徑）教學。
+</div>`;
+    openModal("溫柔小提示", html, `
+      <button class="btn" id="a2hsTeach">捷徑教學</button>
+      <button class="btn primary" id="a2hsLater">稍後再加</button>
+    `);
+    setTimeout(()=>{
+      const teach=document.getElementById("a2hsTeach");
+      const later=document.getElementById("a2hsLater");
+      if(teach) teach.onclick=()=>{ markDismissed(); closeModal(); setTimeout(openTutorial, 60); };
+      if(later) later.onclick=()=>{ markDismissed(); closeModal(); };
+    },0);
+  }
+  // Settings entry（保命：用事件委派，避免 iOS/PWA 偶發未綁定）
+  document.addEventListener('click', (e)=>{
+    const hit = e.target.closest ? e.target.closest('#btnA2HSOpen') : null;
+    if(hit){
+      e.preventDefault();
+      try{ openTutorial(); }catch(_e){}
+    }
+  });
+
+</script>
+
+</body>
+</html>
