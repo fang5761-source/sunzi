@@ -4624,6 +4624,10 @@ function bindFastTap(el, handler){
 
     const fireOnce = (ev) => {
       const now = Date.now();
+      // ✅額外保險：同一元素在極短時間內只允許觸發一次（避免 Android 一觸兩發）
+      if(el.__tapBusy){ return; }
+      el.__tapBusy = true;
+      setTimeout(()=>{ el.__tapBusy = false; }, 350);
       if(now - lastFire < __DEBOUNCE) return; // 防抖：避免極端情境（某些瀏覽器會再補一個 click）
       lastFire = now;
       try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
