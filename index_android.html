@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：v1.0.1（fixed63-android）
+版本：v1.0.1（fixed64-android）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1336,7 +1336,7 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== v1.0.1（fixed63-android）首次公開穩定封存版 ====== */
+/* ====== v1.0.1（fixed64-android）首次公開穩定封存版 ====== */
 .toolbar.toolbarOneLine{
   /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
   padding-right: calc(16px + env(safe-area-inset-right)) !important;
@@ -1688,7 +1688,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed63-android";
+const APP_VERSION = "fixed64-android";
 
 try{ const av=document.getElementById("aboutVersion"); if(av) av.textContent = "v1.0（"+APP_VERSION+"）"; }catch(_e){}
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
@@ -4298,6 +4298,17 @@ const btnClear = document.getElementById("btnClear");
     }, 0);
   }
 
+  // === Android / 模擬器「觸發兩次」保命鎖：同一瞬間只吃一次點擊 ===
+  // 有些 Android WebView / PWA / 模擬器會把一次點擊拆成兩個事件（down/up 或 touch/click），
+  // 造成令牌被放兩次。這裡用很短的時間窗做去抖（不影響正常操作）。
+  window.__TOKEN_TAP_LOCK_AT = 0;
+  function tokenTapLock(){
+    const now = Date.now();
+    if(now - (window.__TOKEN_TAP_LOCK_AT || 0) < 250) return true; // ignore
+    window.__TOKEN_TAP_LOCK_AT = now;
+    return false;
+  }
+
   /***********************
    * ✅TTS（iOS 穩定暫停：onboundary 記錄斷點）
    ***********************/
@@ -4624,10 +4635,6 @@ function bindFastTap(el, handler){
 
     const fireOnce = (ev) => {
       const now = Date.now();
-      // ✅額外保險：同一元素在極短時間內只允許觸發一次（避免 Android 一觸兩發）
-      if(el.__tapBusy){ return; }
-      el.__tapBusy = true;
-      setTimeout(()=>{ el.__tapBusy = false; }, 350);
       if(now - lastFire < __DEBOUNCE) return; // 防抖：避免極端情境（某些瀏覽器會再補一個 click）
       lastFire = now;
       try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
@@ -4661,7 +4668,11 @@ function bindFastTap(el, handler){
     // Click 後援（桌機）
     el.addEventListener('click', (ev)=>{
       // 手機上 pointerdown 後仍可能補一個 click；若剛剛有 pointerdown，就直接忽略 click
-      if(Date.now() - lastPointerDown < 900) return;
+      if(Date.now() - lastPointerDown < 900){
+        try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
+        try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
+        return;
+      }
       fireOnce(ev);
     }, {passive:false});
   }
@@ -4685,6 +4696,7 @@ function bindFastTap(el, handler){
       selection.forEach((t, idx) => {
         const el = makeToken(t);
         bindFastTap(el, () => {
+          if(tokenTapLock()) return;
           beep("tap");
           const k = selection.indexOf(t);
           if(k < 0) return;
@@ -4702,6 +4714,7 @@ function bindFastTap(el, handler){
     pool.forEach((t, idx) => {
       const el = makeToken(t);
       bindFastTap(el, () => {
+        if(tokenTapLock()) return;
         // 防止 Android 裝置（特別是加入主畫面捷徑）偶發的重複觸發造成「一按噴兩張」
         const k = pool.indexOf(t);
         if(k < 0) return;
