@@ -2,7 +2,7 @@
 
 <!--
 孫子兵法背誦
-版本：v1.0.1（fixed64-android）
+版本：v1.0.1（fixed65-android）
 狀態：功能穩定，下一關/上一關/測驗流程正常
 用途：對照、回溯、保險版本
 ⚠️ 此檔請勿直接修改，請複製後再改
@@ -1336,7 +1336,7 @@ html, body { overflow-x: hidden; }
 }
 
 
-/* ====== v1.0.1（fixed64-android）首次公開穩定封存版 ====== */
+/* ====== v1.0.1（fixed65-android）首次公開穩定封存版 ====== */
 .toolbar.toolbarOneLine{
   /* 多留一點呼吸：避免 iPhone Chrome 右側安全區裁切 */
   padding-right: calc(16px + env(safe-area-inset-right)) !important;
@@ -1688,7 +1688,7 @@ html, body { overflow-x: hidden; }
 <script>
 
 // ===== 固定版號（用來辨識是否還在看舊快取） =====
-const APP_VERSION = "fixed64-android";
+const APP_VERSION = "fixed65-android";
 
 try{ const av=document.getElementById("aboutVersion"); if(av) av.textContent = "v1.0（"+APP_VERSION+"）"; }catch(_e){}
 // ===== 解除 Service Worker/快取殘影（避免一直看到舊版或整頁變成程式碼） =====
@@ -4612,68 +4612,34 @@ function vibrateSoft(){
   }
 
 function bindFastTap(el, handler){
-    if(!el) return;
-
-    // ✅手機瀏覽器「連發」的根因：同時綁了 pointerdown / pointerup / touchstart / touchend
-    // 會讓同一次觸控觸發 2~4 次。
-    // 這裡改成：
-    // 1) 以 pointerdown 為主（最靈敏）
-    // 2) 同一個 pointerId 只允許觸發一次
-    // 3) click 當最後保險（桌機/少數環境）
-
-    let activePointerId = null;
+    // Android PWA / WebView 常見：pointerdown + click 或 touchend + click 會觸發兩次
+    // 這裡統一用「放開」(pointerup/touchend) 觸發，並用時間鎖擋掉後續的 click
     let lastFire = 0;
-    let lastPointerDown = 0;
 
-    // 🔒 Android（新增到主畫面／捷徑模式）容易「一觸多發」：同一手勢會補送 click/touch
-    // 只在 Android + standalone 時提高防抖門檻，避免噴發；iOS/桌機不受影響。
-    const __isAndroid = /Android/i.test(navigator.userAgent);
-    const __isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-                          (window.navigator.standalone === true);
-    const __DEBOUNCE = (__isAndroid && __isStandalone) ? 900 : 220;
-
-
-    const fireOnce = (ev) => {
+    const fire = (e) => {
       const now = Date.now();
-      if(now - lastFire < __DEBOUNCE) return; // 防抖：避免極端情境（某些瀏覽器會再補一個 click）
+      if (now - lastFire < 350) return; // 去抖，避免同一次操作重複觸發
       lastFire = now;
-      try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
-      try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
-      try{ unlockAudio(); }catch(_e){}
-      handler();
-      try{ ensureBottomSafe(); }catch(_e){}
+      try { if (e && e.preventDefault) e.preventDefault(); } catch(_){}
+      try { if (e && e.stopPropagation) e.stopPropagation(); } catch(_){}
+      handler(e);
     };
 
-    const onDown = (ev) => {
-      // 同一次觸控，只觸發一次
-      if(activePointerId !== null) return;
-      activePointerId = ev && (ev.pointerId ?? 1);
-      lastPointerDown = Date.now();
-      try{ el.setPointerCapture && ev && el.setPointerCapture(ev.pointerId); }catch(_e){}
-      ev.preventDefault();
-      ev.stopPropagation();
-      ev.preventDefault();
-      ev.stopPropagation();
-      fireOnce(ev);
-    };
+    if (window.PointerEvent){
+      el.addEventListener('pointerup', fire, {passive:false});
+      // 某些環境仍會再補一個 click，這裡直接擋掉
+      el.addEventListener('click', (e)=> {
+        if (Date.now() - lastFire < 800){ e.preventDefault(); e.stopPropagation(); return; }
+        fire(e);
+      }, {passive:false});
+      return;
+    }
 
-    const release = () => { activePointerId = null; };
-
-    // Pointer events
-    el.addEventListener('pointerdown', onDown, {passive:false});
-    el.addEventListener('pointerup', release, {passive:true});
-    el.addEventListener('pointercancel', release, {passive:true});
-    el.addEventListener('lostpointercapture', release, {passive:true});
-
-    // Click 後援（桌機）
-    el.addEventListener('click', (ev)=>{
-      // 手機上 pointerdown 後仍可能補一個 click；若剛剛有 pointerdown，就直接忽略 click
-      if(Date.now() - lastPointerDown < 900){
-        try{ if(ev && ev.cancelable) ev.preventDefault(); }catch(_e){}
-        try{ ev && ev.stopPropagation && ev.stopPropagation(); }catch(_e){}
-        return;
-      }
-      fireOnce(ev);
+    // 無 PointerEvent 時：touchend + click 也可能雙發
+    el.addEventListener('touchend', fire, {passive:false});
+    el.addEventListener('click', (e)=> {
+      if (Date.now() - lastFire < 800){ e.preventDefault(); e.stopPropagation(); return; }
+      fire(e);
     }, {passive:false});
   }
 
